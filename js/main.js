@@ -524,8 +524,43 @@ function initEventListeners() {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             hideModal();
+            closeMobileMenu();
         }
     });
+
+    // Mobile menu toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navTabs = document.getElementById('nav-tabs');
+    const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+
+    if (mobileMenuToggle) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.classList.toggle('active');
+            navTabs.classList.toggle('active');
+            mobileNavOverlay.classList.toggle('active');
+            document.body.style.overflow = navTabs.classList.contains('active') ? 'hidden' : '';
+        });
+    }
+
+    if (mobileNavOverlay) {
+        mobileNavOverlay.addEventListener('click', closeMobileMenu);
+    }
+
+    // Close mobile menu when a nav tab is clicked
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+        tab.addEventListener('click', closeMobileMenu);
+    });
+}
+
+function closeMobileMenu() {
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navTabs = document.getElementById('nav-tabs');
+    const mobileNavOverlay = document.getElementById('mobile-nav-overlay');
+
+    if (mobileMenuToggle) mobileMenuToggle.classList.remove('active');
+    if (navTabs) navTabs.classList.remove('active');
+    if (mobileNavOverlay) mobileNavOverlay.classList.remove('active');
+    document.body.style.overflow = '';
 }
 
 // =============================================

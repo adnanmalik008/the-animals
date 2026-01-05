@@ -10,6 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <!-- Mobile Nav Overlay -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay"></div>
+
     <!-- Navigation Header -->
     <header class="nav-header">
         <div class="nav-left">
@@ -17,7 +20,7 @@
                 <img src="assets/logo/logo.png" alt="The Animals" class="logo-image">
             </div>
         </div>
-        <nav class="nav-tabs">
+        <nav class="nav-tabs" id="nav-tabs">
             <button class="nav-tab active" data-page="live">Live View</button>
             <button class="nav-tab" data-page="peripheral">Peripheral View</button>
             <button class="nav-tab" data-page="sources">Sources</button>
@@ -35,6 +38,11 @@
                 <span class="user-name">R Basckin</span>
                 <div class="user-avatar"></div>
             </div>
+            <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
         </div>
     </header>
 
