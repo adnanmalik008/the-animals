@@ -307,28 +307,51 @@ function renderCulturePulse() {
 let currentVideoIndex = 0;
 let videoAutoplayInterval;
 let isVideoPlaying = false;
+let sliderTrack = null;
 
-function renderVideo(index) {
+function initVideoSlider() {
     const container = document.getElementById('video-container');
-    const video = videoData[index];
 
-    if (isVideoPlaying) {
-        // Show embedded video
-        container.innerHTML = `
-            <iframe
-                src="https://www.youtube.com/embed/${video.id}?autoplay=1&mute=1"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-            </iframe>
-        `;
-    } else {
-        // Show thumbnail with play button
-        container.innerHTML = `
+    // Create slider track with all videos
+    sliderTrack = document.createElement('div');
+    sliderTrack.className = 'video-slider-track';
+
+    videoData.forEach((video, index) => {
+        const slide = document.createElement('div');
+        slide.className = 'video-slide';
+        slide.dataset.index = index;
+        slide.innerHTML = `
             <img class="video-thumbnail" src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
-            <div class="video-play-overlay" onclick="playVideo()">▶</div>
+            <div class="video-play-overlay">▶</div>
         `;
+        sliderTrack.appendChild(slide);
+    });
+
+    container.appendChild(sliderTrack);
+    updateVideoInfo(0);
+}
+
+function updateSliderPosition(animate = true) {
+    if (!sliderTrack) return;
+
+    if (!animate) {
+        sliderTrack.style.transition = 'none';
+    } else {
+        sliderTrack.style.transition = 'transform 0.5s ease';
     }
 
+    const offset = currentVideoIndex * (100 / videoData.length);
+    sliderTrack.style.transform = `translateX(-${offset}%)`;
+
+    // Force reflow for non-animated changes
+    if (!animate) {
+        sliderTrack.offsetHeight;
+        sliderTrack.style.transition = 'transform 0.5s ease';
+    }
+}
+
+function updateVideoInfo(index) {
+    const video = videoData[index];
     document.getElementById('video-title').textContent = video.title;
     document.getElementById('video-description').innerHTML = video.description + ' <a href="#" class="read-more">Read More</a>';
 }
@@ -336,28 +359,53 @@ function renderVideo(index) {
 function playVideo() {
     isVideoPlaying = true;
     clearInterval(videoAutoplayInterval);
-    renderVideo(currentVideoIndex);
+
+    // Replace current slide with iframe
+    const currentSlide = sliderTrack.querySelector(`.video-slide[data-index="${currentVideoIndex}"]`);
+    const video = videoData[currentVideoIndex];
+    currentSlide.innerHTML = `
+        <iframe
+            src="https://www.youtube.com/embed/${video.id}?autoplay=1&mute=1"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+        </iframe>
+    `;
 }
 
 function stopVideo() {
     isVideoPlaying = false;
-    renderVideo(currentVideoIndex);
+
+    // Replace iframe back with thumbnail
+    const currentSlide = sliderTrack.querySelector(`.video-slide[data-index="${currentVideoIndex}"]`);
+    const video = videoData[currentVideoIndex];
+    currentSlide.innerHTML = `
+        <img class="video-thumbnail" src="${video.thumbnail}" alt="${video.title}" onerror="this.style.display='none'">
+        <div class="video-play-overlay">▶</div>
+    `;
+
     startVideoCarousel();
 }
 
 function nextVideo() {
-    isVideoPlaying = false;
+    if (isVideoPlaying) {
+        stopVideo();
+    }
     currentVideoIndex = (currentVideoIndex + 1) % videoData.length;
-    renderVideo(currentVideoIndex);
+    updateSliderPosition();
+    updateVideoInfo(currentVideoIndex);
 }
 
 function prevVideo() {
-    isVideoPlaying = false;
+    if (isVideoPlaying) {
+        stopVideo();
+    }
     currentVideoIndex = (currentVideoIndex - 1 + videoData.length) % videoData.length;
-    renderVideo(currentVideoIndex);
+    updateSliderPosition();
+    updateVideoInfo(currentVideoIndex);
 }
 
 function startVideoCarousel() {
+    clearInterval(videoAutoplayInterval);
     videoAutoplayInterval = setInterval(() => {
         if (!isVideoPlaying) {
             nextVideo();
@@ -433,6 +481,13 @@ function initEventListeners() {
     videoContainer.addEventListener('mouseleave', () => {
         if (isVideoPlaying) {
             stopVideo();
+        }
+    });
+
+    // Click on play overlay to start video
+    videoContainer.addEventListener('click', (e) => {
+        if (e.target.classList.contains('video-play-overlay')) {
+            playVideo();
         }
     });
 
@@ -531,8 +586,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Render culture pulse
     renderCulturePulse();
 
-    // Initialize video
-    renderVideo(0);
+    // Initialize video slider
+    initVideoSlider();
     startVideoCarousel();
 
     // Initialize voice quote
