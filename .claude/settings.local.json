@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nInitial commit - The Animals Dashboard prototype\n\nStatic prototype dashboard for ON Running brand insights including:\n- News Wire with auto-scroll and source logos\n- Culture Pulse with image gallery\n- On The Ground video carousel with hover-to-play\n- Media Presence bar chart\n- AI Visibility metrics\n- Deterrents/Drivers tabbed section\n- Live clock and marquee\n\n🤖 Generated with [Claude Code]\\(https://claude.com/claude-code\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")"
+    ]
+  }
+}

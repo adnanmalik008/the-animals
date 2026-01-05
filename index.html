@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Animals - Live View Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation Header -->
+    <header class="nav-header">
+        <div class="nav-left">
+            <div class="logo">
+                <img src="assets/logo/logo.png" alt="The Animals" class="logo-image">
+            </div>
+        </div>
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-page="live">Live View</button>
+            <button class="nav-tab" data-page="peripheral">Peripheral View</button>
+            <button class="nav-tab" data-page="sources">Sources</button>
+            <button class="nav-tab" data-page="settings">Settings</button>
+        </nav>
+        <div class="nav-right">
+            <div class="moderators">
+                <span>Moderators Online</span>
+                <div class="moderator-dots">
+                    <span class="dot orange"></span>
+                    <span class="dot purple"></span>
+                </div>
+            </div>
+            <div class="user-profile">
+                <span class="user-name">R Basckin</span>
+                <div class="user-avatar"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <main class="dashboard">
+        <!-- Brand Bar Section -->
+        <section class="brand-bar">
+            <div class="brand-logo">
+                <img src="assets/images/brand-bar/on-cloud-logo.png" alt="ON" class="on-logo-img">
+            </div>
+            <div class="brand-hero-wrapper">
+                <div class="hero-image">
+                    <img src="assets/images/brand-bar/bg-img.png" alt="ON Cloudsurfer">
+                </div>
+                <div class="hero-label">ON Cloudsurfer Next</div>
+                <div class="brand-marquee">
+                    <div class="marquee-track">
+                        <span class="marquee-text">All current news pertaining to ON masterbrand, Cloudsurfer line, Cloudmonster Hyper, updates to Cloudrunner 2 & Cloudswift 3, and lifestyle/performance hybrid Roger Clubhouse Pro.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                        <span class="marquee-text">All current news pertaining to ON masterbrand, Cloudsurfer line, Cloudmonster Hyper, updates to Cloudrunner 2 & Cloudswift 3, and lifestyle/performance hybrid Roger Clubhouse Pro.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+                    </div>
+                </div>
+            </div>
+            <div class="brand-clock">
+                <div class="clock-time-box">
+                    <div class="clock-time">
+                        <span id="clock-hours">13</span>:<span id="clock-minutes">47</span>:<span id="clock-seconds">03</span>
+                    </div>
+                    <span class="clock-zone">GMT</span>
+                </div>
+                <div class="clock-date-stack">
+                    <span class="clock-day" id="clock-day">Wed</span>
+                    <span class="clock-date-num" id="clock-date-num">17</span>
+                    <span class="clock-month" id="clock-month">Dec</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- News Wire Section -->
+            <section class="news-wire">
+                <h2 class="section-title">NEWS WIRE</h2>
+                <div class="news-list" id="news-list">
+                    <!-- News items will be populated by JS -->
+                </div>
+            </section>
+
+            <!-- Culture Pulse Section -->
+            <section class="culture-pulse">
+                <h2 class="section-title">CULTURE PULSE</h2>
+                <div class="culture-grid" id="culture-grid">
+                    <!-- Culture items will be populated by JS -->
+                </div>
+            </section>
+
+            <!-- On The Ground Section -->
+            <section class="on-the-ground">
+                <div class="section-header">
+                    <h2 class="section-title">ON THE GROUND</h2>
+                    <span class="live-badge"><span class="live-dot"></span> LIVE</span>
+                </div>
+                <div class="video-carousel">
+                    <button class="carousel-arrow prev" id="video-prev">&larr;</button>
+                    <div class="video-container" id="video-container">
+                        <!-- Video embed will be here -->
+                    </div>
+                    <button class="carousel-arrow next" id="video-next">&rarr;</button>
+                </div>
+                <div class="video-info">
+                    <h3 class="video-title" id="video-title">YOUTUBE LIVE: SMART KICKS</h3>
+                    <p class="video-description" id="video-description">AI Info: Smart Kicks is a Youtuber with 157k subscribers that reviews a variety of sneakers in hand he is fair... <a href="#" class="read-more">Read More</a></p>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- Bottom Row - 3 columns -->
+        <div class="bottom-row">
+            <!-- Deterrents/Drivers Section -->
+            <section class="deterrents-drivers">
+                <div class="section-header">
+                    <h2 class="section-title">DETERRENTS/DRIVERS</h2>
+                </div>
+                <div class="sources-count">83 <span>SOURCES</span></div>
+                <div class="tabs">
+                    <button class="tab" data-tab="drivers">Drivers</button>
+                    <button class="tab active" data-tab="problems">Problems</button>
+                    <button class="tab" data-tab="solutions">Solutions</button>
+                </div>
+                <div class="tab-content">
+                    <button class="carousel-arrow prev" id="dd-prev">&larr;</button>
+                    <div class="voice-card" id="voice-card">
+                        <span class="voice-label">CONSUMER VOICE</span>
+                        <p class="voice-quote" id="voice-quote">Shoes occasionally squeak</p>
+                    </div>
+                    <button class="carousel-arrow next" id="dd-next">&rarr;</button>
+                </div>
+            </section>
+
+            <!-- Media Presence Section -->
+            <section class="media-presence">
+                <h2 class="section-title">MEDIA PRESENCE (.COM TRAFFIC)</h2>
+                <div class="bar-chart">
+                    <div class="bar-item">
+                        <span class="bar-value">55%</span>
+                        <div class="bar news"></div>
+                    </div>
+                    <div class="bar-item">
+                        <span class="bar-value">30%</span>
+                        <div class="bar socials"></div>
+                    </div>
+                    <div class="bar-item">
+                        <span class="bar-value">15%</span>
+                        <div class="bar blogs"></div>
+                    </div>
+                </div>
+                <div class="bar-labels">
+                    <span class="bar-label">NEWS</span>
+                    <span class="bar-label">SOCIALS</span>
+                    <span class="bar-label">BLOGS</span>
+                </div>
+                <div class="chart-progress">
+                    <div class="progress-bar"></div>
+                </div>
+            </section>
+
+            <!-- AI Visibility Section -->
+            <section class="ai-visibility">
+                <div class="section-header">
+                    <h2 class="section-title">AI VISIBILITY</h2>
+                    <span class="region-label">REGION: EUR</span>
+                </div>
+                <div class="ai-metrics">
+                    <div class="metric">
+                        <span class="metric-value">74<span class="metric-small">/100</span></span>
+                        <span class="metric-label">SCORE</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">541</span>
+                        <span class="metric-label">MENTIONS</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-value">1.8m</span>
+                        <span class="metric-label">CITED</span>
+                    </div>
+                </div>
+                <div class="platform-breakdown">
+                    <div class="platform-row">
+                        <span class="platform-name">CHATGPT</span>
+                        <span class="platform-value">135k</span>
+                    </div>
+                    <div class="platform-row">
+                        <span class="platform-name">AI OVERVIEW</span>
+                        <span class="platform-value">115k</span>
+                    </div>
+                    <div class="platform-row">
+                        <span class="platform-name">GEMINI</span>
+                        <span class="platform-value coming-soon">coming soon</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Coming Soon Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-icon">🚧</div>
+            <h2 class="modal-title">Coming Soon</h2>
+            <p class="modal-text">This feature is currently under development and will be available in a future update.</p>
+            <button class="modal-btn" id="modal-close">Got it</button>
+        </div>
+    </div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
