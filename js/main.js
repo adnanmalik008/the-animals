@@ -123,17 +123,17 @@ const newArticle = {
 };
 
 const cultureData = [
-    { src: "assets/images/culture-pulse/Reddit user using shoes as taxonomy.png", alt: "Reddit user using shoes as taxonomy" },
-    { src: "assets/images/culture-pulse/Reddit user asking for men's fashion advice.png", alt: "Reddit user asking for men's fashion advice" },
-    { src: "assets/images/culture-pulse/TikTok comic.png", alt: "TikTok comic" },
-    { src: "assets/images/culture-pulse/TikTok comic roundup of what your running shoes say about you.png", alt: "TikTok comic roundup" },
-    { src: "assets/images/culture-pulse/Reddit user asking the sneaker communityfor recommendations.png", alt: "Reddit user asking for recommendations" },
-    { src: "assets/images/culture-pulse/Reddit global question.png", alt: "Reddit global question" },
-    { src: "assets/images/culture-pulse/Reddit user sharing experience of shoes running.png", alt: "Reddit user sharing experience" },
-    { src: "assets/images/culture-pulse/Comic real life situation.png", alt: "Comic real life situation" },
-    { src: "assets/images/culture-pulse/Podiatrist reviews the shoe.png", alt: "Podiatrist reviews the shoe" },
-    { src: "assets/images/culture-pulse/comic social media share.png", alt: "Comic social media share" },
-    { src: "assets/images/culture-pulse/Screenshot 2025-12-03 at 18.00.16.png", alt: "Screenshot" }
+    { src: "assets/images/culture-pulse/Reddit user using shoes as taxonomy.png", alt: "Reddit user using shoes as taxonomy", platform: "reddit" },
+    { src: "assets/images/culture-pulse/Reddit user asking for men's fashion advice.png", alt: "Reddit user asking for men's fashion advice", platform: "reddit" },
+    { src: "assets/images/culture-pulse/TikTok comic.png", alt: "TikTok comic", platform: "tiktok" },
+    { src: "assets/images/culture-pulse/TikTok comic roundup of what your running shoes say about you.png", alt: "TikTok comic roundup", platform: "tiktok" },
+    { src: "assets/images/culture-pulse/Reddit user asking the sneaker communityfor recommendations.png", alt: "Reddit user asking for recommendations", platform: "reddit" },
+    { src: "assets/images/culture-pulse/Reddit global question.png", alt: "Reddit global question", platform: "reddit" },
+    { src: "assets/images/culture-pulse/Reddit user sharing experience of shoes running.png", alt: "Reddit user sharing experience", platform: "reddit" },
+    { src: "assets/images/culture-pulse/Comic real life situation.png", alt: "Comic real life situation", platform: "instagram" },
+    { src: "assets/images/culture-pulse/Podiatrist reviews the shoe.png", alt: "Podiatrist reviews the shoe", platform: "tiktok" },
+    { src: "assets/images/culture-pulse/comic social media share.png", alt: "Comic social media share", platform: "instagram" },
+    { src: "assets/images/culture-pulse/Screenshot 2025-12-03 at 18.00.16.png", alt: "Screenshot", platform: "instagram" }
 ];
 
 const videoData = [
@@ -289,6 +289,8 @@ function addNewArticle() {
 // =============================================
 // CULTURE PULSE
 // =============================================
+let currentCultureFilter = 'all';
+
 function renderCulturePulse() {
     const cultureGrid = document.getElementById('culture-grid');
     cultureGrid.innerHTML = '';
@@ -296,8 +298,31 @@ function renderCulturePulse() {
     cultureData.forEach((item) => {
         const cultureItem = document.createElement('div');
         cultureItem.className = 'culture-item';
+        cultureItem.dataset.platform = item.platform;
         cultureItem.innerHTML = `<img src="${item.src}" alt="${item.alt}">`;
         cultureGrid.appendChild(cultureItem);
+    });
+}
+
+function filterCulturePulse(platform) {
+    currentCultureFilter = platform;
+    const cultureItems = document.querySelectorAll('.culture-item');
+
+    // Update filter button states
+    document.querySelectorAll('.culture-filter').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.dataset.platform === platform) {
+            btn.classList.add('active');
+        }
+    });
+
+    // Filter items
+    cultureItems.forEach(item => {
+        if (platform === 'all' || item.dataset.platform === platform) {
+            item.classList.remove('hidden');
+        } else {
+            item.classList.add('hidden');
+        }
     });
 }
 
@@ -418,6 +443,8 @@ function startVideoCarousel() {
 // =============================================
 let currentTab = 'problems';
 let currentVoiceIndex = 0;
+let voiceAutoplayInterval;
+let isVoiceHovered = false;
 
 function switchTab(tab) {
     currentTab = tab;
@@ -433,22 +460,41 @@ function switchTab(tab) {
 
     // Update voice quote
     updateVoiceQuote();
+
+    // Restart auto-rotation
+    startVoiceCarousel();
+}
+
+function startVoiceCarousel() {
+    clearInterval(voiceAutoplayInterval);
+    voiceAutoplayInterval = setInterval(() => {
+        if (!isVoiceHovered) {
+            nextVoice();
+        }
+    }, 5000); // Rotate every 5 seconds
 }
 
 function updateVoiceQuote() {
     const quotes = voiceData[currentTab];
-    document.getElementById('voice-quote').textContent = quotes[currentVoiceIndex];
+    // Show two quotes at a time
+    const index1 = currentVoiceIndex * 2;
+    const index2 = currentVoiceIndex * 2 + 1;
+
+    document.getElementById('voice-quote-1').textContent = quotes[index1] || '';
+    document.getElementById('voice-quote-2').textContent = quotes[index2] || '';
 }
 
 function nextVoice() {
     const quotes = voiceData[currentTab];
-    currentVoiceIndex = (currentVoiceIndex + 1) % quotes.length;
+    const maxIndex = Math.ceil(quotes.length / 2) - 1;
+    currentVoiceIndex = (currentVoiceIndex + 1) > maxIndex ? 0 : currentVoiceIndex + 1;
     updateVoiceQuote();
 }
 
 function prevVoice() {
     const quotes = voiceData[currentTab];
-    currentVoiceIndex = (currentVoiceIndex - 1 + quotes.length) % quotes.length;
+    const maxIndex = Math.ceil(quotes.length / 2) - 1;
+    currentVoiceIndex = (currentVoiceIndex - 1) < 0 ? maxIndex : currentVoiceIndex - 1;
     updateVoiceQuote();
 }
 
@@ -461,6 +507,164 @@ function showModal() {
 
 function hideModal() {
     document.getElementById('modal-overlay').classList.remove('active');
+}
+
+// =============================================
+// AI VISIBILITY COUNTER ANIMATION
+// =============================================
+let aiCounterAnimated = false;
+const aiMetricValues = {
+    visibility: 42,
+    mentions: 10.8,
+    citedPages: 14.8
+};
+const platformValues = {
+    chatgpt: { mentions: 2.8, cited: 8 },
+    aiOverview: { mentions: 1.2, cited: 1.8 },
+    aiMode: { mentions: 3.2, cited: 5.5 },
+    gemini: { mentions: 3.7, cited: 930 }
+};
+
+function animateCounter(element, target, suffix = '', duration = 1000, isDecimal = false) {
+    const start = 0;
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = start + (target - start) * easeOutQuart;
+
+        if (isDecimal) {
+            element.textContent = current.toFixed(1) + suffix;
+        } else if (target >= 100) {
+            element.textContent = Math.round(current) + suffix;
+        } else {
+            element.textContent = Math.round(current) + suffix;
+        }
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            // Ensure final value is exact
+            if (isDecimal) {
+                element.textContent = target.toFixed(1) + suffix;
+            } else {
+                element.textContent = target + suffix;
+            }
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function animateScoreRing(target, duration = 1200) {
+    const ringFill = document.querySelector('.score-ring-fill');
+    if (!ringFill) return;
+
+    const startTime = performance.now();
+
+    function update(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const current = target * easeOutQuart;
+
+        ringFill.setAttribute('stroke-dasharray', `${current}, 100`);
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            ringFill.setAttribute('stroke-dasharray', `${target}, 100`);
+        }
+    }
+
+    requestAnimationFrame(update);
+}
+
+function resetAICounters() {
+    // Reset main metrics
+    const visibilityEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(1) .ai-metric-value');
+    const mentionsEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(2) .ai-metric-value');
+    const citedEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(3) .ai-metric-value');
+
+    if (visibilityEl) visibilityEl.textContent = '0';
+    if (mentionsEl) mentionsEl.textContent = '0K';
+    if (citedEl) citedEl.textContent = '0K';
+
+    // Reset score ring to 0
+    const ringFill = document.querySelector('.score-ring-fill');
+    if (ringFill) ringFill.setAttribute('stroke-dasharray', '0, 100');
+
+    // Reset platform values
+    const platformRows = document.querySelectorAll('.ai-platform-table .platform-row');
+    platformRows.forEach(row => {
+        const mentions = row.querySelector('.platform-mentions');
+        const cited = row.querySelector('.platform-cited');
+        if (mentions) mentions.textContent = '0';
+        if (cited) cited.textContent = '0';
+    });
+}
+
+function animateAICounters() {
+    // Animate main metrics
+    const visibilityEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(1) .ai-metric-value');
+    const mentionsEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(2) .ai-metric-value');
+    const citedEl = document.querySelector('.ai-metrics-grid .ai-metric:nth-child(3) .ai-metric-value');
+
+    if (visibilityEl) animateCounter(visibilityEl, aiMetricValues.visibility, '', 1200);
+    if (mentionsEl) animateCounter(mentionsEl, aiMetricValues.mentions, 'K', 1200, true);
+    if (citedEl) animateCounter(citedEl, aiMetricValues.citedPages, 'K', 1200, true);
+
+    // Animate score ring from 0 to 42
+    animateScoreRing(aiMetricValues.visibility, 1200);
+
+    // Animate platform values with staggered timing
+    const platformRows = document.querySelectorAll('.ai-platform-table .platform-row');
+    const platforms = ['chatgpt', 'aiOverview', 'aiMode', 'gemini'];
+
+    platformRows.forEach((row, index) => {
+        const mentions = row.querySelector('.platform-mentions');
+        const cited = row.querySelector('.platform-cited');
+        const platformKey = platforms[index];
+        const values = platformValues[platformKey];
+
+        setTimeout(() => {
+            if (mentions && values) {
+                animateCounter(mentions, values.mentions, 'K', 800, true);
+            }
+            if (cited && values) {
+                if (values.cited >= 100) {
+                    animateCounter(cited, values.cited, '', 800, false);
+                } else {
+                    animateCounter(cited, values.cited, 'K', 800, true);
+                }
+            }
+        }, index * 100);
+    });
+
+    aiCounterAnimated = true;
+}
+
+function initAICounterAnimation() {
+    const aiVisibilityCard = document.querySelector('.ai-visibility');
+
+    if (aiVisibilityCard) {
+        aiVisibilityCard.addEventListener('mouseenter', () => {
+            if (!aiCounterAnimated) {
+                resetAICounters();
+                setTimeout(() => animateAICounters(), 50);
+            }
+        });
+
+        aiVisibilityCard.addEventListener('mouseleave', () => {
+            aiCounterAnimated = false;
+        });
+    }
 }
 
 // =============================================
@@ -499,6 +703,22 @@ function initEventListeners() {
     // Voice carousel arrows
     document.getElementById('dd-prev').addEventListener('click', prevVoice);
     document.getElementById('dd-next').addEventListener('click', nextVoice);
+
+    // Voice carousel hover pause
+    const voiceCards = document.querySelector('.voice-cards');
+    if (voiceCards) {
+        voiceCards.addEventListener('mouseenter', () => {
+            isVoiceHovered = true;
+        });
+        voiceCards.addEventListener('mouseleave', () => {
+            isVoiceHovered = false;
+        });
+    }
+
+    // Culture pulse filters
+    document.querySelectorAll('.culture-filter').forEach(filter => {
+        filter.addEventListener('click', () => filterCulturePulse(filter.dataset.platform));
+    });
 
     // Navigation tabs - show modal for non-live pages
     document.querySelectorAll('.nav-tab').forEach(navTab => {
@@ -625,11 +845,15 @@ document.addEventListener('DOMContentLoaded', () => {
     initVideoSlider();
     startVideoCarousel();
 
-    // Initialize voice quote
+    // Initialize voice quote and start auto-rotation
     updateVoiceQuote();
+    startVoiceCarousel();
 
     // Set up event listeners
     initEventListeners();
+
+    // Initialize AI counter animation
+    initAICounterAnimation();
 
     console.log('The Animals Dashboard initialized');
 });
