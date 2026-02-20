@@ -22,7 +22,7 @@
         </div>
         <nav class="nav-tabs" id="nav-tabs">
             <button class="nav-tab active" data-page="live">Live View</button>
-            <button class="nav-tab" data-page="peripheral">Peripheral View</button>
+            <button class="nav-tab" data-page="anomalies">Anomalies</button>
             <button class="nav-tab" data-page="sources">Sources</button>
             <button class="nav-tab" data-page="settings">Settings</button>
         </nav>
@@ -361,6 +361,19 @@
             <h2 class="modal-title">Coming Soon</h2>
             <p class="modal-text">This feature is currently under development and will be available in a future update.</p>
             <button class="modal-btn" id="modal-close">Got it</button>
+        </div>
+    </div>
+
+    <!-- Anomalies Login Modal -->
+    <div class="modal-overlay" id="anomalies-modal-overlay">
+        <div class="modal anomalies-modal">
+            <h2 class="modal-title">Anomalies — Client Access</h2>
+            <p class="modal-text">This is a restricted intelligence layer.<br>Access is limited to active partners.</p>
+            <form class="anomalies-form" id="anomalies-form">
+                <input type="text" class="anomalies-input" placeholder="Email / Username" required>
+                <input type="password" class="anomalies-input" placeholder="Password" required>
+                <button type="submit" class="modal-btn anomalies-btn">Enter</button>
+            </form>
         </div>
     </div>
 

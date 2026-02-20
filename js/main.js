@@ -509,6 +509,14 @@ function hideModal() {
     document.getElementById('modal-overlay').classList.remove('active');
 }
 
+function showAnomaliesModal() {
+    document.getElementById('anomalies-modal-overlay').classList.add('active');
+}
+
+function hideAnomaliesModal() {
+    document.getElementById('anomalies-modal-overlay').classList.remove('active');
+}
+
 // =============================================
 // AI VISIBILITY COUNTER ANIMATION
 // =============================================
@@ -724,7 +732,9 @@ function initEventListeners() {
     document.querySelectorAll('.nav-tab').forEach(navTab => {
         navTab.addEventListener('click', () => {
             const page = navTab.dataset.page;
-            if (page !== 'live') {
+            if (page === 'anomalies') {
+                showAnomaliesModal();
+            } else if (page !== 'live') {
                 showModal();
             }
         });
@@ -740,10 +750,24 @@ function initEventListeners() {
         }
     });
 
-    // Close modal on Escape key
+    // Anomalies modal - close on overlay click
+    document.getElementById('anomalies-modal-overlay').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('anomalies-modal-overlay')) {
+            hideAnomaliesModal();
+        }
+    });
+
+    // Anomalies form submit
+    document.getElementById('anomalies-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        hideAnomaliesModal();
+    });
+
+    // Close modals on Escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             hideModal();
+            hideAnomaliesModal();
             closeMobileMenu();
         }
     });
