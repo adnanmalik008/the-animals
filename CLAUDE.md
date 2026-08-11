@@ -11,11 +11,11 @@ A static prototype dashboard for "The Animals" agency showcasing ON Running bran
 
 ## Current Status
 - **Phase**: Prototype/MVP
-- **Last Updated**: January 2026
+- **Last Updated**: August 2026
 - **Mobile Optimization**: Complete with hamburger menu
 
 ### Completed Features
-- [x] Navigation header with tabs (Live View, Peripheral View, Sources, Settings)
+- [x] Navigation header with tabs (Live View, Anomalies, Sources, Settings)
 - [x] Brand bar with ON Running logo, hero image, marquee, and live clock
 - [x] News Wire section with auto-scroll and source logos
 - [x] Culture Pulse section with vertical image gallery and social media filters (TikTok, Reddit, Instagram)
@@ -29,9 +29,10 @@ A static prototype dashboard for "The Animals" agency showcasing ON Running bran
   - Live "Today" badge with pulsating indicator
 - [x] Mobile responsive design with hamburger menu
 - [x] Coming Soon modal for inactive pages
+- [x] Anomalies client-access modal (prototype login form, closes on submit)
 
 ### Pending Features
-- [ ] Peripheral View page
+- [ ] Anomalies page (currently modal only, no real auth)
 - [ ] Sources page
 - [ ] Settings page
 - [ ] Backend integration (currently static data)
