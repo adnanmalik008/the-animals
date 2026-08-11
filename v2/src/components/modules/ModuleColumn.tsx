@@ -5,7 +5,6 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -42,12 +41,6 @@ export function ModuleColumn({
   const [closed, setClosed] = useState<Set<string>>(new Set());
   const [dragId, setDragId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
-  const orderRef = useRef(order);
-  orderRef.current = order;
-  const dragRef = useRef<string | null>(null);
-  dragRef.current = dragId;
-  const overRef = useRef<string | null>(null);
-  overRef.current = overId;
 
   const allClosed = closed.size >= order.length;
 
@@ -61,24 +54,22 @@ export function ModuleColumn({
   }, []);
 
   const toggleAll = useCallback(() => {
-    setClosed(allClosed ? new Set() : new Set(orderRef.current));
-  }, [allClosed]);
+    setClosed(allClosed ? new Set() : new Set(order));
+  }, [allClosed, order]);
 
   const onDrop = useCallback(() => {
-    const from = dragRef.current;
-    const to = overRef.current;
-    if (from && to && from !== to) {
+    if (dragId && overId && dragId !== overId) {
       setOrder((prev) => {
-        const without = prev.filter((x) => x !== from);
+        const without = prev.filter((x) => x !== dragId);
         const insertAt =
-          without.indexOf(to) + (prev.indexOf(from) < prev.indexOf(to) ? 1 : 0);
-        without.splice(insertAt, 0, from);
+          without.indexOf(overId) + (prev.indexOf(dragId) < prev.indexOf(overId) ? 1 : 0);
+        without.splice(insertAt, 0, dragId);
         return without;
       });
     }
     setDragId(null);
     setOverId(null);
-  }, []);
+  }, [dragId, overId]);
 
   const ctx = useMemo<ColumnCtx>(
     () => ({

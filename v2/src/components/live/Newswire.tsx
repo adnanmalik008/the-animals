@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { incomingNewsItem, newsItems, type NewsItem } from "@/data/board";
 import { SourceMark } from "./SourceMark";
+import { useStickerTarget } from "./stickers";
 
 const categoryText: Record<NewsItem["categoryColor"], string> = {
   orange: "text-orange bg-orange/10",
@@ -15,8 +16,24 @@ const categoryText: Record<NewsItem["categoryColor"], string> = {
 function NewswireCard({ item, isNew }: { item: NewsItem; isNew?: boolean }) {
   const [expanded, setExpanded] = useState(false);
 
+  /* sticker drops file this article into the News circle on the Anomalies board */
+  /* no author here: InsightItem.author means user-authored, and the Anomalies
+     board renders source wordmarks only when author is absent */
+  const { targetProps, isOver, justDropped } = useStickerTarget(() => ({
+    circleId: "news",
+    headline: item.headline,
+    source: item.source,
+    category: item.category,
+    categoryColor: item.categoryColor,
+  }));
+
   return (
-    <article className={isNew ? "fold-in" : undefined}>
+    <article
+      {...targetProps}
+      className={`${isNew ? "fold-in " : ""}rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
+        justDropped ? "ring-4 ring-orange" : isOver ? "ring-2 ring-orange" : ""
+      }`}
+    >
       <div className="torn-card px-5 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />

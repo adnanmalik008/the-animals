@@ -12,7 +12,9 @@ export function useInView<T extends HTMLElement>(threshold = 0.35) {
     if (!el || inView) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries.some((e) => e.isIntersecting)) {
+        // require a real box: collapsed (zero-height) modules report
+        // isIntersecting and would consume the one-shot trigger while hidden
+        if (entries.some((e) => e.isIntersecting && e.boundingClientRect.height > 0)) {
           setInView(true);
           observer.disconnect();
         }
@@ -26,6 +28,38 @@ export function useInView<T extends HTMLElement>(threshold = 0.35) {
   return { ref, inView };
 }
 
+/* localStorage-persisted state. Reads after mount to stay hydration-safe. */
+export function useLocalStorage<T>(key: string, initial: T) {
+  const [value, setValue] = useState<T>(initial);
+
+  useEffect(() => {
+    // async so the rehydrate never causes a cascading synchronous render
+    const id = requestAnimationFrame(() => {
+      try {
+        const raw = localStorage.getItem(key);
+        if (raw !== null) setValue(JSON.parse(raw) as T);
+      } catch {
+        /* unavailable or corrupted — keep initial */
+      }
+    });
+    return () => cancelAnimationFrame(id);
+  }, [key]);
+
+  const set = (next: T | ((prev: T) => T)) => {
+    setValue((prev) => {
+      const resolved = typeof next === "function" ? (next as (p: T) => T)(prev) : next;
+      try {
+        localStorage.setItem(key, JSON.stringify(resolved));
+      } catch {
+        /* quota/private mode — in-memory only */
+      }
+      return resolved;
+    });
+  };
+
+  return [value, set] as const;
+}
+
 /* Animates 0 → target with ease-out once `start` is true. */
 export function useCountUp(target: number, start: boolean, duration = 1200, decimals = 0) {
   const [value, setValue] = useState(0);
@@ -33,8 +67,8 @@ export function useCountUp(target: number, start: boolean, duration = 1200, deci
   useEffect(() => {
     if (!start) return;
     if (typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setValue(target);
-      return;
+      const id = requestAnimationFrame(() => setValue(target));
+      return () => cancelAnimationFrame(id);
     }
     let raf = 0;
     const t0 = performance.now();
