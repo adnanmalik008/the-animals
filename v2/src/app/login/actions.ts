@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkBoardLogin, checkEnvAdmin, resolveBoardSlug } from "@/lib/server/boards";
+import { checkBoardLogin, checkEnvAdmin, getCurrentBoard } from "@/lib/server/boards";
 import { clearSession, setSession } from "@/lib/server/session";
 
 export interface LoginState {
@@ -27,7 +27,10 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
     redirect(next);
   }
 
-  const boardSlug = await resolveBoardSlug();
+  // Resolve through getCurrentBoard so non-board hosts (e.g. on-view.*)
+  // authenticate against the same default board the page guard serves.
+  const board = await getCurrentBoard();
+  const boardSlug = board.slug;
   const result = await checkBoardLogin(boardSlug, username, password);
   if (!result.ok) return { error: "Wrong username or password for this board." };
 
