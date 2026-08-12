@@ -1,7 +1,11 @@
-import { boardMeta } from "@/data/board";
+"use client";
+
+import { useBoardMeta } from "@/components/board/BoardDataContext";
 import { LiveClock } from "./LiveClock";
 
 export function BrandBar() {
+  const boardMeta = useBoardMeta();
+
   return (
     <div className="bg-card border-b border-line">
       <div className="mx-auto flex max-w-[1560px] items-stretch gap-3 px-4 py-3 sm:px-6">

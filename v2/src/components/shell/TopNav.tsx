@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { boardMeta } from "@/data/board";
+import { useBoardMeta } from "@/components/board/BoardDataContext";
 
 const tabs = [
   { label: "Live", href: "/" },
@@ -14,6 +14,7 @@ const tabs = [
 
 export function TopNav() {
   const pathname = usePathname();
+  const boardMeta = useBoardMeta();
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (

@@ -1,7 +1,14 @@
-import { wildCams } from "@/data/wild";
+import { wildCams as fixtureCams, type WildCam } from "@/data/wild";
 import { WildCamCard } from "@/components/wild/WildCamCard";
+import { requireBoardAccess } from "@/lib/server/guard";
+import { getModuleData } from "@/lib/server/boards";
 
-export default function InTheWildPage() {
+export default async function InTheWildPage() {
+  const board = await requireBoardAccess("/in-the-wild");
+  const modules = await getModuleData(board.id);
+  const cms = modules["wild-cams"] as { cams?: WildCam[] } | undefined;
+  const wildCams = cms?.cams?.length ? cms.cams : fixtureCams;
+
   return (
     <main className="watermark-bg mx-auto min-h-full w-full max-w-[1560px] flex-1 px-4 py-8 sm:px-8">
       {/* Editorial header */}

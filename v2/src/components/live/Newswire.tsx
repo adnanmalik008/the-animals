@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { incomingNewsItem, newsItems, type NewsItem } from "@/data/board";
+import { incomingNewsItem as fixtureIncoming, newsItems as fixtureItems, type NewsItem } from "@/data/board";
+import { useModuleData } from "@/components/board/BoardDataContext";
 import { SourceMark } from "./SourceMark";
 import { useStickerTarget } from "./stickers";
 
@@ -83,19 +84,24 @@ function NewswireCard({ item, isNew }: { item: NewsItem; isNew?: boolean }) {
 }
 
 export function Newswire() {
-  const [items, setItems] = useState(newsItems);
+  /* CMS document when the board has one; fixtures otherwise */
+  const cms = useModuleData<{ items?: NewsItem[]; incoming?: NewsItem }>("newswire");
+  const baseItems = cms?.items?.length ? cms.items : fixtureItems;
+  const incoming = cms?.incoming ?? fixtureIncoming;
+
+  const [items, setItems] = useState(baseItems);
   const [newId, setNewId] = useState<string | null>(null);
 
   /* A fresh article folds into the top after 30s — the wire feels alive */
   useEffect(() => {
     const id = setTimeout(() => {
       setItems((prev) =>
-        prev.some((p) => p.id === incomingNewsItem.id) ? prev : [incomingNewsItem, ...prev]
+        prev.some((p) => p.id === incoming.id) ? prev : [incoming, ...prev]
       );
-      setNewId(incomingNewsItem.id);
+      setNewId(incoming.id);
     }, 30_000);
     return () => clearTimeout(id);
-  }, []);
+  }, [incoming]);
 
   return (
     <div className="flex flex-col gap-4 pt-4">
