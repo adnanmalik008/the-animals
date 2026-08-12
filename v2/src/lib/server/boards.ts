@@ -60,21 +60,21 @@ function rowToBoard(row: any): BoardRecord {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-/** Board slug from the request host: first label of a subdomain
-    (client1.animals.example → client1), else the default board. */
+/** Board slug from the request host. Subdomain routing only kicks in
+    under the explicit BOARD_ROOT_DOMAIN (e.g. "animalsboards.com" →
+    nike.animalsboards.com serves the nike board). Every other host —
+    localhost, *.vercel.app preview/prod URLs, bare domains — serves
+    the default board. */
 export async function resolveBoardSlug(): Promise<string> {
+  const root = (process.env.BOARD_ROOT_DOMAIN ?? "").toLowerCase().replace(/^\.+/, "");
+  if (!root) return DEFAULT_SLUG;
   const h = await headers();
   const host = (h.get("host") ?? "").split(":")[0].toLowerCase();
-  const labels = host.split(".");
-  if (
-    labels.length >= 3 &&
-    labels[0] !== "www" &&
-    host !== "localhost" &&
-    !/^\d+\.\d+\.\d+\.\d+$/.test(host)
-  ) {
-    return labels[0];
-  }
-  return DEFAULT_SLUG;
+  if (!host.endsWith("." + root)) return DEFAULT_SLUG;
+  const label = host.slice(0, -(root.length + 1));
+  // exactly one label, and not www
+  if (!label || label.includes(".") || label === "www") return DEFAULT_SLUG;
+  return label;
 }
 
 export async function getBoardBySlug(slug: string): Promise<BoardRecord | null> {
