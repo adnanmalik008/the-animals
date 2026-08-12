@@ -7,6 +7,7 @@ import { aiVisibility, incomingNewsItem, newsItems, shareOfVoice } from "@/data/
 import {
   appStoreVoice,
   hiringRows,
+  hiringSummary,
   opinionLeaders,
   pulseWeek,
   redditInsights,
@@ -44,7 +45,7 @@ export const MODULE_TEMPLATES: Record<string, unknown> = {
   "app-store": appStoreVoice,
   "traffic-sources": { channels: trafficChannels },
   pulse: { week: pulseWeek },
-  hiring: { rows: hiringRows },
+  hiring: { summary: hiringSummary, rows: hiringRows },
   "wild-cams": { cams: wildCams },
   "channel-mix": { competitors: channelMix },
   "media-overlap": { brands: overlapBrands, rows: mediaOverlap },

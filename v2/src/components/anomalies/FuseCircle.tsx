@@ -7,11 +7,14 @@ import { focusRing } from "./palette";
 
 function GhostWordmark() {
   return (
-    <div aria-hidden className="pointer-events-none select-none leading-none text-ink/10">
-      <span className="-mb-1 block pl-1 text-left text-xl font-bold">The</span>
-      <span className="block text-7xl font-black tracking-tight">Ani</span>
-      <span className="-mt-3 block text-7xl font-black tracking-tight">mals</span>
-    </div>
+    // real logo asset (white-on-transparent) inverted to ink, faded to a ghost
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/assets/logo/logo.png"
+      alt=""
+      aria-hidden
+      className="pointer-events-none w-44 select-none opacity-10 invert"
+    />
   );
 }
 

@@ -374,12 +374,14 @@ export interface HiringRow {
   roles: number;
   delta: number; // signed %
   pct: number; // bar width relative to leader
+  note: string; // "→ strategic intent" annotation
 }
 
+export const hiringSummary = { open: 129, deltaPct: 98 };
+
 export const hiringRows: HiringRow[] = [
-  { id: "hv-1", label: "Retail", roles: 124, delta: 18, pct: 100 },
-  { id: "hv-2", label: "Digital", roles: 86, delta: 32, pct: 69 },
-  { id: "hv-3", label: "Logistics", roles: 58, delta: -4, pct: 47 },
-  { id: "hv-4", label: "Data", roles: 41, delta: 26, pct: 33 },
-  { id: "hv-5", label: "Design", roles: 34, delta: 9, pct: 27 },
+  { id: "hv-1", label: "Digital & App Engineering", roles: 41, delta: 320, pct: 52, note: "Building the membership platform fast" },
+  { id: "hv-2", label: "Retail Experience", roles: 58, delta: 56, pct: 60, note: "Flagship expansion continues" },
+  { id: "hv-3", label: "Performance Footwear Design", roles: 24, delta: 180, pct: 40, note: "Doubling down on running silhouettes" },
+  { id: "hv-4", label: "Heritage Marketing", roles: 6, delta: -40, pct: 12, note: "Pulling back on lifestyle spend" },
 ];

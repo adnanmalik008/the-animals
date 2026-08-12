@@ -21,11 +21,14 @@ export function TopNav() {
     <header className="sticky top-0 z-40 bg-card border-b border-line">
       <div className="mx-auto flex h-16 max-w-[1560px] items-center justify-between gap-4 px-4 sm:px-6">
         {/* Wordmark */}
-        <Link href="/" className="shrink-0 select-none leading-none" aria-label="The Animals — home">
-          <span className="block text-[10px] font-semibold tracking-wide">The</span>
-          <span className="block text-xl font-extrabold tracking-tight -mt-0.5">
-            Ani<span className="block -mt-1.5">mals</span>
-          </span>
+        <Link href="/" className="shrink-0 select-none" aria-label="The Animals — home">
+          {/* v1 logo asset is white-on-transparent; invert for the light shell */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/assets/logo/logo.png"
+            alt="The Animals"
+            className="h-9 w-auto invert"
+          />
         </Link>
 
         {/* Desktop tab pill */}
