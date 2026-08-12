@@ -87,7 +87,11 @@ export async function getBoardBySlug(slug: string): Promise<BoardRecord | null> 
 
 export async function getCurrentBoard(): Promise<BoardRecord> {
   const slug = await resolveBoardSlug();
-  return (await getBoardBySlug(slug)) ?? fixtureBoard();
+  const board = await getBoardBySlug(slug);
+  if (board) return board;
+  // Unknown subdomain: fall back to the DEFAULT board from the DB (so
+  // non-board hosts like on-view.* stay protected), then to fixtures.
+  return (await getBoardBySlug(DEFAULT_SLUG)) ?? fixtureBoard();
 }
 
 export function boardToMeta(board: BoardRecord): BoardMeta {
