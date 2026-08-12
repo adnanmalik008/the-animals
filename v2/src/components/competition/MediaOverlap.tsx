@@ -1,73 +1,114 @@
-import { isSharedByAll, mediaOverlap, overlapBrands } from "@/data/competition";
+import { Module } from "@/components/modules/ModuleColumn";
+import {
+  isSharedByAll,
+  mediaOverlap,
+  overlapBrands,
+  sharedByAllCount,
+} from "@/data/competition";
+import { DarkPanel, panelTitle } from "./ui";
 
-/* Static presence matrix. The pulsing "shared by all" cells are
-   the only animation on this table — everything else holds still. */
+/* Media Overlap — dark presence matrix. Static except for the
+   cell-pulse on the dots of rows shared by all three brands. */
 
-export function MediaOverlap() {
+function Dot({ present, shared, label }: { present: boolean; shared: boolean; label: string }) {
+  if (!present) {
+    return (
+      <>
+        <span aria-hidden className="inline-block h-2 w-2 rounded-full bg-white/15" />
+        <span className="sr-only">{label}: absent</span>
+      </>
+    );
+  }
   return (
-    <div className="pt-4">
-      <div className="relative overflow-x-auto">
-        <table className="w-full min-w-[600px] border-collapse text-sm">
-          <thead>
-            <tr className="border-b border-line text-left">
-              <th scope="col" className="py-3 pr-4 font-normal text-graphite">
-                Outlet
-              </th>
-              {overlapBrands.map((brand) => (
-                <th
-                  key={brand.id}
-                  scope="col"
-                  className={`px-2 py-3 text-center ${
-                    brand.id === "adidas" ? "font-bold text-orange" : "font-semibold"
-                  }`}
-                >
-                  {brand.name}
+    <span
+      role="img"
+      aria-label={`${label}: present`}
+      className={`inline-block h-2 w-2 rounded-full bg-yellow ${shared ? "cell-pulse" : ""}`}
+    />
+  );
+}
+
+export function MediaOverlap({ id }: { id: string }) {
+  return (
+    <Module
+      id={id}
+      title="Media Overlap"
+      titleClassName={panelTitle}
+      headerExtra={
+        <span className="ml-auto mr-8 whitespace-nowrap text-xs text-white/50">
+          {sharedByAllCount} shared by all
+        </span>
+      }
+    >
+      <DarkPanel className="mt-4">
+        {/* relative + min-w-0: keeps the wide table clipped to the panel
+            instead of stretching the page at mobile widths */}
+        <div className="relative min-w-0 overflow-x-auto">
+          <table className="w-full min-w-[560px] border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-white/10 text-left">
+                <th scope="col" className="py-2.5 pl-3 pr-4 font-serif text-sm font-normal italic text-white/40">
+                  Channel
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {mediaOverlap.map((row) => {
-              const shared = isSharedByAll(row);
-              return (
-                <tr key={row.outlet} className="border-b border-line/70">
+                {overlapBrands.map((name) => (
                   <th
-                    scope="row"
-                    className="whitespace-nowrap py-3.5 pr-4 text-left font-semibold"
+                    key={name}
+                    scope="col"
+                    className="px-2 py-2.5 text-center font-serif text-sm font-normal italic text-white/55"
                   >
-                    {row.outlet}
+                    {name}
                   </th>
-                  {row.presence.map((present, i) => (
-                    <td
-                      key={overlapBrands[i].id}
-                      className={`px-2 py-3.5 text-center ${
-                        shared ? "cell-pulse bg-yellow/25" : ""
+                ))}
+                <th
+                  scope="col"
+                  className="py-2.5 pl-2 pr-3 text-center font-serif text-sm font-normal italic text-white/40"
+                >
+                  Shared
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {mediaOverlap.map((row) => {
+                const shared = isSharedByAll(row);
+                const count = row.presence.filter(Boolean).length;
+                return (
+                  <tr
+                    key={row.channel}
+                    className={`border-b border-white/[0.06] ${
+                      shared ? "bg-yellow/[0.07]" : ""
+                    }`}
+                  >
+                    <th
+                      scope="row"
+                      className={`whitespace-nowrap border-l-2 py-3 pl-3 pr-4 text-left font-serif text-[15px] font-normal italic ${
+                        shared ? "border-yellow/60 text-white/90" : "border-transparent text-white/70"
                       }`}
                     >
-                      {present ? (
-                        <span
-                          className="inline-block h-2.5 w-2.5 rounded-full bg-ink"
-                          role="img"
-                          aria-label={`${overlapBrands[i].name} appears in ${row.outlet}`}
+                      {row.channel}
+                    </th>
+                    {row.presence.map((present, i) => (
+                      <td key={overlapBrands[i]} className="px-2 py-3 text-center">
+                        <Dot
+                          present={present}
+                          shared={shared}
+                          label={`${overlapBrands[i]} — ${row.channel}`}
                         />
-                      ) : (
-                        <span className="sr-only">
-                          {overlapBrands[i].name} absent from {row.outlet}
-                        </span>
-                      )}
+                      </td>
+                    ))}
+                    <td
+                      className={`py-3 pl-2 pr-3 text-center text-xs tabular-nums ${
+                        shared ? "font-semibold text-yellow" : "text-white/40"
+                      }`}
+                    >
+                      {count}/3
                     </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <p className="mt-3 flex items-center gap-2 text-xs text-graphite">
-        <span className="inline-block h-3 w-3 rounded-[3px] bg-yellow/50" aria-hidden />
-        Shared by all
-      </p>
-    </div>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </DarkPanel>
+    </Module>
   );
 }

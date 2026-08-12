@@ -5,19 +5,23 @@ import { aiVisibility, shareOfVoice } from "@/data/board";
 import { AISearchVisibility } from "./AISearchVisibility";
 import { AppStoreVoice } from "./AppStoreVoice";
 import { HiringVelocity } from "./HiringVelocity";
+import { InTheirInbox } from "./InTheirInbox";
 import { Newswire } from "./Newswire";
 import { Notepad } from "./Notepad";
 import { OnStage } from "./OnStage";
+import { OnTheAirwaves } from "./OnTheAirwaves";
 import { OpinionLeaders } from "./OpinionLeaders";
 import { PulseModule } from "./PulseModule";
 import { RedditModule } from "./RedditModule";
 import { SearchVelocity } from "./SearchVelocity";
 import { ShareOfVoice } from "./ShareOfVoice";
+import { Sightings } from "./Sightings";
 import { SocialPulse } from "./SocialPulse";
 import { StickerDropZone, StickerProvider, StickerTray } from "./stickers";
 import { TheConversation } from "./TheConversation";
 import { TopSites } from "./TopSites";
 import { TrafficSources } from "./TrafficSources";
+import { YouTubeVoices } from "./YouTubeVoices";
 
 /* Left column: human-curated, editorial. Right column: machine-led, clean. */
 
@@ -35,6 +39,14 @@ function renderEditorial(id: string) {
       return <TheConversation key={id} id={id} />;
     case "on-stage":
       return <OnStage key={id} id={id} />;
+    case "in-their-inbox":
+      return <InTheirInbox key={id} id={id} />;
+    case "sightings":
+      return <Sightings key={id} id={id} />;
+    case "airwaves":
+      return <OnTheAirwaves key={id} id={id} />;
+    case "youtube-voices":
+      return <YouTubeVoices key={id} id={id} />;
     case "notepad":
       return <Notepad key={id} id={id} />;
     default:
@@ -104,7 +116,17 @@ export function LiveBoard() {
     <StickerProvider>
       <main className="mx-auto grid w-full max-w-[1560px] flex-1 grid-cols-1 lg:grid-cols-2">
         <ModuleColumn
-          ids={["newswire", "social-pulse", "conversation", "on-stage", "notepad"]}
+          ids={[
+            "newswire",
+            "social-pulse",
+            "conversation",
+            "on-stage",
+            "in-their-inbox",
+            "sightings",
+            "airwaves",
+            "youtube-voices",
+            "notepad",
+          ]}
           render={renderEditorial}
           className="paper-surface px-4 py-5 sm:px-8"
         />

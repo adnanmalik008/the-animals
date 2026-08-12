@@ -5,11 +5,27 @@ import { trafficChannels } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
-const MAX = 40; // y-axis ceiling, %
+/* Static filter pills — the underlying windows are a later API phase. */
+const filters = [
+  {
+    label: "Jan 2026",
+    icon: (
+      <path d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+    ),
+  },
+  {
+    label: "Worldwide",
+    icon: <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 21 12 21s-3.8-2.6-3.8-9S9.5 3 12 3z" />,
+  },
+  {
+    label: "All Traffic",
+    icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
+  },
+];
 
 export function TrafficSources({ id }: { id: string }) {
   const { ref, inView } = useInView<HTMLDivElement>();
-  const top = trafficChannels[0];
+  const lead = [...trafficChannels].sort((a, b) => b.value - a.value)[0];
 
   return (
     <Module id={id} title="Sources of Traffic">
@@ -17,60 +33,62 @@ export function TrafficSources({ id }: { id: string }) {
         className="rounded-xl"
         insight={() => ({
           circleId: "channels",
-          headline: `Sources of Traffic — ${top.label} ${top.value}% of visits`,
+          headline: `Sources of Traffic — ${lead.label} leads web traffic`,
           source: "Live board",
           category: "Signal",
           categoryColor: "orange",
         })}
       >
         <div ref={ref} className="pt-4">
-          <p className="mb-5 text-sm text-graphite">.com traffic mix, last 30 days</p>
-          <div className="pl-7">
-            <div className="relative h-[190px] border-b border-line">
-              {/* y-axis gridlines: 40 / 20 / 0 */}
-              {[40, 20].map((tick) => (
-                <div
-                  key={tick}
-                  aria-hidden
-                  className="absolute inset-x-0 border-t border-dashed border-line/80"
-                  style={{ top: `${(1 - tick / MAX) * 100}%` }}
-                >
-                  <span className="absolute -left-7 -top-2 w-6 text-right text-[9px] tabular-nums text-graphite">
+          <p className="text-sm text-graphite">Web traffic from marketing channels</p>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            {filters.map((f) => (
+              <button
+                key={f.label}
+                type="button"
+                className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink shadow-sm transition-colors hover:bg-bg2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="text-graphite" aria-hidden>
+                  {f.icon}
+                </svg>
+                {f.label}
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="text-graphite" aria-hidden>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            ))}
+          </div>
+
+          {/* gradient columns growing from the axis */}
+          <div className="relative mt-5 h-56">
+            <div className="absolute inset-0 flex flex-col justify-between">
+              {[100, 75, 50, 25, 0].map((tick) => (
+                <div key={tick} className="flex items-center gap-2">
+                  <span className="w-9 shrink-0 text-right text-[10px] tabular-nums text-graphite">
                     {tick}%
                   </span>
+                  <span className="h-px flex-1 bg-line" />
                 </div>
               ))}
-              <span aria-hidden className="absolute -left-7 bottom-[-6px] w-6 text-right text-[9px] tabular-nums text-graphite">
-                0
-              </span>
-
-              <div className="flex h-full items-end justify-between gap-1.5 sm:gap-3">
-                {trafficChannels.map((c) => (
-                  <div key={c.id} className="flex h-full flex-1 flex-col items-center justify-end">
-                    <span className="mb-1 text-[10px] font-bold tabular-nums leading-none">
-                      {c.value}%
-                    </span>
-                    <div
-                      className="w-full max-w-[30px] rounded-t bg-orange transition-[height] duration-1000 ease-out motion-reduce:transition-none"
-                      style={{ height: inView ? `${Math.max((c.value / MAX) * 100, 0.75)}%` : "0%" }}
-                    />
-                  </div>
-                ))}
-              </div>
             </div>
-
-            <div className="mt-2 flex items-start justify-between gap-1.5 sm:gap-3">
+            <div className="absolute inset-y-0 left-11 right-0 flex items-end gap-2 pb-[18px]">
               {trafficChannels.map((c) => (
-                <div key={c.id} className="flex flex-1 flex-col items-center text-center">
-                  <span className="text-[10px] font-semibold leading-tight">{c.label}</span>
-                  {c.target && (
-                    <span className="mt-0.5 rounded-full bg-bg2 px-1.5 py-px text-[9px] leading-tight text-graphite">
-                      {c.target}
-                    </span>
-                  )}
+                <div key={c.id} className="flex flex-1 flex-col items-center justify-end">
+                  <div
+                    className="w-full rounded-t-sm border-t-2 border-orange bg-gradient-to-b from-orange/45 to-orange/0 transition-[height] duration-1000 ease-out motion-reduce:transition-none"
+                    style={{ height: inView ? `${c.value * 1.9}px` : "0px" }}
+                  />
                 </div>
               ))}
             </div>
+          </div>
+          <div className="ml-11 flex gap-2">
+            {trafficChannels.map((c) => (
+              <span key={c.id} className="flex-1 text-center text-[10px] text-graphite">
+                {c.label}
+              </span>
+            ))}
           </div>
         </div>
       </StickerDropZone>

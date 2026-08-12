@@ -5,27 +5,33 @@ import { Module } from "@/components/modules/ModuleColumn";
 import { appStoreVoice, type AppPlatform } from "@/data/live";
 import { useCountUp, useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
-import { TabPills } from "./TopSites";
 
 const platforms: { id: AppPlatform; label: string }[] = [
   { id: "ios", label: "iOS" },
   { id: "android", label: "Android" },
 ];
 
-const starLabels = ["5", "4", "3", "2", "1"];
-
-function Star({ filled }: { filled: boolean }) {
+function Stars({ rating, platform }: { rating: number; platform: AppPlatform }) {
   return (
-    <svg
-      width="20"
-      height="20"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      aria-hidden
-      className={filled ? "text-yellow" : "text-silver"}
-    >
-      <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-    </svg>
+    <span className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <svg
+          // re-key per platform so the roll-in replays on toggle
+          key={`${platform}-${i}`}
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          className="roll-in text-yellow"
+          style={{ animationDelay: `${i * 90}ms` }}
+          fill={i < Math.round(rating) ? "currentColor" : "none"}
+          stroke="currentColor"
+          strokeWidth="1.6"
+          aria-hidden
+        >
+          <path d="M12 3.5l2.6 5.3 5.9.9-4.2 4.1 1 5.8-5.3-2.8-5.3 2.8 1-5.8-4.2-4.1 5.9-.9z" />
+        </svg>
+      ))}
+    </span>
   );
 }
 
@@ -33,71 +39,76 @@ export function AppStoreVoice({ id }: { id: string }) {
   const [platform, setPlatform] = useState<AppPlatform>("ios");
   const { ref, inView } = useInView<HTMLDivElement>();
   const data = appStoreVoice[platform];
-  const rating = useCountUp(data.rating, inView, 1200, 1);
+  const rating = useCountUp(data.rating, inView, 900, 1);
 
   return (
     <Module
       id={id}
       title="App Store Voice"
-      headerExtra={<TabPills items={platforms} active={platform} onChange={setPlatform} label="App platform" />}
+      headerExtra={
+        <div
+          role="group"
+          aria-label="App platform"
+          className="ml-auto flex items-center gap-1 rounded-full border border-line bg-card p-1 shadow-sm"
+        >
+          {platforms.map((p) => {
+            const active = platform === p.id;
+            return (
+              <button
+                key={p.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => setPlatform(p.id)}
+                className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 ${
+                  active ? "bg-orange text-white" : "text-graphite hover:text-ink"
+                }`}
+              >
+                {p.label}
+              </button>
+            );
+          })}
+        </div>
+      }
     >
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
           circleId: "channels",
-          headline: `App Store Voice — ${platform === "ios" ? "iOS" : "Android"} rated ${data.rating} across ${data.totalLabel}`,
+          headline: `App Store Voice — ${platform === "ios" ? "iOS" : "Android"} rating ${data.rating}, ${data.stats[2].value} ${data.stats[2].label.toLowerCase()} chatter`,
           source: "Live board",
           category: "Signal",
           categoryColor: "orange",
         })}
       >
         <div ref={ref} className="pt-4">
-          <div className="flex flex-wrap items-end gap-x-5 gap-y-2">
-            <span className="text-5xl font-bold tabular-nums leading-none sm:text-6xl">
+          <p className="text-sm text-graphite">Unfiltered consumer reviews</p>
+
+          <div className="mt-3 flex items-end gap-4">
+            <span className="text-5xl font-bold tabular-nums leading-none">
               {rating.toFixed(1)}
             </span>
-            <div className="pb-0.5">
-              {/* keyed by platform + visibility so the stars roll in again on toggle */}
-              <div key={inView ? platform : "hidden"} className="flex items-center gap-0.5" aria-label={`${data.rating} out of 5 stars`}>
-                {[0, 1, 2, 3, 4].map((i) => (
-                  <span
-                    key={i}
-                    className={inView ? "roll-in" : "opacity-0"}
-                    style={inView ? { animationDelay: `${i * 110}ms` } : undefined}
-                  >
-                    <Star filled={i < Math.round(data.rating)} />
-                  </span>
-                ))}
-              </div>
-              <p className="mt-1 text-xs text-graphite">{data.totalLabel}</p>
-            </div>
+            <span className="mb-1 flex flex-col gap-1">
+              <Stars rating={data.rating} platform={platform} />
+              <span className="text-sm text-graphite">{data.totalLabel}</span>
+            </span>
           </div>
 
-          <ul className="mt-5 flex flex-col gap-2">
-            {data.distribution.map((pct, i) => (
-              <li key={starLabels[i]} className="flex items-center gap-3">
-                <span className="flex w-6 shrink-0 items-center gap-0.5 text-xs font-semibold tabular-nums text-graphite">
-                  {starLabels[i]}
-                  <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" aria-hidden className="text-graphite">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
-                  </svg>
-                </span>
-                <div className="h-2 flex-1 overflow-hidden rounded-full bg-bg2">
-                  <div
-                    className="bar-fill h-full rounded-full bg-yellow"
-                    style={{ width: inView ? `${pct}%` : "0%" }}
-                  />
-                </div>
-                <span className="w-9 shrink-0 text-right text-xs tabular-nums text-graphite">{pct}%</span>
-              </li>
+          {/* review-theme movement chips */}
+          <div className="mt-5 grid grid-cols-2 divide-line rounded-2xl border border-line sm:grid-cols-4 sm:divide-x">
+            {data.stats.map((stat) => (
+              <div key={stat.label} className="px-4 py-3.5 text-center">
+                <span className="block text-xl font-bold tabular-nums sm:text-2xl">{stat.value}</span>
+                <span className="mt-0.5 block text-xs text-graphite">{stat.label}</span>
+              </div>
             ))}
-          </ul>
+          </div>
 
-          <figure className="mt-5 rounded-xl border border-line bg-bg2/60 p-4">
-            <blockquote className="font-serif text-[15px] leading-snug sm:text-base">
-              “{data.review.text}”
+          <figure className="mt-5 border-l-2 border-orange pl-4">
+            <Stars rating={5} platform={platform} />
+            <blockquote className="mt-2 font-serif text-lg leading-snug">
+              &ldquo;{data.review.text}&rdquo;
             </blockquote>
-            <figcaption className="mt-2 text-xs font-semibold uppercase tracking-wide text-graphite">
+            <figcaption className="mt-2 text-xs uppercase tracking-wide text-graphite">
               — {data.review.author}
             </figcaption>
           </figure>

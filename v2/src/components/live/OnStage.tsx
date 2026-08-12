@@ -1,111 +1,120 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import { stageVideos } from "@/data/live";
-import { StickerDropZone } from "./stickers";
-import { CarouselArrow } from "./SocialPulse";
+import { stageEvents } from "@/data/live";
+import { StickerBadge, useStickerTarget } from "./stickers";
 
+/* Keynote stages — what the category is saying from the podium. */
 export function OnStage({ id }: { id: string }) {
   const [index, setIndex] = useState(0);
-  const [playing, setPlaying] = useState<string | null>(null);
-  const current = stageVideos[index];
+  const [paused, setPaused] = useState(false);
+  const current = stageEvents[index];
 
-  const go = (next: number) => {
-    setPlaying(null); // stop any embed when sliding away
-    setIndex((next + stageVideos.length) % stageVideos.length);
-  };
+  useEffect(() => {
+    if (paused) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % stageEvents.length), 7000);
+    return () => clearInterval(t);
+  }, [paused]);
+
+  const { targetProps, isOver, tagged } = useStickerTarget(
+    () => ({
+      circleId: "culture",
+      headline: current.quote,
+      source: current.speaker,
+      category: "Event",
+      categoryColor: "green",
+    }),
+    `stage:${current.id}`
+  );
 
   return (
-    <Module
-      id={id}
-      eyebrow="Transmission № 04"
-      title="On Stage"
-      variant="editorial"
-      headerExtra={
-        <span className="ml-auto flex items-center gap-1.5 rounded-full border border-red/30 bg-red/10 px-2.5 py-1 text-[11px] font-bold tracking-wide text-red">
-          <span className="pulse-dot h-2 w-2 rounded-full bg-red" aria-hidden />
-          LIVE
-        </span>
-      }
-    >
-      <StickerDropZone
-        className="mt-4 rounded-2xl"
-        insight={() => ({
-          circleId: "culture",
-          headline: `${current.title} — ${current.description}`,
-          source: "YouTube",
-          category: "Culture",
-          categoryColor: "green",
-        })}
+    <Module id={id} eyebrow="Transmission № 04" title="On Stage" variant="editorial">
+      <div
+        className="pt-4"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
       >
-        <div className="relative">
-          <div className="overflow-hidden rounded-2xl">
-            <div
-              className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
-              style={{ transform: `translateX(-${index * 100}%)` }}
-            >
-              {stageVideos.map((v) => (
-                <div key={v.id} className="relative aspect-video w-full shrink-0 overflow-hidden bg-bg3">
-                  {playing === v.id ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${v.videoId}?autoplay=1&mute=1&rel=0`}
-                      title={v.title}
-                      allow="autoplay; encrypted-media; picture-in-picture"
-                      allowFullScreen
-                      className="absolute inset-0 h-full w-full border-0"
-                    />
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => setPlaying(v.id)}
-                      aria-label={`Play ${v.title}`}
-                      className="group absolute inset-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-orange"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={`https://img.youtube.com/vi/${v.videoId}/maxresdefault.jpg`}
-                        alt={v.title}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
-                      />
-                      <span className="absolute inset-0 bg-ink/20 transition-colors group-hover:bg-ink/10" aria-hidden />
-                      <span
-                        className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-orange text-white shadow-lg transition-transform group-hover:scale-110 motion-reduce:transition-none"
-                        aria-hidden
-                      >
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
+        <div className="overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+            style={{ transform: `translateX(-${index * 100}%)` }}
+          >
+            {stageEvents.map((ev) => (
+              <div key={ev.id} className="w-full shrink-0 px-0.5">
+                <article
+                  {...(ev.id === current.id ? targetProps : {})}
+                  className={`relative rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
+                    ev.id === current.id && tagged !== undefined
+                      ? "ring-2 ring-orange/60"
+                      : ev.id === current.id && isOver
+                        ? "ring-2 ring-orange"
+                        : ""
+                  }`}
+                >
+                  {ev.id === current.id && tagged !== undefined && <StickerBadge shade={tagged} />}
+                  <div className="torn-card px-5 py-5 sm:px-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <span className="text-xs font-bold uppercase tracking-wide">{ev.event}</span>
+                      <span className="shrink-0 rounded-full bg-orange/10 px-2.5 py-0.5 text-xs font-medium text-orange">
+                        {ev.hashtag}
                       </span>
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+                    </div>
+                    <p className="mt-1 text-xs text-graphite">{ev.session}</p>
 
-          <div className="pointer-events-none absolute inset-y-0 left-2 right-2 flex items-center justify-between">
-            <CarouselArrow dir="prev" label="Previous video" onClick={() => go(index - 1)} />
-            <CarouselArrow dir="next" label="Next video" onClick={() => go(index + 1)} />
+                    <blockquote className="mt-4 font-serif text-xl leading-snug sm:text-2xl">
+                      «{ev.quote}»
+                    </blockquote>
+
+                    <div className="mt-4 flex items-end justify-between gap-3 border-t border-ink/10 pt-2.5">
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold">{ev.speaker}</span>
+                        <span className="block truncate text-xs text-graphite">{ev.speakerTitle}</span>
+                      </span>
+                      <span className="shrink-0 text-xs text-graphite">
+                        Live tweets: <span className="font-semibold text-ink">{ev.liveTweets}</span>
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="px-1 pb-1 pt-3">
-          <h3 className="text-base font-bold uppercase tracking-tight sm:text-lg">{current.title}</h3>
-          <p className="mt-0.5 text-sm text-graphite">{current.description}</p>
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i - 1 + stageEvents.length) % stageEvents.length)}
+            aria-label="Previous event"
+            className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card text-ink shadow-sm transition-colors hover:bg-bg2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <span className="flex items-center gap-1.5">
+            {stageEvents.map((ev, i) => (
+              <span
+                key={ev.id}
+                className={`h-1.5 rounded-full transition-all ${
+                  i === index ? "w-5 bg-orange" : "w-1.5 bg-silver"
+                }`}
+                aria-hidden
+              />
+            ))}
+          </span>
+          <button
+            type="button"
+            onClick={() => setIndex((i) => (i + 1) % stageEvents.length)}
+            aria-label="Next event"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-orange text-white shadow-sm transition-colors hover:bg-orange-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </button>
         </div>
-      </StickerDropZone>
-
-      <div className="mt-2 flex items-center justify-center gap-1.5" aria-hidden>
-        {stageVideos.map((v, i) => (
-          <span
-            key={v.id}
-            className={`h-1.5 rounded-full transition-all duration-300 motion-reduce:transition-none ${
-              i === index ? "w-5 bg-orange" : "w-1.5 bg-silver"
-            }`}
-          />
-        ))}
       </div>
     </Module>
   );

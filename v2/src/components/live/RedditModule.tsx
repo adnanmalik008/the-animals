@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import { redditInsights, redditors, subreddits, type RedditTab } from "@/data/live";
+import {
+  insightStateLabel,
+  redditInsightStates,
+  redditors,
+  subreddits,
+  type InsightState,
+  type RedditTab,
+} from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
-import { TabPills } from "./TopSites";
+import { TabPills } from "./TabPills";
 
 const tabs: { id: RedditTab; label: string }[] = [
   { id: "subreddits", label: "Subreddits" },
@@ -40,6 +47,7 @@ function BarRow({
 
 export function RedditModule({ id }: { id: string }) {
   const [tab, setTab] = useState<RedditTab>("subreddits");
+  const [state, setState] = useState<InsightState>("drivers");
   const { ref, inView } = useInView<HTMLDivElement>();
   const top = subreddits[0];
 
@@ -75,13 +83,35 @@ export function RedditModule({ id }: { id: string }) {
             </ul>
           )}
           {tab === "insights" && (
-            <ul className="flex flex-col gap-4 py-1">
-              {redditInsights.map((text, i) => (
-                <li key={i} className="border-l-2 border-orange pl-3.5">
-                  <p className="font-serif text-[15px] leading-snug text-ink sm:text-base">{text}</p>
-                </li>
-              ))}
-            </ul>
+            <div className="py-1">
+              <div className="mb-3 flex flex-wrap items-center gap-1.5" role="group" aria-label="Insight state">
+                {(Object.keys(insightStateLabel) as InsightState[]).map((s) => {
+                  const active = state === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => setState(s)}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 ${
+                        active
+                          ? "border-orange bg-orange text-white"
+                          : "border-line bg-card text-graphite hover:text-ink"
+                      }`}
+                    >
+                      {insightStateLabel[s]}
+                    </button>
+                  );
+                })}
+              </div>
+              <ul className="flex flex-col gap-4">
+                {redditInsightStates[state].map((text, i) => (
+                  <li key={`${state}-${i}`} className="border-l-2 border-orange pl-3.5">
+                    <p className="font-serif text-[15px] leading-snug text-ink sm:text-base">{text}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </StickerDropZone>

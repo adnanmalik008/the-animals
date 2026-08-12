@@ -45,7 +45,6 @@ export function Toolbar({
   zoom,
   onZoom,
   onCopyLink,
-  onReset,
   onDownload,
   ideasCount,
   ideasOpen,
@@ -55,7 +54,6 @@ export function Toolbar({
   zoom: number;
   onZoom: (zoom: number) => void;
   onCopyLink: () => void;
-  onReset: () => void;
   onDownload: () => void;
   ideasCount: number;
   ideasOpen: boolean;
@@ -108,12 +106,6 @@ export function Toolbar({
           <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
             <path d="M10 13a5 5 0 0 0 7.07 0l2.13-2.13a5 5 0 1 0-7.07-7.07l-1.42 1.42" />
             <path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.13a5 5 0 1 0 7.07 7.07l1.41-1.42" />
-          </svg>
-        </IconButton>
-        <IconButton label="Reset board" onClick={onReset}>
-          <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
-            <path d="M21 4v6h-6" />
-            <path d="M20.5 14a8.5 8.5 0 1 1-2-8.5L21 8" />
           </svg>
         </IconButton>
         <IconButton label="Download board" onClick={onDownload}>

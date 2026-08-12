@@ -1,15 +1,15 @@
 "use client";
 
 import { Module } from "@/components/modules/ModuleColumn";
-import { opinionLeaders } from "@/data/live";
+import { opinionLeaders, type LeaderTone } from "@/data/live";
 import { StickerDropZone } from "./stickers";
 
-const avatarBg: Record<string, string> = {
-  orange: "bg-orange text-white",
-  blue: "bg-blue text-white",
-  green: "bg-green text-white",
-  purple: "bg-purple text-white",
-  yellow: "bg-yellow text-ink",
+const toneClass: Record<LeaderTone, string> = {
+  ember: "bg-gradient-to-br from-orange to-red",
+  ocean: "bg-gradient-to-br from-blue to-blue2",
+  moss: "bg-gradient-to-br from-green to-olive",
+  violet: "bg-gradient-to-br from-purple to-blue2",
+  sun: "bg-gradient-to-br from-yellow to-orange",
 };
 
 export function OpinionLeaders({ id }: { id: string }) {
@@ -20,41 +20,37 @@ export function OpinionLeaders({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
-          headline: `Opinion Leaders — ${lead.name} reach ${lead.reach} (${lead.trend > 0 ? "+" : ""}${lead.trend}%)`,
+          circleId: "opinion-leaders",
+          headline: `Opinion Leaders — ${lead.name}, ENG ${lead.eng}, ${lead.followers} followers`,
           source: "Live board",
-          category: "Signal",
-          categoryColor: "orange",
+          category: "Voice",
+          categoryColor: "purple",
         })}
       >
         <div className="pt-4">
-          <ul className="flex flex-col">
-            {opinionLeaders.map((leader) => {
-              const up = leader.trend >= 0;
-              return (
-                <li key={leader.id} className="flex items-center gap-3 border-b border-line/60 py-3 last:border-b-0">
-                  <span
-                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-bold ${avatarBg[leader.color]}`}
-                    aria-hidden
-                  >
-                    {leader.initials}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold">{leader.name}</p>
-                    <p className="text-xs text-graphite">{leader.platform}</p>
-                  </div>
-                  <span className="shrink-0 text-sm font-bold tabular-nums">{leader.reach}</span>
-                  <span
-                    className={`w-14 shrink-0 rounded-full px-2 py-0.5 text-center text-xs font-bold tabular-nums ${
-                      up ? "bg-green/10 text-green" : "bg-red/10 text-red"
-                    }`}
-                  >
-                    {up ? "+" : ""}
-                    {leader.trend}%
-                  </span>
-                </li>
-              );
-            })}
+          <p className="mb-3 text-sm text-graphite">Who the category listens to</p>
+          <ul className="divide-y divide-line">
+            {opinionLeaders.map((leader) => (
+              <li key={leader.id} className="flex items-center gap-3 py-3.5">
+                <span
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${toneClass[leader.tone]}`}
+                  aria-hidden
+                >
+                  {leader.initials}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className="block truncate font-semibold">{leader.name}</span>
+                  <span className="block truncate text-sm text-graphite">{leader.role}</span>
+                </span>
+                <span className="shrink-0 text-sm tabular-nums">
+                  <span className="text-graphite">ENG</span>{" "}
+                  <span className="font-semibold">{leader.eng}</span>
+                  <span className="mx-2 text-silver">|</span>
+                  <span className="text-graphite">Followers</span>{" "}
+                  <span className="font-semibold">{leader.followers}</span>
+                </span>
+              </li>
+            ))}
           </ul>
         </div>
       </StickerDropZone>

@@ -11,7 +11,7 @@ import {
 import {
   addCircle,
   addInsight,
-  resetStore,
+
   saveIdea,
   useBoardStore,
   type InsightItem,
@@ -209,12 +209,6 @@ export function AnomaliesBoard() {
     }
   }, [showToast]);
 
-  const resetBoard = useCallback(() => {
-    if (window.confirm("Reset the board? This clears added circles, insights and ideas.")) {
-      resetStore();
-    }
-  }, []);
-
   const download = useCallback(() => {
     window.print();
   }, []);
@@ -249,7 +243,6 @@ export function AnomaliesBoard() {
           zoom={zoom}
           onZoom={setZoom}
           onCopyLink={copyLink}
-          onReset={resetBoard}
           onDownload={download}
           ideasCount={ideas.length}
           ideasOpen={ideasOpen}

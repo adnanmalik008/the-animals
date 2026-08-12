@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { incomingNewsItem as fixtureIncoming, newsItems as fixtureItems, type NewsItem } from "@/data/board";
 import { useModuleData } from "@/components/board/BoardDataContext";
 import { SourceMark } from "./SourceMark";
-import { useStickerTarget } from "./stickers";
+import { StickerBadge, useStickerTarget } from "./stickers";
 
 const categoryText: Record<NewsItem["categoryColor"], string> = {
   orange: "text-orange bg-orange/10",
@@ -20,21 +20,25 @@ function NewswireCard({ item, isNew }: { item: NewsItem; isNew?: boolean }) {
   /* sticker drops file this article into the News circle on the Anomalies board */
   /* no author here: InsightItem.author means user-authored, and the Anomalies
      board renders source wordmarks only when author is absent */
-  const { targetProps, isOver, justDropped } = useStickerTarget(() => ({
-    circleId: "news",
-    headline: item.headline,
-    source: item.source,
-    category: item.category,
-    categoryColor: item.categoryColor,
-  }));
+  const { targetProps, isOver, tagged } = useStickerTarget(
+    () => ({
+      circleId: "news",
+      headline: item.headline,
+      source: item.source,
+      category: item.category,
+      categoryColor: item.categoryColor,
+    }),
+    `news:${item.id}`
+  );
 
   return (
     <article
       {...targetProps}
-      className={`${isNew ? "fold-in " : ""}rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
-        justDropped ? "ring-4 ring-orange" : isOver ? "ring-2 ring-orange" : ""
+      className={`${isNew ? "fold-in " : ""}relative rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
+        tagged !== undefined ? "ring-2 ring-orange/60" : isOver ? "ring-2 ring-orange" : ""
       }`}
     >
+      {tagged !== undefined && <StickerBadge shade={tagged} />}
       <div className="torn-card px-5 py-4 sm:px-6">
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />

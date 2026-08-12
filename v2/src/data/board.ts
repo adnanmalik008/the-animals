@@ -19,6 +19,8 @@ export interface NewsItem {
   timeAgo: string;
   summary: string;
   link?: string;
+  /** full article copy for the reader modal; paragraphs separated by blank lines */
+  body?: string;
 }
 
 export interface BoardMeta {
@@ -49,6 +51,8 @@ export const newsItems: NewsItem[] = [
     timeAgo: "2m ago",
     summary:
       "Run clubs have quietly become the fastest-growing social layer in major cities, and brands are treating weekly 5Ks as owned media channels rather than sponsorship opportunities.",
+    body:
+      "On a drizzly Saturday in Hackney, two hundred people queue for a run that has no prize money, no medal and no finish-line photographer. What it has is a waitlist. The club that organises it caps entries at 250, and the cap is hit within an hour of the signup link going live each Tuesday.\n\nSociologists have started calling it the loneliness economy: a wave of consumer behaviour driven less by product and more by the search for a room — or a pavement — full of people who expect you to show up. Running, cheap and schedulable, has become its main street. Club membership across the ten largest US and UK cities has tripled since 2023, and the average member joined for fitness but stays, surveys suggest, for the people.\n\nFor brands the implication is uncomfortable. The channel that now moves product is not a billboard or a feed but a WhatsApp group with 42 members and a strong opinion about tempo pace. The companies adapting fastest are the ones treating club captains the way they once treated magazine editors — early access, honest briefings, and no scripts.",
   },
   {
     id: "nw-2",
@@ -71,6 +75,8 @@ export const newsItems: NewsItem[] = [
     timeAgo: "2m ago",
     summary:
       "The platform is courting short-form video budgets with new publisher partnerships, positioning itself against TikTok for B2B attention.",
+    body:
+      "LinkedIn is expanding its video advertising program to a wider set of publishers and creators, the company said Tuesday, the latest sign that the professional network wants a serious share of the short-form budgets that have flowed almost exclusively to TikTok, Reels and Shorts.\n\nThe pitch to advertisers is context: the same fifteen-second clip that scrolls past on entertainment feeds lands differently, the company argues, when the viewer is in a professional mindset. Early partners report completion rates roughly double their entertainment-platform benchmarks, though from a far smaller base.\n\nAnalysts are split on whether the push changes the platform's character. Video now accounts for the fastest-growing slice of time spent on the network, but the most engaged conversations still happen in comments and direct messages — the quiet layer that no ad format has managed to reach.",
   },
   {
     id: "nw-4",
@@ -107,6 +113,8 @@ export const incomingNewsItem: NewsItem = {
   timeAgo: "just now",
   summary:
     "Limited releases tied to local running crews are outperforming traditional launches, according to new retail traffic data.",
+  body:
+    "Sportswear brands are rewriting the launch playbook around a new gatekeeper: the neighbourhood run club. Limited releases seeded through local crews are outselling traditional wide launches by a widening margin, according to retail traffic data reviewed by CNBC.\n\nThe mechanics are simple and deliberately unglamorous. A brand offers a club early access — sometimes a colourway, sometimes a full silhouette — and lets the captains decide who gets pairs. No influencer contracts, no countdown clocks. The scarcity is real because the community is real.\n\nRetail analysts caution that the tactic works precisely because it is small. Scale it into a program with a logo and a landing page, one buyer said, and it becomes another marketing channel that runners will politely ignore.",
 };
 
 export interface AiPlatformRow {
@@ -141,7 +149,7 @@ export interface VoiceShareRow {
 
 export const shareOfVoice: VoiceShareRow[] = [
   { id: "sov-brand", label: "Your Brand", pct: 42, color: "orange" },
-  { id: "sov-nike", label: "Competitor A", pct: 27, color: "blue" },
-  { id: "sov-on", label: "Competitor B", pct: 18, color: "green" },
-  { id: "sov-nb", label: "Competitor C", pct: 13, color: "purple" },
+  { id: "sov-nike", label: "Rival Co.", pct: 28, color: "blue" },
+  { id: "sov-on", label: "Upstart Ltd", pct: 18, color: "green" },
+  { id: "sov-nb", label: "Legacy Inc", pct: 12, color: "purple" },
 ];
