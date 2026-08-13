@@ -7,13 +7,13 @@ import { focusRing } from "./palette";
 
 function GhostWordmark() {
   return (
-    // real logo asset (white-on-transparent) inverted to ink, faded to a ghost
+    // Figma-exported logo, faded back to a ghost watermark
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src="/assets/logo/logo.png"
+      src="/assets/logo/animals-logo.png"
       alt=""
       aria-hidden
-      className="pointer-events-none w-44 select-none opacity-10 invert"
+      className="pointer-events-none w-44 select-none opacity-10"
     />
   );
 }

@@ -22,12 +22,12 @@ export function TopNav() {
       <div className="mx-auto flex h-16 max-w-[1560px] items-center justify-between gap-4 px-4 sm:px-6">
         {/* Wordmark */}
         <Link href="/" className="shrink-0 select-none" aria-label="The Animals — home">
-          {/* v1 logo asset is white-on-transparent; invert for the light shell */}
+          {/* exported from the Figma source file: black on transparent */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="/assets/logo/logo.png"
+            src="/assets/logo/animals-logo.png"
             alt="The Animals"
-            className="h-9 w-auto invert"
+            className="h-9 w-auto"
           />
         </Link>
 
