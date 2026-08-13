@@ -1,20 +1,45 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { NewsItem } from "@/data/board";
 import { SourceMark } from "./SourceMark";
 
 /* Full-article reader. Opens from a Newswire row's "Read full article". */
 export function ArticleModal({ item, onClose }: { item: NewsItem; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDivElement | null>(null);
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
   useEffect(() => {
+    /* focus moves into the dialog, cycles inside it, and returns on close */
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !dialogRef.current) return;
+      const focusables = dialogRef.current.querySelectorAll<HTMLElement>(
+        'button, a[href], [tabindex]:not([tabindex="-1"])'
+      );
+      if (focusables.length === 0) return;
+      const first = focusables[0];
+      const last = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      opener?.focus?.();
     };
   }, [onClose]);
 
@@ -30,8 +55,9 @@ export function ArticleModal({ item, onClose }: { item: NewsItem; onClose: () =>
       }}
       className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/85 px-4 py-10 backdrop-blur-sm print:hidden"
     >
-      <article className="relative w-full max-w-3xl rounded-3xl bg-card shadow-2xl">
+      <article ref={dialogRef} className="relative w-full max-w-3xl rounded-3xl bg-card shadow-2xl">
         <button
+          ref={closeRef}
           type="button"
           onClick={onClose}
           aria-label="Close article"

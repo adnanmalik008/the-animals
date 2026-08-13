@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
   type DragEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
 import { addInsight, useBoardStore, type InsightItem } from "@/lib/insights";
@@ -23,15 +24,11 @@ import { addInsight, useBoardStore, type InsightItem } from "@/lib/insights";
 
 export const STICKER_MIME = "animals/sticker";
 
-/* three shades of orange, per the client's note */
-const SHADES = ["#FF4500", "#FF652C", "#FF8A5B"];
-const STICKER_COUNT = SHADES.length;
-
 export type InsightPayload = Omit<InsightItem, "id" | "createdAt">;
 
 interface StickerCtxValue {
-  /** wheel[0] is the sticker currently on top and ready to use */
-  wheel: number[];
+  /** how many stickers have been used — drives the Rolodex roll */
+  used: number;
   armedSticker: number | null;
   toggleArm: () => void;
   /** shade index stuck on a given target, or undefined */
@@ -40,7 +37,7 @@ interface StickerCtxValue {
 }
 
 const StickerCtx = createContext<StickerCtxValue>({
-  wheel: [0, 1, 2],
+  used: 0,
   armedSticker: null,
   toggleArm: () => {},
   tagOf: () => undefined,
@@ -51,9 +48,7 @@ const TAG_STORE_KEY = "animals-sticker-tags";
 
 export function StickerProvider({ children }: { children: ReactNode }) {
   const { circles } = useBoardStore();
-  const [wheel, setWheel] = useState<number[]>(() =>
-    Array.from({ length: STICKER_COUNT }, (_, i) => i)
-  );
+  const [used, setUsed] = useState(0);
   const [armed, setArmed] = useState(false);
   const [tags, setTags] = useState<Record<string, number>>({});
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
@@ -81,7 +76,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
 
   const applySticker = useCallback(
     (key: string, payload: InsightPayload) => {
-      const shade = wheel[0];
+      const shade = used % 3;
       addInsight(payload);
 
       setTags((prev) => {
@@ -94,8 +89,8 @@ export function StickerProvider({ children }: { children: ReactNode }) {
         return next;
       });
 
-      /* Rolodex: the used sticker rotates to the back of the wheel */
-      setWheel((prev) => [...prev.slice(1), prev[0]]);
+      /* Rolodex: the used sticker leaves; the queue advances */
+      setUsed((u) => u + 1);
       setArmed(false);
 
       const circle = circlesRef.current.find((c) => c.id === payload.circleId);
@@ -106,7 +101,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       toastTimer.current = setTimeout(() => setToast(null), 2400);
       return true;
     },
-    [wheel]
+    [used]
   );
 
   /* Escape disarms */
@@ -120,18 +115,22 @@ export function StickerProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<StickerCtxValue>(
     () => ({
-      wheel,
-      armedSticker: armed ? wheel[0] : null,
+      used,
+      armedSticker: armed ? used % 3 : null,
       toggleArm: () => setArmed((v) => !v),
       tagOf: (key: string) => tags[key],
       applySticker,
     }),
-    [wheel, armed, tags, applySticker]
+    [used, armed, tags, applySticker]
   );
 
   return (
     <StickerCtx.Provider value={value}>
       {children}
+      {/* persistent live region so screen readers hear every confirmation */}
+      <div role="status" aria-live="polite" className="sr-only">
+        {toast?.msg}
+      </div>
       {toast && <Toast key={toast.key} msg={toast.msg} />}
     </StickerCtx.Provider>
   );
@@ -174,8 +173,15 @@ export function StickerBadge({ shade, className = "" }: { shade: number; classNa
 /* ---------------- the floating tray ---------------- */
 
 export function StickerTray() {
-  const { wheel, armedSticker, toggleArm } = useContext(StickerCtx);
+  const { used, armedSticker, toggleArm } = useContext(StickerCtx);
   const liveStickerRef = useRef<HTMLImageElement | null>(null);
+  const [inHand, setInHand] = useState(false);
+
+  /* a successful drop advances `used` — the dragged sticker is gone,
+     so stop hiding the (new) center sticker */
+  useEffect(() => {
+    setInHand(false);
+  }, [used]);
 
   return (
     <div
@@ -185,33 +191,33 @@ export function StickerTray() {
         armedSticker !== null ? "scale-105" : ""
       }`}
     >
-      {/* peeking stickers: the next one rolls in from the top, the one
-          after waits at the bottom — clipped by the pill */}
+      {/* the rest of the roll: orange stickers half-showing at both ends,
+          clipped inside the pill — the cue that more stickers are queued.
+          The top one is the next in line: on use it rolls down into the
+          center, and a fresh sticker pops in up top. */}
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          key={`top-${wheel[1]}`}
+          key={`top-${used}`}
           src="/assets/stickers/sticker-red.png"
           alt=""
           draggable={false}
-          className="absolute -top-3 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
-          style={{ transform: "translateX(-50%) rotate(24deg)" }}
+          className="sticker-pop absolute top-1.5 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          key={`bottom-${wheel[2]}`}
           src="/assets/stickers/sticker-red.png"
           alt=""
           draggable={false}
-          className="absolute -bottom-3 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
-          style={{ transform: "translateX(-50%) rotate(-18deg)" }}
+          className="absolute bottom-1.5 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
         />
       </div>
 
-      {/* the live sticker in the middle; when dragged, the sticker itself
-          rides with the cursor and the next one rolls up in its place */}
+      {/* the live sticker in the middle. Dragging lifts it off the wheel
+          (the slot empties while it rides with the cursor); when it lands,
+          the top sticker rolls down into the empty slot. */}
       <button
-        key={wheel[0]}
+        key={used}
         type="button"
         draggable
         aria-pressed={armedSticker !== null}
@@ -219,15 +225,18 @@ export function StickerTray() {
         title="Drag onto a card or module — or press, then click a target"
         onClick={toggleArm}
         onDragStart={(e) => {
-          e.dataTransfer.setData(STICKER_MIME, String(wheel[0]));
+          e.dataTransfer.setData(STICKER_MIME, String(used % 3));
           e.dataTransfer.effectAllowed = "copy";
           if (liveStickerRef.current) {
-            e.dataTransfer.setDragImage(liveStickerRef.current, 16, 16);
+            e.dataTransfer.setDragImage(liveStickerRef.current, 20, 20);
           }
+          /* hide after the browser snapshots the drag image */
+          requestAnimationFrame(() => setInHand(true));
         }}
-        className={`sticker-pop absolute left-1/2 top-1/2 h-[34px] w-[34px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
-          armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""
-        }`}
+        onDragEnd={() => setInHand(false)}
+        className={`sticker-roll absolute left-1/2 top-1/2 h-[40px] w-[40px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full transition-opacity duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
+          inHand ? "opacity-0" : "opacity-100"
+        } ${armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""}`}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
@@ -275,6 +284,17 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     stick();
   }, [armedSticker, stick]);
 
+  /* armed targets are reachable and actionable by keyboard */
+  const onKeyDown = useCallback(
+    (e: ReactKeyboardEvent<HTMLElement>) => {
+      if (armedSticker === null) return;
+      if (e.key !== "Enter" && e.key !== " ") return;
+      e.preventDefault();
+      stick();
+    },
+    [armedSticker, stick]
+  );
+
   const onDragOver = useCallback((e: DragEvent<HTMLElement>) => {
     if (!e.dataTransfer.types.includes(STICKER_MIME)) return;
     e.preventDefault();
@@ -299,12 +319,24 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     [stick]
   );
 
-  const tagged = tagOf(tagKey ?? "");
+  /* read under the same key stick() writes, or keyless zones never show their sticker */
+  const tagged = tagOf(tagKey ?? getPayload().headline.slice(0, 80));
 
+  const armed = armedSticker !== null;
   return {
-    targetProps: { onDragOver, onDragLeave, onDrop, onClick },
+    targetProps: {
+      onDragOver,
+      onDragLeave,
+      onDrop,
+      onClick,
+      onKeyDown,
+      /* focusable + announced only while a sticker is armed */
+      tabIndex: armed ? 0 : undefined,
+      role: armed ? ("button" as const) : undefined,
+      "aria-label": armed ? "Stick here — send to Anomalies" : undefined,
+    },
     /* highlight every target while a sticker is armed so the next click is obvious */
-    isOver: isOver || armedSticker !== null,
+    isOver: isOver || armed,
     /** shade index of the sticker stuck here, or undefined */
     tagged,
     /** kept for callers that only need the drop flash */

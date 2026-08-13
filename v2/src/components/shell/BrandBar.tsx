@@ -24,9 +24,10 @@ export function BrandBar() {
           <div className="min-w-0">
             <p className="font-serif text-lg font-bold sm:text-xl">{boardMeta.briefDate}</p>
             <div className="relative overflow-hidden">
-              <div className="marquee-track gap-16 text-sm text-graphite sm:text-base">
-                <span>{boardMeta.briefQuestion}</span>
-                <span aria-hidden>{boardMeta.briefQuestion}</span>
+              {/* the gap lives inside each copy so the -50% loop wraps seamlessly */}
+              <div className="marquee-track text-sm text-graphite sm:text-base">
+                <span className="pr-16">{boardMeta.briefQuestion}</span>
+                <span aria-hidden className="pr-16">{boardMeta.briefQuestion}</span>
               </div>
             </div>
           </div>

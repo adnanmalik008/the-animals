@@ -24,8 +24,14 @@ function SightingCard({ item }: { item: SightingItem }) {
       })}
     >
       <figure className="flex h-full flex-col border border-line/70 bg-card p-2.5 shadow-sm">
-        {/* photo stand-in: gradient art, no external images */}
-        <div className="aspect-square w-full" style={{ background: item.art }} aria-hidden />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={item.photo}
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className="aspect-square w-full object-cover"
+        />
         <figcaption className="flex flex-1 flex-col px-0.5">
           <p className="mt-3 flex-1 font-serif text-sm leading-snug">{item.caption}</p>
           <div className="mt-2.5 flex items-center justify-between gap-2 pt-1 text-xs text-graphite">

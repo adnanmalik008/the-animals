@@ -5,8 +5,8 @@
    module wants a stable, curated pick. */
 
 const HEADSHOTS = [
-  "h01.png", "h02.png", "h03.jpg", "h04.jpg", "h05.jpg",
-  "h06.jpg", "h07.jpg", "h08.jpg", "h09.jpg", "h10.png",
+  "h01.jpg", "h02.jpg", "h03.jpg", "h04.jpg", "h05.jpg",
+  "h06.jpg", "h07.jpg", "h08.jpg", "h09.jpg", "h10.jpg",
   "h11.jpg", "h12.jpg", "h13.jpg", "h14.jpg", "h15.jpg",
   "h16.jpg", "h17.jpg", "h18.jpg", "h19.jpg", "h20.jpg",
 ];
@@ -59,7 +59,6 @@ export function Avatar({
     <img
       src={`/assets/headshots/${file}`}
       alt={name}
-      title={name}
       width={size}
       height={size}
       draggable={false}

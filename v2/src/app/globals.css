@@ -112,19 +112,36 @@ body {
   border-image-slice: 38 60 38 60 fill;
   border-width: 14px 38px;
 }
-.stock-fabric {
-  border-image-source: url("/assets/textures/strip-fabric.png");
-  border-image-slice: 48 70 48 70 fill;
-  border-width: 15px 40px;
+/* torn-card side borders are wide scans; on small phones give the text
+   back its room */
+@media (max-width: 480px) {
+  .torn-card {
+    border-width: 16px 30px;
+  }
 }
 
-/* the live sticker in the wheel gets a soft pop when it rotates up */
+/* the live sticker in the wheel gets a soft pop when it rotates up.
+   Animates the individual `scale` property only — Tailwind's translate
+   utilities set the native `translate` property, and a keyframe
+   `transform` would stack on top of it and displace the sticker. */
 @keyframes sticker-pop {
-  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0.4; }
-  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  from { scale: 0.6; opacity: 0.4; }
+  to { scale: 1; opacity: 1; }
 }
 .sticker-pop { animation: sticker-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
-@media (prefers-reduced-motion: reduce) { .sticker-pop { animation: none; } }
+
+/* the next sticker rolls down from the top slot into the center.
+   Animates the native translate/scale properties so it composes with the
+   centering utilities instead of stacking a second transform. */
+@keyframes sticker-roll {
+  from { translate: -50% calc(-50% - 33px); scale: 0.65; }
+  to { translate: -50% -50%; scale: 1; }
+}
+.sticker-roll { animation: sticker-roll 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker-pop, .sticker-roll { animation: none; }
+}
 
 /* alternating strips read as separate pieces of paper, like the design */
 .torn-card-alt {

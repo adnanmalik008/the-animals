@@ -1,115 +1,20 @@
 "use client";
 
-import type { ReactElement } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
 import { podcastItems, type PodcastCover, type PodcastItem } from "@/data/live-extra";
 import { StickerDropZone } from "./stickers";
 
 /* ============================================================
-   On the Airwaves — podcast watch. Stylized CSS cover mocks on
-   the left, a listener's annotation on the right: sometimes a
-   post-it, sometimes a spiral-pad note, sometimes plain margin
-   prose. No external artwork.
+   On the Airwaves — podcast watch. Real show artwork from the
+   design source on the left, a listener's annotation on the
+   right: sometimes a post-it, sometimes a spiral-pad note,
+   sometimes plain margin prose.
    ============================================================ */
 
-/* ---------------- cover art (pure CSS) ---------------- */
-
-function PivotCover() {
-  return (
-    <div
-      className="relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden"
-      style={{ background: "linear-gradient(150deg, #3d3d3d 0%, #5a5a5a 45%, #222222 100%)" }}
-    >
-      {/* two faint studio silhouettes behind the wordmark */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 32% 46% at 32% 56%, rgba(255,255,255,0.16), transparent 70%), radial-gradient(ellipse 34% 50% at 70% 52%, rgba(255,255,255,0.12), transparent 70%)",
-        }}
-      />
-      <span className="absolute right-3 top-2 font-serif text-[11px] italic text-white/80">New York</span>
-      <span className="relative font-sans text-[42px] font-black italic leading-none tracking-tighter text-red [text-shadow:0_1px_0_rgba(255,255,255,0.45)]">
-        PIVOT
-      </span>
-      <span className="absolute bottom-2.5 left-0 right-0 px-2 text-center text-[7px] font-bold uppercase tracking-[0.18em] text-white">
-        Hosted by Kara Swisher and Scott Galloway
-      </span>
-    </div>
-  );
-}
-
-function StartUpCover() {
-  return (
-    <div className="relative flex aspect-square w-full items-center justify-center overflow-hidden bg-blue">
-      {/* night sky */}
-      <span aria-hidden className="absolute left-[14%] top-[12%] text-[9px] text-white/70">✦</span>
-      <span aria-hidden className="absolute right-[18%] top-[20%] text-[7px] text-white/60">✦</span>
-      <span aria-hidden className="absolute left-[30%] top-[28%] text-[6px] text-white/50">✦</span>
-      <span aria-hidden className="absolute right-[34%] top-[9%] text-[8px] text-white/60">✦</span>
-      <span className="relative -mt-8 font-sans text-4xl font-black italic tracking-tight text-white">
-        Start<span className="text-yellow">Up</span>
-      </span>
-      {/* rooftop under construction */}
-      <div aria-hidden className="absolute bottom-0 left-0 right-0 h-[32%]" style={{ background: "#54341f" }}>
-        <div className="absolute bottom-[22%] left-[30%] flex gap-2">
-          {Array.from({ length: 3 }, (_, i) => (
-            <span key={i} className="h-4 w-5 bg-yellow" />
-          ))}
-        </div>
-        <div className="absolute bottom-[58%] left-[42%] flex gap-2">
-          <span className="h-3.5 w-5 bg-yellow" />
-        </div>
-        {/* ladder */}
-        <svg
-          className="absolute -top-6 left-[10%]"
-          width="26"
-          height="64"
-          viewBox="0 0 26 64"
-          fill="none"
-          stroke="rgba(255,255,255,0.75)"
-          strokeWidth="2.4"
-        >
-          <path d="M6 2v60M20 2v60M6 12h14M6 24h14M6 36h14M6 48h14" />
-        </svg>
-      </div>
-    </div>
-  );
-}
-
-function OddLotsCover() {
-  return (
-    <div className="relative flex aspect-square w-full flex-col overflow-hidden bg-bg3 px-3 pb-2.5 pt-2">
-      <span className="text-[8px] font-semibold tracking-wide text-white/85">Bloomberg</span>
-      {/* the gift pile */}
-      <div aria-hidden className="relative mx-auto mt-1 h-[48%] w-[74%]">
-        <span
-          className="absolute bottom-0 left-[6%] h-9 w-9 -rotate-6 rounded-[2px] bg-purple"
-          style={{ backgroundImage: "linear-gradient(90deg, transparent 44%, rgba(255,255,255,0.5) 44%, rgba(255,255,255,0.5) 56%, transparent 56%)" }}
-        />
-        <span
-          className="absolute bottom-0.5 left-[38%] h-11 w-8 rotate-3 rounded-[2px] bg-orange"
-          style={{ backgroundImage: "linear-gradient(0deg, transparent 46%, rgba(255,255,255,0.5) 46%, rgba(255,255,255,0.5) 56%, transparent 56%)" }}
-        />
-        <span
-          className="absolute bottom-0 right-[6%] h-8 w-10 rotate-6 rounded-[2px] bg-green"
-          style={{ backgroundImage: "linear-gradient(90deg, transparent 44%, rgba(255,255,255,0.5) 44%, rgba(255,255,255,0.5) 56%, transparent 56%)" }}
-        />
-        <span className="absolute bottom-8 left-[24%] h-7 w-7 -rotate-12 rounded-[2px] bg-yellow" />
-        <span className="absolute bottom-7 right-[18%] h-6 w-8 rotate-12 rounded-[2px] bg-red" />
-      </div>
-      <span className="mt-auto text-center font-serif text-[26px] font-semibold leading-none text-white">
-        Odd Lots
-      </span>
-    </div>
-  );
-}
-
-const covers: Record<PodcastCover, () => ReactElement> = {
-  pivot: PivotCover,
-  startup: StartUpCover,
-  oddlots: OddLotsCover,
+const covers: Record<PodcastCover, string> = {
+  pivot: "/assets/podcasts/pivot.jpg",
+  startup: "/assets/podcasts/startup.jpg",
+  oddlots: "/assets/podcasts/odd-lots.jpg",
 };
 
 /* ---------------- annotations ---------------- */
@@ -156,7 +61,7 @@ function Annotation({ item }: { item: PodcastItem }) {
 /* ---------------- rows ---------------- */
 
 function PodcastRow({ item }: { item: PodcastItem }) {
-  const Cover = covers[item.cover];
+  const cover = covers[item.cover];
   return (
     <StickerDropZone
       className="rounded-lg"
@@ -174,9 +79,13 @@ function PodcastRow({ item }: { item: PodcastItem }) {
         }`}
       >
         <div className="w-[168px] max-w-full">
-          <div className="shadow-sm">
-            <Cover />
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={cover}
+            alt={`${item.show} cover art`}
+            loading="lazy"
+            className="aspect-square w-full object-cover shadow-sm"
+          />
           <p className="mt-2 text-sm font-bold text-ink">{item.show}</p>
           <p className="mt-0.5 flex items-baseline justify-between gap-2 text-[11px] text-graphite">
             <span className="min-w-0">{item.network}</span>

@@ -15,17 +15,23 @@ const categoryText: Record<NewsItem["categoryColor"], string> = {
   purple: "text-purple bg-purple/15",
 };
 
-/* the wire mixes real paper stocks as it runs down the column */
+/* the wire mixes real paper stocks as it runs down the column; keyed to
+   the item, not the row index, so a new article folding in at the top
+   does not reshuffle every texture below it */
 const PAPER_STOCKS = ["", "stock-soft", "", "stock-crumple", "", "stock-soft"];
+
+function stockFor(id: string): string {
+  let sum = 0;
+  for (let i = 0; i < id.length; i += 1) sum = (sum * 31 + id.charCodeAt(i)) >>> 0;
+  return PAPER_STOCKS[sum % PAPER_STOCKS.length];
+}
 
 function NewswireCard({
   item,
-  index,
   isNew,
   onOpen,
 }: {
   item: NewsItem;
-  index: number;
   isNew?: boolean;
   onOpen: (item: NewsItem) => void;
 }) {
@@ -45,7 +51,7 @@ function NewswireCard({
     `news:${item.id}`
   );
 
-  const stock = PAPER_STOCKS[index % PAPER_STOCKS.length];
+  const stock = stockFor(item.id);
 
   return (
     <article
@@ -118,10 +124,12 @@ function NewswireCard({
 }
 
 export function Newswire() {
-  /* CMS document when the board has one; fixtures otherwise */
+  /* CMS document when the board has one; fixtures otherwise. A CMS board
+     without an `incoming` article gets none — the fixture must not fold
+     into a real client's wire. */
   const cms = useModuleData<{ items?: NewsItem[]; incoming?: NewsItem }>("newswire");
   const baseItems = cms?.items?.length ? cms.items : fixtureItems;
-  const incoming = cms?.incoming ?? fixtureIncoming;
+  const incoming = cms ? (cms.incoming ?? null) : fixtureIncoming;
 
   const [items, setItems] = useState(baseItems);
   const [newId, setNewId] = useState<string | null>(null);
@@ -129,6 +137,7 @@ export function Newswire() {
 
   /* A fresh article folds into the top after 30s — the wire feels alive */
   useEffect(() => {
+    if (!incoming) return;
     const id = setTimeout(() => {
       setItems((prev) =>
         prev.some((p) => p.id === incoming.id) ? prev : [incoming, ...prev]
@@ -141,11 +150,10 @@ export function Newswire() {
   return (
     <>
       <div className="flex flex-col pt-3">
-        {items.map((item, i) => (
+        {items.map((item) => (
           <NewswireCard
             key={item.id}
             item={item}
-            index={i}
             isNew={item.id === newId}
             onOpen={setReading}
           />

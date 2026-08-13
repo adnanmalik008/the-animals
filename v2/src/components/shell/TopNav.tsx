@@ -28,6 +28,8 @@ export function TopNav() {
           <img
             src="/assets/logo/animals-logo.png"
             alt="The Animals"
+            width={66}
+            height={36}
             className="h-9 w-auto"
           />
         </Link>

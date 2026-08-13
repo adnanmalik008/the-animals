@@ -114,7 +114,8 @@ function renderData(id: string) {
 export function LiveBoard() {
   return (
     <StickerProvider>
-      <main className="mx-auto grid w-full max-w-[1560px] flex-1 grid-cols-1 lg:grid-cols-2">
+      {/* pb clears the fixed sticker tray on small screens */}
+      <main className="mx-auto grid w-full max-w-[1560px] flex-1 grid-cols-1 pb-36 lg:grid-cols-2 lg:pb-0">
         <ModuleColumn
           ids={[
             "newswire",

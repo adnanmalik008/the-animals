@@ -64,6 +64,8 @@ export const newsItems: NewsItem[] = [
     timeAgo: "2m ago",
     summary:
       "The security service issued fresh guidance after a wave of fabricated recruiter profiles targeted civil servants, raising questions about professional networks as intelligence surfaces.",
+    body:
+      "MI5 has warned government departments that Chinese intelligence services are running fabricated recruiter profiles on LinkedIn at what it called an industrial scale, with more than ten thousand approaches to officials and contractors flagged in the past year alone.\n\nThe profiles follow a pattern: a plausible headshot, a consultancy nobody can quite place, and an offer of paid speaking or advisory work that begins with an innocuous request for a CV. Officials who engage are steered toward encrypted channels, where requests gradually sharpen toward policy detail and personnel gossip.\n\nThe guidance stops short of telling civil servants to leave the platform. Instead it asks them to treat unsolicited approaches the way they would treat a stranger at the department's front desk — and to report anything that flatters a little too precisely.",
   },
   {
     id: "nw-3",
@@ -88,6 +90,8 @@ export const newsItems: NewsItem[] = [
     timeAgo: "2m ago",
     summary:
       "Moderation decisions on political speech keep pulling professional platforms into culture-war coverage, with advertisers watching closely.",
+    body:
+      "LinkedIn found itself at the centre of a moderation storm this week after removing a post supportive of immigration enforcement that the platform labelled hateful, then partially walking the decision back after an appeal.\n\nThe episode is the latest in a series testing whether a professional network can hold a narrower speech standard than the open platforms without alienating half its audience. Advertisers, for their part, have been conspicuously quiet: brand-safety teams privately say the professional context is precisely why they spend there, and they would rather the platform err on the side of removal.\n\nThe company says enforcement decisions are made against published community policies, not politics. Critics on both sides say the published policies are broad enough to justify either outcome — which is, in effect, the problem.",
   },
   {
     id: "nw-5",
@@ -99,6 +103,8 @@ export const newsItems: NewsItem[] = [
     timeAgo: "2m ago",
     summary:
       "Critics accuse the network of inconsistent enforcement; the company says the post violated existing community policies.",
+    body:
+      "The knives are out for LinkedIn after the network yanked a pro-ICE post it branded 'hateful' — and conservatives say the double standard is the story.\n\nUsers surfaced a string of posts on the other side of the immigration debate that remain live, some with sharper language than the removed item. The company insists each case is judged against the same community policies and that the comparison posts are under review, but declined to say how many had been actioned.\n\nFor a platform that sells itself to advertisers as the safest room on the internet, the fight is an unwelcome reminder that there is no such thing as a professional network without politics — only one where the politics arrive wearing a lanyard.",
   },
 ];
 

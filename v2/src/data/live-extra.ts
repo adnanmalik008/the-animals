@@ -60,8 +60,8 @@ export interface SightingItem {
   caption: string;
   time: string; // "14:00 GMT"
   city: string;
-  /** CSS background for the photo area — gradient art stand-in, no external images */
-  art: string;
+  /** photo asset from the design source, under /assets/sightings */
+  photo: string;
 }
 
 export const sightingItems: SightingItem[] = [
@@ -70,42 +70,42 @@ export const sightingItems: SightingItem[] = [
     caption: "Billboard, Times Square — competitor promoting AI running coach",
     time: "14:00 GMT",
     city: "New York",
-    art: "radial-gradient(circle at 72% 28%, #dce8c9 0%, #cfe0b8 34%, #e3d24b 78%, #d9c33c 100%)",
+    photo: "/assets/sightings/ny.jpg",
   },
   {
     id: "sg-2",
     caption: "Tram wrap, Alexanderplatz — Evo SL launch takeover in full carbon black",
     time: "09:20 GMT",
     city: "Berlin",
-    art: "linear-gradient(128deg, #efe7db 0%, #d9c9b4 38%, #f2ece2 62%, #c6b299 100%)",
+    photo: "/assets/sightings/berlin.jpg",
   },
   {
     id: "sg-3",
     caption: "Projection, Shibuya crossing — midnight run-club invite, QR only",
     time: "23:45 GMT",
     city: "Tokyo",
-    art: "linear-gradient(118deg, #0b3a40 0%, #17666a 42%, #072e35 74%, #1d7a78 100%)",
+    photo: "/assets/sightings/tokyo.jpg",
   },
   {
     id: "sg-4",
     caption: "Marathon expo wall, ExCeL — rival stacking carbon plates floor to ceiling",
     time: "11:30 GMT",
     city: "London",
-    art: "linear-gradient(142deg, #f2c199 0%, #e08a4e 45%, #b9541f 82%, #8f3a12 100%)",
+    photo: "/assets/sightings/london.jpg",
   },
   {
     id: "sg-5",
     caption: "Bus shelter, Le Marais — retro Samba campaign shot on grainy film",
     time: "16:10 GMT",
     city: "Paris",
-    art: "linear-gradient(126deg, #cdd9e8 0%, #9fb4cf 40%, #dfe7f0 66%, #7c93b4 100%)",
+    photo: "/assets/sightings/paris.jpg",
   },
   {
     id: "sg-6",
     caption: "Stadium banner, Old Trafford — grassroots 10K sponsorship reveal",
     time: "19:05 GMT",
     city: "Manchester",
-    art: "linear-gradient(134deg, #3c2b52 0%, #6b4a86 44%, #2a1d3e 78%, #8a63a8 100%)",
+    photo: "/assets/sightings/manchester.jpg",
   },
 ];
 
