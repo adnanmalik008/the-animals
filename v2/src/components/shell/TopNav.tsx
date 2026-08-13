@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { Avatar } from "./Avatar";
 
 const tabs = [
   { label: "Live", href: "/" },
@@ -58,13 +59,13 @@ export function TopNav() {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2">
             <span className="flex -space-x-1.5">
-              <span className="h-7 w-7 rounded-full border-2 border-card bg-orange" aria-hidden />
-              <span className="h-7 w-7 rounded-full border-2 border-card bg-blue" aria-hidden />
+              <Avatar name="Amara Osei" tone="ember" size={28} className="border-2 border-card" />
+              <Avatar name="Jonas Keller" tone="ocean" size={28} className="border-2 border-card" />
             </span>
             <span className="text-graphite text-sm">/</span>
             <span className="text-sm font-medium">{boardMeta.userName}</span>
           </div>
-          <span className="h-9 w-9 rounded-full bg-gradient-to-br from-orange to-purple" aria-hidden />
+          <Avatar name={boardMeta.userName} tone="violet" size={36} />
 
           {/* Mobile menu button */}
           <button

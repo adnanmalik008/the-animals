@@ -2,13 +2,7 @@
 
 import { aiVisibility } from "@/data/board";
 import { useCountUp, useInView } from "@/lib/hooks";
-
-const platformDot: Record<string, string> = {
-  chatgpt: "bg-green",
-  grok: "bg-ink",
-  claude: "bg-orange",
-  gemini: "bg-blue",
-};
+import { AiPlatformMark, type AiPlatformId } from "./AiPlatformMark";
 
 function Headline({
   value,
@@ -57,7 +51,7 @@ export function AISearchVisibility() {
         {aiVisibility.platforms.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-4 py-3.5">
             <span className="flex items-center gap-2.5 font-semibold">
-              <span className={`h-4 w-4 rounded-full ${platformDot[p.id]}`} aria-hidden />
+              <AiPlatformMark id={p.id as AiPlatformId} />
               {p.name}
             </span>
             <span className="flex items-center gap-6 text-sm tabular-nums sm:gap-10">

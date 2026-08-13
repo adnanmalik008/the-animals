@@ -11,8 +11,15 @@ export function BrandBar() {
       <div className="mx-auto flex max-w-[1560px] items-stretch gap-3 px-4 py-3 sm:px-6">
         {/* Client brief card */}
         <div className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl bg-bg2 px-4 py-3 sm:px-5">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-card text-lg font-black lowercase tracking-tight">
-            {boardMeta.clientName}
+          <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-xl bg-card px-2">
+            {boardMeta.clientName.toLowerCase() === "adidas" ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src="/assets/brand-bar/adidas.svg" alt="adidas" className="h-10 w-auto" />
+            ) : (
+              <span className="text-lg font-black lowercase tracking-tight">
+                {boardMeta.clientName}
+              </span>
+            )}
           </div>
           <div className="min-w-0">
             <p className="font-serif text-lg font-bold sm:text-xl">{boardMeta.briefDate}</p>

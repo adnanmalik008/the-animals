@@ -157,9 +157,10 @@ export function Module({
         title="Drag to reorder"
         aria-label={`Reorder ${title}`}
         role="button"
-        className="absolute right-2 top-4 cursor-grab p-1 text-silver opacity-40 transition-opacity hover:text-graphite group-hover/module:opacity-100 active:cursor-grabbing"
+        className="absolute right-2 top-4 cursor-grab rounded-md p-1.5 text-graphite/70 transition-colors hover:bg-ink/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 active:cursor-grabbing"
+        tabIndex={0}
       >
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
           <circle cx="8" cy="5" r="1.7" /><circle cx="16" cy="5" r="1.7" />
           <circle cx="8" cy="12" r="1.7" /><circle cx="16" cy="12" r="1.7" />
           <circle cx="8" cy="19" r="1.7" /><circle cx="16" cy="19" r="1.7" />

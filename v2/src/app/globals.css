@@ -75,24 +75,52 @@ body {
 }
 
 /* torn newsprint card */
+/* Real torn newsprint strip, exported from the design source. The image
+   carries its own ragged edges and crumple, so no clip-path is needed:
+   the middle stretches while the torn left/right ends stay intact. */
 .torn-card {
   position: relative;
-  background-color: #fbfaf7;
-  background-image:
-    radial-gradient(ellipse 70% 50% at 30% 20%, rgba(255, 255, 255, 0.6), transparent 65%),
-    radial-gradient(ellipse 55% 45% at 80% 75%, rgba(0, 0, 0, 0.04), transparent 60%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015 0.02' numOctaves='2' seed='11'/%3E%3CfeColorMatrix type='matrix' values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.5 0.5 0.5 0 0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='0.08'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  clip-path: polygon(
-    0.6% 4%, 3% 0.8%, 9% 2.4%, 15% 0.4%, 22% 2.8%, 30% 0.9%, 38% 2.2%,
-    47% 0.3%, 55% 2.6%, 63% 0.8%, 71% 2.1%, 79% 0.5%, 87% 2.4%, 94% 0.9%,
-    99.4% 3.2%, 99% 12%, 99.7% 25%, 99.1% 40%, 99.8% 56%, 99.2% 71%,
-    99.7% 85%, 99.3% 96%, 96% 99.4%, 89% 97.6%, 81% 99.5%, 72% 97.8%,
-    63% 99.6%, 53% 97.9%, 44% 99.4%, 35% 98%, 26% 99.6%, 17% 98.1%,
-    9% 99.5%, 3% 98%, 0.4% 95%, 0.9% 82%, 0.3% 67%, 0.8% 51%, 0.2% 36%,
-    0.9% 21%, 0.4% 10%
-  );
-  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.12));
+  border-image-source: url("/assets/textures/torn-strip.webp");
+  border-image-slice: 46 120 46 120 fill;
+  border-image-repeat: stretch stretch;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 22px 58px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
+
+/* Newswire rows read flat until hovered or opened, when the torn strip
+   slides in behind the text. Rendered as a background layer so the row
+   text keeps its own padding. */
+.torn-strip {
+  border-image-source: url("/assets/textures/torn-strip.webp");
+  border-image-slice: 46 120 46 120 fill;
+  border-image-repeat: stretch stretch;
+  border-style: solid;
+  border-color: transparent;
+  border-width: 18px 52px;
+}
+
+/* paper stocks — the design mixes a few tints down the wire */
+.torn-tint-olive { filter: sepia(0.4) saturate(1.35) hue-rotate(8deg); }
+.torn-tint-cool { filter: saturate(0.7) hue-rotate(-14deg) brightness(1.02); }
+
+/* the live sticker in the wheel gets a soft pop when it rotates up */
+@keyframes sticker-pop {
+  from { transform: translate(-50%, -50%) scale(0.6); opacity: 0.4; }
+  to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+}
+.sticker-pop { animation: sticker-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+@media (prefers-reduced-motion: reduce) { .sticker-pop { animation: none; } }
+
+/* alternating strips read as separate pieces of paper, like the design */
+.torn-card-alt {
+  transform: scaleX(-1);
+}
+.torn-card-alt > * {
+  transform: scaleX(-1);
+}
+
 
 /* marquee for the brief question */
 @keyframes marquee-scroll {

@@ -1,16 +1,9 @@
 "use client";
 
 import { Module } from "@/components/modules/ModuleColumn";
-import { opinionLeaders, type LeaderTone } from "@/data/live";
+import { opinionLeaders } from "@/data/live";
+import { Avatar, type AvatarTone } from "@/components/shell/Avatar";
 import { StickerDropZone } from "./stickers";
-
-const toneClass: Record<LeaderTone, string> = {
-  ember: "bg-gradient-to-br from-orange to-red",
-  ocean: "bg-gradient-to-br from-blue to-blue2",
-  moss: "bg-gradient-to-br from-green to-olive",
-  violet: "bg-gradient-to-br from-purple to-blue2",
-  sun: "bg-gradient-to-br from-yellow to-orange",
-};
 
 export function OpinionLeaders({ id }: { id: string }) {
   const lead = opinionLeaders[0];
@@ -32,12 +25,7 @@ export function OpinionLeaders({ id }: { id: string }) {
           <ul className="divide-y divide-line">
             {opinionLeaders.map((leader) => (
               <li key={leader.id} className="flex items-center gap-3 py-3.5">
-                <span
-                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${toneClass[leader.tone]}`}
-                  aria-hidden
-                >
-                  {leader.initials}
-                </span>
+                <Avatar name={leader.name} tone={leader.tone as AvatarTone} size={44} />
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{leader.name}</span>
                   <span className="block truncate text-sm text-graphite">{leader.role}</span>

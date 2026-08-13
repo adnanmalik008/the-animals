@@ -161,7 +161,7 @@ export function StickerBadge({ shade, className = "" }: { shade: number; classNa
     <span
       aria-label="Tagged for Anomalies"
       title="Tagged for Anomalies"
-      className={`pointer-events-none absolute -right-2 -top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full shadow-md ring-2 ring-white ${className}`}
+      className={`pointer-events-none absolute -left-2.5 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full shadow-md ring-2 ring-white ${className}`}
       style={{ backgroundColor: SHADES[shade] ?? SHADES[0] }}
     >
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
@@ -180,39 +180,37 @@ export function StickerTray() {
     <div
       role="toolbar"
       aria-label="Sticker wheel — drag the top sticker onto a card or module to send it to Anomalies, or press it and then choose a target"
-      className="fixed bottom-4 right-4 z-40 flex h-[104px] w-[52px] items-center justify-center rounded-full border border-line bg-card shadow-lg lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
+      className="fixed bottom-4 right-4 z-40 h-[105px] w-[60px] lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
     >
-      {/* the wheel: position 0 is on top and interactive, the rest are stacked behind */}
-      {wheel.map((shade, position) => {
-        const isTop = position === 0;
-        return (
-          <button
-            key={shade}
-            type="button"
-            draggable={isTop}
-            disabled={!isTop}
-            aria-hidden={!isTop}
-            tabIndex={isTop ? 0 : -1}
-            aria-pressed={isTop ? armedSticker !== null : undefined}
-            aria-label="Sticker — drag onto a card, or press to arm and then choose a target"
-            title="Drag onto a card or module — or press, then click a target"
-            onClick={isTop ? toggleArm : undefined}
-            onDragStart={(e) => {
-              e.dataTransfer.setData(STICKER_MIME, String(shade));
-              e.dataTransfer.effectAllowed = "copy";
-            }}
-            style={{
-              backgroundColor: SHADES[shade],
-              transform: `translateY(${position * 16 - 16}px) scale(${1 - position * 0.14})`,
-              opacity: 1 - position * 0.25,
-              zIndex: STICKER_COUNT - position,
-            }}
-            className={`absolute flex h-9 w-9 items-center justify-center rounded-full shadow-sm transition-all duration-500 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 motion-reduce:transition-none ${
-              isTop ? "cursor-grab active:cursor-grabbing" : "pointer-events-none"
-            } ${isTop && armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""}`}
-          />
-        );
-      })}
+      {/* the pill + peeking stickers, straight from the design source */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/stickers/sticker-wheel.svg"
+        alt=""
+        aria-hidden
+        draggable={false}
+        className={`pointer-events-none absolute inset-0 h-full w-full select-none transition-transform duration-500 ease-out motion-reduce:transition-none ${
+          armedSticker !== null ? "scale-105" : ""
+        }`}
+      />
+
+      {/* the live sticker sits over the middle of the wheel */}
+      <button
+        key={wheel[0]}
+        type="button"
+        draggable
+        aria-pressed={armedSticker !== null}
+        aria-label="Sticker — drag onto a card, or press to arm and then choose a target"
+        title="Drag onto a card or module — or press, then click a target"
+        onClick={toggleArm}
+        onDragStart={(e) => {
+          e.dataTransfer.setData(STICKER_MIME, String(wheel[0]));
+          e.dataTransfer.effectAllowed = "copy";
+        }}
+        className={`sticker-pop absolute left-1/2 top-1/2 h-[31px] w-[31px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
+          armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""
+        }`}
+      />
     </div>
   );
 }
