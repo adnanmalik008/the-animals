@@ -59,13 +59,13 @@ export function TopNav() {
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2">
             <span className="flex -space-x-1.5">
-              <Avatar name="Amara Osei" tone="ember" size={28} className="border-2 border-card" />
-              <Avatar name="Jonas Keller" tone="ocean" size={28} className="border-2 border-card" />
+              <Avatar name="Amara Osei" pick={1} size={28} className="border-2 border-card" />
+              <Avatar name="Jonas Keller" pick={3} size={28} className="border-2 border-card" />
             </span>
             <span className="text-graphite text-sm">/</span>
             <span className="text-sm font-medium">{boardMeta.userName}</span>
           </div>
-          <Avatar name={boardMeta.userName} tone="violet" size={36} />
+          <Avatar name={boardMeta.userName} pick={9} size={36} />
 
           {/* Mobile menu button */}
           <button

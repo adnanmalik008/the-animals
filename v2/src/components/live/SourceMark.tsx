@@ -5,7 +5,11 @@ import type { NewsSource } from "@/data/board";
 
 const icons: Partial<Record<NewsSource, string>> = {
   "The New York Times": "/assets/source-logos/nytimes.png",
-  "New York Post": "/assets/source-logos/ny-post.png",
+};
+
+/* full wordmark images, used instead of styled text */
+const wordmarkImg: Partial<Record<NewsSource, string>> = {
+  "New York Post": "/assets/source-logos/ny-post-wordmark.png",
 };
 
 const wordmark: Record<NewsSource, string> = {
@@ -19,13 +23,19 @@ const wordmark: Record<NewsSource, string> = {
 
 export function SourceMark({ source, className = "" }: { source: NewsSource; className?: string }) {
   const icon = icons[source];
+  const img = wordmarkImg[source];
   return (
     <span className={`inline-flex items-center gap-1.5 leading-none ${className}`}>
       {icon && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={icon} alt="" aria-hidden className="h-4 w-4 shrink-0 rounded-[3px]" />
       )}
-      <span className={wordmark[source]}>{source}</span>
+      {img ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={img} alt={source} className="h-3.5 w-auto" />
+      ) : (
+        <span className={wordmark[source]}>{source}</span>
+      )}
     </span>
   );
 }

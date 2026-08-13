@@ -155,19 +155,19 @@ function Toast({ msg }: { msg: string }) {
   );
 }
 
-/* A stuck sticker badge, rendered on tagged cards and modules. */
+/* A stuck sticker badge, rendered on tagged cards and modules —
+   the real sticker asset, tilted slightly so it reads as hand-placed. */
 export function StickerBadge({ shade, className = "" }: { shade: number; className?: string }) {
   return (
-    <span
-      aria-label="Tagged for Anomalies"
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/assets/stickers/sticker-red.png"
+      alt="Tagged for Anomalies"
       title="Tagged for Anomalies"
-      className={`pointer-events-none absolute -left-2.5 top-2 z-10 flex h-7 w-7 items-center justify-center rounded-full shadow-md ring-2 ring-white ${className}`}
-      style={{ backgroundColor: SHADES[shade] ?? SHADES[0] }}
-    >
-      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-        <path d="M20 6L9 17l-5-5" />
-      </svg>
-    </span>
+      draggable={false}
+      className={`pointer-events-none absolute -left-1 top-1 z-10 h-8 w-8 drop-shadow-md ${className}`}
+      style={{ transform: `rotate(${((shade % 3) - 1) * 14}deg)` }}
+    />
   );
 }
 
@@ -175,6 +175,7 @@ export function StickerBadge({ shade, className = "" }: { shade: number; classNa
 
 export function StickerTray() {
   const { wheel, armedSticker, toggleArm } = useContext(StickerCtx);
+  const liveStickerRef = useRef<HTMLImageElement | null>(null);
 
   return (
     <div
@@ -194,7 +195,8 @@ export function StickerTray() {
         }`}
       />
 
-      {/* the live sticker sits over the middle of the wheel */}
+      {/* the live sticker sits over the middle of the wheel; when dragged,
+          the sticker itself rides with the cursor and the next one rolls up */}
       <button
         key={wheel[0]}
         type="button"
@@ -206,11 +208,24 @@ export function StickerTray() {
         onDragStart={(e) => {
           e.dataTransfer.setData(STICKER_MIME, String(wheel[0]));
           e.dataTransfer.effectAllowed = "copy";
+          if (liveStickerRef.current) {
+            e.dataTransfer.setDragImage(liveStickerRef.current, 16, 16);
+          }
         }}
         className={`sticker-pop absolute left-1/2 top-1/2 h-[31px] w-[31px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
           armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""
         }`}
-      />
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          ref={liveStickerRef}
+          src="/assets/stickers/sticker-red.png"
+          alt=""
+          aria-hidden
+          draggable={false}
+          className="pointer-events-none h-full w-full select-none drop-shadow-sm"
+        />
+      </button>
     </div>
   );
 }

@@ -89,21 +89,34 @@ body {
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
 }
 
-/* Newswire rows read flat until hovered or opened, when the torn strip
+/* Newswire rows read flat until hovered or opened, when a torn strip
    slides in behind the text. Rendered as a background layer so the row
-   text keeps its own padding. */
+   text keeps its own padding. Each stock is a real torn-paper scan from
+   the design source; the middle stretches, the ragged ends stay intact. */
 .torn-strip {
-  border-image-source: url("/assets/textures/torn-strip.webp");
-  border-image-slice: 46 120 46 120 fill;
+  border-image-source: url("/assets/textures/strip-grey.png");
+  border-image-slice: 32 60 32 60 fill;
   border-image-repeat: stretch stretch;
   border-style: solid;
   border-color: transparent;
-  border-width: 18px 52px;
+  border-width: 12px 40px;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.22)) drop-shadow(0 1px 1px rgba(0, 0, 0, 0.1));
 }
-
-/* paper stocks — the design mixes a few tints down the wire */
-.torn-tint-olive { filter: sepia(0.4) saturate(1.35) hue-rotate(8deg); }
-.torn-tint-cool { filter: saturate(0.7) hue-rotate(-14deg) brightness(1.02); }
+.stock-soft {
+  border-image-source: url("/assets/textures/strip-soft.png");
+  border-image-slice: 34 56 34 56 fill;
+  border-width: 13px 38px;
+}
+.stock-crumple {
+  border-image-source: url("/assets/textures/strip-crumple.png");
+  border-image-slice: 38 60 38 60 fill;
+  border-width: 14px 38px;
+}
+.stock-fabric {
+  border-image-source: url("/assets/textures/strip-fabric.png");
+  border-image-slice: 48 70 48 70 fill;
+  border-width: 15px 40px;
+}
 
 /* the live sticker in the wheel gets a soft pop when it rotates up */
 @keyframes sticker-pop {

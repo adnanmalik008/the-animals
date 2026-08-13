@@ -15,8 +15,8 @@ const categoryText: Record<NewsItem["categoryColor"], string> = {
   purple: "text-purple bg-purple/15",
 };
 
-/* the wire mixes paper stocks as it runs down the column */
-const PAPER_STOCKS = ["", "", "torn-tint-olive", "", "torn-tint-cool", ""];
+/* the wire mixes real paper stocks as it runs down the column */
+const PAPER_STOCKS = ["", "stock-soft", "", "stock-crumple", "", "stock-soft"];
 
 function NewswireCard({
   item,
@@ -50,12 +50,12 @@ function NewswireCard({
   return (
     <article
       {...targetProps}
-      className={`group/row relative ${isNew ? "fold-in" : ""}`}
+      className={`group/row relative isolate ${isNew ? "fold-in" : ""}`}
     >
       {/* the paper slides in behind the row on hover, and stays while open */}
       <div
         aria-hidden
-        className={`torn-strip pointer-events-none absolute -inset-x-3 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
+        className={`torn-strip pointer-events-none absolute -inset-x-1 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
           expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
         }`}
       />
