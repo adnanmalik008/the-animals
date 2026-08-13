@@ -181,22 +181,35 @@ export function StickerTray() {
     <div
       role="toolbar"
       aria-label="Sticker wheel — drag the top sticker onto a card or module to send it to Anomalies, or press it and then choose a target"
-      className="fixed bottom-4 right-4 z-40 h-[105px] w-[60px] lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2"
+      className={`fixed bottom-4 right-4 z-40 h-[105px] w-[60px] rounded-full border border-line bg-card shadow-[0_2px_10px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-out motion-reduce:transition-none lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ${
+        armedSticker !== null ? "scale-105" : ""
+      }`}
     >
-      {/* the pill + peeking stickers, straight from the design source */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/assets/stickers/sticker-wheel.svg"
-        alt=""
-        aria-hidden
-        draggable={false}
-        className={`pointer-events-none absolute inset-0 h-full w-full select-none transition-transform duration-500 ease-out motion-reduce:transition-none ${
-          armedSticker !== null ? "scale-105" : ""
-        }`}
-      />
+      {/* peeking stickers: the next one rolls in from the top, the one
+          after waits at the bottom — clipped by the pill */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-full">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={`top-${wheel[1]}`}
+          src="/assets/stickers/sticker-red.png"
+          alt=""
+          draggable={false}
+          className="absolute -top-3 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
+          style={{ transform: "translateX(-50%) rotate(24deg)" }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          key={`bottom-${wheel[2]}`}
+          src="/assets/stickers/sticker-red.png"
+          alt=""
+          draggable={false}
+          className="absolute -bottom-3 left-1/2 h-[26px] w-[26px] -translate-x-1/2 select-none opacity-90"
+          style={{ transform: "translateX(-50%) rotate(-18deg)" }}
+        />
+      </div>
 
-      {/* the live sticker sits over the middle of the wheel; when dragged,
-          the sticker itself rides with the cursor and the next one rolls up */}
+      {/* the live sticker in the middle; when dragged, the sticker itself
+          rides with the cursor and the next one rolls up in its place */}
       <button
         key={wheel[0]}
         type="button"
@@ -212,7 +225,7 @@ export function StickerTray() {
             e.dataTransfer.setDragImage(liveStickerRef.current, 16, 16);
           }
         }}
-        className={`sticker-pop absolute left-1/2 top-1/2 h-[31px] w-[31px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
+        className={`sticker-pop absolute left-1/2 top-1/2 h-[34px] w-[34px] -translate-x-1/2 -translate-y-1/2 cursor-grab rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${
           armedSticker !== null ? "ring-2 ring-ink ring-offset-2" : ""
         }`}
       >
@@ -251,8 +264,11 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
   );
 
   const stick = useCallback(() => {
-    applySticker(resolveKey(), payloadRef.current());
-  }, [applySticker, resolveKey]);
+    const key = resolveKey();
+    /* one sticker per target — re-sticking would file duplicates */
+    if (tagOf(key) !== undefined) return;
+    applySticker(key, payloadRef.current());
+  }, [applySticker, resolveKey, tagOf]);
 
   const onClick = useCallback(() => {
     if (armedSticker === null) return;

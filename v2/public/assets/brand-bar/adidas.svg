@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80" width="120" height="80" role="img" aria-label="adidas">
-  <!-- three slanted bars, ascending -->
-  <g fill="#000000">
-    <path d="M8 62 L30 62 L18 34 L2 34 Z" />
-    <path d="M34 62 L56 62 L40 22 L24 22 Z" />
-    <path d="M60 62 L82 62 L62 10 L46 10 Z" />
-  </g>
-  <text x="60" y="76" text-anchor="middle" font-family="Arial Black, Arial, sans-serif" font-weight="900" font-size="15" fill="#000000">adidas</text>
-</svg>
