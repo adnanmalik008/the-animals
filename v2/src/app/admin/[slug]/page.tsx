@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getBoardBySlug, getModuleData, listBoardUsers } from "@/lib/server/boards";
-import { BoardMetaForm, ModuleEditor, UsersManager } from "../ui";
-import { deleteBoardAction } from "../actions";
+import { boardHost } from "@/lib/board-url";
+import { BoardMetaForm, DeleteBoardButton, ModuleEditor, PublishChip, UsersManager } from "../ui";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
 
 export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug]">) {
@@ -14,30 +14,29 @@ export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug
     getModuleData(board.id),
     listBoardUsers(board.id),
   ]);
+  const host = boardHost(board.slug, process.env.BOARD_ROOT_DOMAIN);
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div className="min-w-0">
           <Link href="/admin" className="text-xs text-graphite hover:text-ink">
             ← All boards
           </Link>
           <h1 className="mt-1 text-2xl font-bold tracking-tight">{board.clientName}</h1>
-          <p className="text-sm text-graphite">{board.slug}.yourdomain.com</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <PublishChip host={host} />
+            <span
+              className={`rounded-full px-2.5 py-1 text-xs font-medium ${
+                board.isProtected ? "bg-green/10 text-green" : "bg-yellow/15 text-olive"
+              }`}
+            >
+              {board.isProtected ? "Login required" : "Open to anyone"}
+            </span>
+          </div>
         </div>
         {board.id !== "fixture" && (
-          <form
-            action={deleteBoardAction}
-            className="self-start"
-          >
-            <input type="hidden" name="slug" value={board.slug} />
-            <button
-              type="submit"
-              className="rounded-full border border-line px-4 py-1.5 text-xs text-graphite transition-colors hover:bg-red/10 hover:text-red"
-            >
-              Delete board
-            </button>
-          </form>
+          <DeleteBoardButton slug={board.slug} clientName={board.clientName} />
         )}
       </div>
 
@@ -55,7 +54,7 @@ export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug
         existing={modules}
         templates={MODULE_TEMPLATES}
       />
-      <UsersManager board={board} users={users} />
+      <UsersManager board={board} users={users} host={host} />
     </div>
   );
 }
