@@ -1,113 +1,57 @@
-# The Animals Dashboard - Project Context
+# The Animals — Client Intelligence Boards
 
-## Project Overview
-A static prototype dashboard for "The Animals" agency showcasing ON Running brand insights. Built with vanilla HTML, CSS, and JavaScript (no frameworks).
+## What this is
+A multi-tenant client intelligence dashboard for The Animals agency. Each client
+gets a board — four tabs (Live, Anomalies, Competition, In the Wild) — published
+at its own subdomain behind its own logins, all managed from a small admin CMS.
 
-## Tech Stack
-- **HTML5** - Semantic markup
-- **CSS3** - Flexbox, Grid, CSS Variables, Media Queries
-- **JavaScript** - Vanilla ES6+
-- **Fonts** - Inter (Google Fonts)
+**All code lives in `v2/`.** The original vanilla-JS prototype that used to sit at
+the repo root was retired and removed (see git history if ever needed).
+`design-reference/` holds stills from the client's Figma walkthrough videos.
 
-## Current Status
-- **Phase**: Prototype/MVP
-- **Last Updated**: August 2026
-- **Mobile Optimization**: Complete with hamburger menu
+## Stack
+- Next.js (App Router) + React + TypeScript strict + Tailwind v4, in `v2/`
+- Supabase (Postgres) for boards/users/module content; service_role key
+  server-side only; stateless HMAC session cookies
+- Deployed on Vercel, project `the-animals`, **Root Directory = `v2`** —
+  pushing to `main` auto-deploys
 
-### Completed Features
-- [x] Navigation header with tabs (Live View, Anomalies, Sources, Settings)
-- [x] Brand bar with ON Running logo, hero image, marquee, and live clock
-- [x] News Wire section with auto-scroll and source logos
-- [x] Culture Pulse section with vertical image gallery and social media filters (TikTok, Reddit, Instagram)
-- [x] On The Ground - YouTube Influence with sliding video carousel
-- [x] Deterrents/Drivers tabbed section with consumer voices and sources count
-- [x] Media Presence bar chart (.com traffic) with metadata icons
-- [x] AI Search Visibility section with:
-  - Platform breakdown (ChatGPT, AI Overview, AI Mode, Gemini)
-  - Score ring visualization
-  - Counter animation on hover (numbers count up from 0)
-  - Live "Today" badge with pulsating indicator
-- [x] Mobile responsive design with hamburger menu
-- [x] Coming Soon modal for inactive pages
-- [x] Anomalies client-access modal (prototype login form, closes on submit)
+## Publishing model (the point of the product)
+- Domain `theanimals.live` uses Vercel nameservers; `*.theanimals.live` is
+  attached to the project with a wildcard cert — any subdomain works instantly.
+- Creating a board in `/admin` (slug = subdomain) publishes it at
+  `https://<slug>.theanimals.live` immediately. Client logins are minted in the
+  same screen. No DNS, cert, or deploy steps per client — ever.
+- Unknown subdomains fall back to the default board (`DEFAULT_BOARD_SLUG`).
+- Admin entry: `https://on-view.theanimals.live/admin`.
 
-### Pending Features
-- [ ] Anomalies page (currently modal only, no real auth)
-- [ ] Sources page
-- [ ] Settings page
-- [ ] Backend integration (currently static data)
+## Route layout (v2/src/app)
+- `(board)/` — the client-facing board (nav + brand bar chrome): `/`,
+  `/anomalies`, `/competition`, `/in-the-wild`
+- `admin/` — chrome-free CMS (boards list, per-board settings / module JSON /
+  client logins)
+- `login/` — chrome-free, shared by clients and admin (`?admin=1`)
 
-## File Structure
-```
-the-animals/
-├── index.html              # Main dashboard page
-├── css/
-│   └── styles.css          # All styles including responsive
-├── js/
-│   └── main.js             # All JavaScript functionality
-├── assets/
-│   ├── logo/               # The Animals logo
-│   ├── images/
-│   │   ├── brand-bar/      # ON Running logo, hero image
-│   │   ├── source-logos/   # WSJ, BBC, Reuters, etc.
-│   │   └── culture-pulse/  # Culture pulse images
-└── CLAUDE.md               # This file
-```
+## Conventions
+- Secrets only in `v2/.env.local` (gitignored). `.env.example` = placeholders.
+- Design assets in `v2/public/assets/` are exported from the client's Figma
+  file — use real assets, don't hand-draw stand-ins.
+- Figma keyframes/utilities gotcha: Tailwind v4 translate utilities compile to
+  the native `translate` property; keyframes must animate `translate`/`scale`
+  (not `transform`) or they stack and displace elements.
+- Board data flows: server components read Supabase → `BoardDataProvider` →
+  modules read via `useModuleData(key)`, falling back to fixtures in
+  `v2/src/data/` when no CMS doc exists.
 
-## Development Guidelines
+## Plugins
+Use `/frontend-design` when building or reshaping UI; `/feature-dev` for
+planning multi-file features.
 
-### Use Claude Code Plugins
-When working on this project, utilize the following plugins:
-
-1. **`/frontend-design`** - Always Use for:
-   - Building new UI components
-   - Creating polished, production-grade interfaces
-   - Designing distinctive visual elements
-   - Avoiding generic AI aesthetics
-
-2. **`/feature-dev`** - Always Use for:
-   - Planning new feature implementations
-   - Understanding existing codebase patterns
-   - Architecture decisions
-   - Guided development with context
-
-### Code Style
-- Use CSS Variables for colors and common values
-- Follow BEM-like naming for CSS classes
-- Keep JavaScript modular with clear section comments
-- Mobile-first responsive approach
-
-### Key CSS Variables
-```css
---bg-primary: #D9D9D9;
---bg-card: #ffffff;
---accent-orange: #ff4d00;
---accent-red: #e63946;
---text-primary: #000000;
---text-secondary: #666666;
-```
-
-### Responsive Breakpoints
-- `1200px` - Tablet landscape / small desktop
-- `992px` - Tablet
-- `768px` - Mobile (hamburger menu activates)
-- `480px` - Small mobile
-
-## Data Sources (Currently Hardcoded)
-- `newsData` - News wire articles
-- `cultureData` - Culture pulse images with platform tags (tiktok, reddit, instagram)
-- `videoData` - YouTube video IDs and metadata
-- `voiceData` - Consumer voice quotes (drivers, problems, solutions)
-
-## Running Locally
+## Running locally
 ```bash
-# Using npx serve
-npx serve -l 3000
-
-# Or any static file server
-python -m http.server 3000
+cd v2 && npm run dev -- -p 3100
 ```
 
-## Git Repository
-- **Remote**: https://github.com/adnanmalik008/the-animals.git
-- **Branch**: main
+## Git
+- Remote: https://github.com/adnanmalik008/the-animals.git (account
+  `adnanmalik008` — if push 403s, `gh auth switch -u adnanmalik008`)
