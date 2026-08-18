@@ -154,6 +154,21 @@ export function removeInsight(id: string) {
   update((prev) => ({ ...prev, insights: prev.insights.filter((i) => i.id !== id) }));
 }
 
+/** Refile a card under another circle. Returns false when nothing moved. */
+export function moveInsight(id: string, circleId: CircleId): boolean {
+  let moved = false;
+  update((prev) => {
+    const item = prev.insights.find((i) => i.id === id);
+    if (!item || item.circleId === circleId) return prev;
+    moved = true;
+    return {
+      ...prev,
+      insights: prev.insights.map((i) => (i.id === id ? { ...i, circleId } : i)),
+    };
+  });
+  return moved;
+}
+
 export function addCircle(circle: Omit<TopicCircle, "id"> & { id?: string }) {
   const full: TopicCircle = { ...circle, id: circle.id ?? nextId("circle") };
   update((prev) => ({ ...prev, circles: [...prev.circles, full] }));

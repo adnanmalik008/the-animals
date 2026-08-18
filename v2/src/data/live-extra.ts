@@ -166,6 +166,8 @@ export interface CreatorVideo {
   markA: string;
   markB: string;
   link?: string;
+  /** YouTube id; when set, the fullscreen player streams the real video */
+  videoId?: string;
 }
 
 export const creatorVideos: CreatorVideo[] = [

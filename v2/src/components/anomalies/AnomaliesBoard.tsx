@@ -11,7 +11,7 @@ import {
 import {
   addCircle,
   addInsight,
-
+  moveInsight,
   saveIdea,
   useBoardStore,
   type InsightItem,
@@ -188,6 +188,16 @@ export function AnomaliesBoard() {
     [showToast]
   );
 
+  /* dragging a card onto another circle refiles it there */
+  const handleMoveInsight = useCallback(
+    (insightId: string, circleId: string) => {
+      if (!moveInsight(insightId, circleId)) return;
+      const name = circleById.get(circleId)?.name ?? "circle";
+      showToast(`Moved to ${name}`);
+    },
+    [circleById, showToast]
+  );
+
   const handleNewCircle = useCallback(
     (c: Omit<TopicCircle, "id" | "builtIn">) => {
       addCircle(c);
@@ -274,6 +284,7 @@ export function AnomaliesBoard() {
                   addOpen={addFor === c.id}
                   onAddToggle={setAddFor}
                   onAddSave={handleAddInsight}
+                  onMoveInsight={handleMoveInsight}
                 />
               );
             })}
@@ -306,6 +317,7 @@ export function AnomaliesBoard() {
             addOpen={addFor === c.id}
             onAddToggle={setAddFor}
             onAddSave={handleAddInsight}
+            onMoveInsight={handleMoveInsight}
           />
         ))}
       </div>

@@ -32,7 +32,7 @@ export function SourceMark({ source, className = "" }: { source: NewsSource; cla
       )}
       {img ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={img} alt={source} className="h-3.5 w-auto" />
+        <img src={img} alt={source} width={98} height={15} className="h-3.5 w-auto" />
       ) : (
         <span className={wordmark[source]}>{source}</span>
       )}

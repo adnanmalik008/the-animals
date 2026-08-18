@@ -1,10 +1,10 @@
 "use client";
 
-import type { CSSProperties } from "react";
+import { useCallback, useState, type CSSProperties, type DragEvent } from "react";
 import type { InsightItem, TopicCircle } from "@/lib/insights";
 import { AddInsightPopover } from "./AddInsightPopover";
 import { CircleIcon } from "./CircleIcon";
-import { InsightCard } from "./InsightCard";
+import { InsightCard, INSIGHT_DRAG_TYPE } from "./InsightCard";
 import { circleBadge, circleBorderSoft, circleText, circleTint, focusRing } from "./palette";
 
 const DIAMETER: Record<TopicCircle["size"], number> = { sm: 280, md: 380, lg: 460 };
@@ -20,6 +20,40 @@ interface SharedProps {
   addOpen: boolean;
   onAddToggle: (circleId: string | null) => void;
   onAddSave: (circleId: string, text: string) => void;
+  /** refile a card dragged in from another circle */
+  onMoveInsight: (insightId: string, circleId: string) => void;
+}
+
+/* A circle accepts cards dragged from any other circle: the drop refiles
+   the card under this topic. */
+function useCircleDropTarget(circleId: string, onMove: (id: string, circleId: string) => void) {
+  const [isOver, setIsOver] = useState(false);
+
+  const onDragOver = useCallback((e: DragEvent<HTMLElement>) => {
+    if (!e.dataTransfer.types.includes(INSIGHT_DRAG_TYPE)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setIsOver(true);
+  }, []);
+
+  const onDragLeave = useCallback((e: DragEvent<HTMLElement>) => {
+    if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsOver(false);
+  }, []);
+
+  const onDrop = useCallback(
+    (e: DragEvent<HTMLElement>) => {
+      const id = e.dataTransfer.getData(INSIGHT_DRAG_TYPE);
+      if (!id) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setIsOver(false);
+      onMove(id, circleId);
+    },
+    [circleId, onMove]
+  );
+
+  return { isOver, dropProps: { onDragOver, onDragLeave, onDrop } };
 }
 
 function CircleHeader({ circle, count }: { circle: TopicCircle; count: number }) {
@@ -71,6 +105,7 @@ export function TopicCircleView({
   addOpen,
   onAddToggle,
   onAddSave,
+  onMoveInsight,
   lavaClass,
   position,
   popoverFlip = false,
@@ -82,14 +117,18 @@ export function TopicCircleView({
 }) {
   const d = DIAMETER[circle.size];
   const visible = insights.slice(-3);
+  const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
 
   return (
     // z-20 lifts an open popover above the fuse circle (z-10) — the lava
     // transform creates a stacking context that would otherwise trap it
-    <div className={`absolute ${addOpen ? "z-20" : ""}`} style={position}>
+    <div className={`absolute ${addOpen || isOver ? "z-20" : ""}`} style={position}>
       <div className={lavaClass}>
         <div
-          className={`relative flex flex-col items-center rounded-full ${circleTint[circle.color]}`}
+          {...dropProps}
+          className={`relative flex flex-col items-center rounded-full transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
+            isOver ? "ring-2 ring-orange ring-offset-4 ring-offset-bg" : ""
+          }`}
           style={{ width: d, height: d }}
         >
           <div className={circle.size === "sm" ? "pt-6" : "pt-10"}>
@@ -152,9 +191,18 @@ export function TopicPanel({
   addOpen,
   onAddToggle,
   onAddSave,
+  onMoveInsight,
 }: SharedProps) {
+  const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
+
   return (
-    <section className={`rounded-3xl p-4 ${circleTint[circle.color]}`} aria-label={circle.name}>
+    <section
+      {...dropProps}
+      className={`rounded-3xl p-4 transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
+        isOver ? "ring-2 ring-orange" : ""
+      }`}
+      aria-label={circle.name}
+    >
       <CircleHeader circle={circle} count={insights.length} />
 
       <div className="mt-3 flex flex-col gap-2.5">
@@ -166,6 +214,7 @@ export function TopicPanel({
             key={ins.id}
             insight={ins}
             color={circle.color}
+            draggable
             onPick={onPick}
             selected={selectedIds.includes(ins.id)}
           />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
 import { creatorVideos, type CreatorVideo } from "@/data/live-extra";
 import { CarouselArrow } from "./SocialPulse";
@@ -26,7 +26,112 @@ function GrowthBanner({ from, to }: { from: string; to: string }) {
   );
 }
 
-function VideoCard({ video }: { video: CreatorVideo }) {
+/* The thumbnail art, shared by the card and the fullscreen stage. */
+function Thumbnail({ video, large = false }: { video: CreatorVideo; large?: boolean }) {
+  return (
+    <>
+      {/* faint desk glow */}
+      <div
+        aria-hidden
+        className="absolute inset-0"
+        style={{ background: "radial-gradient(ellipse 60% 55% at 50% 62%, rgba(255,255,255,0.14), transparent 70%)" }}
+      />
+      <GrowthBanner from={video.growthFrom} to={video.growthTo} />
+      <span
+        className={`absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-ink shadow-md ${
+          large ? "h-16 w-16" : "h-10 w-10"
+        }`}
+        aria-hidden
+      >
+        <svg width={large ? 24 : 14} height={large ? 24 : 14} viewBox="0 0 24 24" fill="currentColor">
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      </span>
+      {/* channel wordmark */}
+      <span className="absolute bottom-2.5 left-0 right-0 flex items-baseline justify-center gap-1 lowercase">
+        <span className={`font-extrabold tracking-tight text-white ${large ? "text-4xl" : "text-lg"}`}>
+          {video.markA}
+        </span>
+        <span
+          className={`rounded-sm bg-blue2 px-1 pb-0.5 font-extrabold leading-none tracking-tight text-white ${
+            large ? "text-4xl" : "text-lg"
+          }`}
+        >
+          {video.markB}
+        </span>
+      </span>
+    </>
+  );
+}
+
+/* Fullscreen player. Plays the embed when the CMS supplies a videoId;
+   otherwise the thumbnail fills the stage. Click-off or Escape returns. */
+function VideoLightbox({ video, onClose }: { video: CreatorVideo; onClose: () => void }) {
+  const closeRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+      opener?.focus?.();
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={video.title}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 px-4 py-8 backdrop-blur-sm print:hidden"
+    >
+      <button
+        ref={closeRef}
+        type="button"
+        onClick={onClose}
+        aria-label="Close video"
+        className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
+          <path d="M18 6 6 18M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div
+        className="relative aspect-video w-full max-w-5xl overflow-hidden rounded-xl shadow-2xl"
+        style={{ background: "linear-gradient(140deg, #2e2e2e 0%, #1a1a1a 55%, #303030 100%)" }}
+      >
+        {video.videoId ? (
+          <iframe
+            src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1`}
+            title={video.title}
+            allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+            allowFullScreen
+            className="absolute inset-0 h-full w-full border-0"
+          />
+        ) : (
+          <Thumbnail video={video} large />
+        )}
+      </div>
+
+      <div className="mt-4 w-full max-w-5xl text-white">
+        <h2 className="font-serif text-xl font-semibold leading-snug sm:text-2xl">{video.title}</h2>
+        <p className="mt-1 text-sm text-white/70">{video.description}</p>
+      </div>
+    </div>
+  );
+}
+
+function VideoCard({ video, onOpen }: { video: CreatorVideo; onOpen: (v: CreatorVideo) => void }) {
   return (
     <StickerDropZone
       className="h-full rounded-lg"
@@ -40,34 +145,17 @@ function VideoCard({ video }: { video: CreatorVideo }) {
     >
       <article className="flex h-full flex-col">
         {/* thumbnail mock — dark CSS art, no external images */}
-        <div
-          className="relative aspect-video w-full overflow-hidden rounded-sm"
+        <button
+          type="button"
+          onClick={() => onOpen(video)}
+          aria-label={`Play ${video.title}`}
+          className="group relative block aspect-video w-full overflow-hidden rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange"
           style={{ background: "linear-gradient(140deg, #2e2e2e 0%, #1a1a1a 55%, #303030 100%)" }}
         >
-          {/* faint desk glow */}
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{ background: "radial-gradient(ellipse 60% 55% at 50% 62%, rgba(255,255,255,0.14), transparent 70%)" }}
-          />
-          <GrowthBanner from={video.growthFrom} to={video.growthTo} />
-          {/* play button */}
-          <span
-            className="absolute left-1/2 top-1/2 flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-ink shadow-md"
-            aria-hidden
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M8 5v14l11-7z" />
-            </svg>
+          <span className="absolute inset-0 transition-transform duration-500 ease-out group-hover:scale-[1.03] motion-reduce:transition-none">
+            <Thumbnail video={video} />
           </span>
-          {/* channel wordmark */}
-          <span className="absolute bottom-2.5 left-0 right-0 flex items-baseline justify-center gap-1 lowercase">
-            <span className="text-lg font-extrabold tracking-tight text-white">{video.markA}</span>
-            <span className="rounded-sm bg-blue2 px-1 pb-0.5 text-lg font-extrabold leading-none tracking-tight text-white">
-              {video.markB}
-            </span>
-          </span>
-        </div>
+        </button>
 
         <h3 className="mt-2.5 font-serif text-base font-semibold leading-snug">{video.title}</h3>
         <p className="mt-0.5 truncate text-xs text-graphite">{video.description}</p>
@@ -90,6 +178,7 @@ function VideoCard({ video }: { video: CreatorVideo }) {
 export function YouTubeVoices({ id }: { id: string }) {
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(2);
+  const [playing, setPlaying] = useState<CreatorVideo | null>(null);
 
   const maxIndex = Math.max(0, creatorVideos.length - perView);
   /* clamp at render time so a viewport change can never strand the track */
@@ -113,7 +202,7 @@ export function YouTubeVoices({ id }: { id: string }) {
           >
             {creatorVideos.map((video) => (
               <div key={video.id} className="w-full shrink-0 px-1.5 md:w-1/2">
-                <VideoCard video={video} />
+                <VideoCard video={video} onOpen={setPlaying} />
               </div>
             ))}
           </div>
@@ -144,6 +233,7 @@ export function YouTubeVoices({ id }: { id: string }) {
           />
         </div>
       </div>
+      {playing && <VideoLightbox video={playing} onClose={() => setPlaying(null)} />}
     </Module>
   );
 }
