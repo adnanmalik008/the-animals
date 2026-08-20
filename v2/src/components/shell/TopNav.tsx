@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { logout } from "@/app/login/actions";
 import { Avatar } from "./Avatar";
 
 const tabs = [
@@ -69,6 +70,17 @@ export function TopNav() {
           </div>
           <Avatar name={boardMeta.userName} pick={9} size={36} />
 
+          {/* Sign out — the board is behind a client login, so the way
+              out has to be on the board itself, not only in admin */}
+          <form action={logout} className="hidden sm:block">
+            <button
+              type="submit"
+              className="rounded-full border border-line px-3 py-1.5 text-xs font-medium text-graphite transition-colors hover:bg-bg2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+            >
+              Log out
+            </button>
+          </form>
+
           {/* Mobile menu button */}
           <button
             type="button"
@@ -102,6 +114,14 @@ export function TopNav() {
               </Link>
             );
           })}
+          <form action={logout} className="mt-1 border-t border-line pt-2 sm:hidden">
+            <button
+              type="submit"
+              className="w-full rounded-full px-4 py-2.5 text-left text-sm font-medium text-graphite hover:bg-bg2 hover:text-ink"
+            >
+              Log out
+            </button>
+          </form>
         </nav>
       )}
     </header>
