@@ -48,7 +48,7 @@ function PlatformIcon({ platform }: { platform: ConversationPlatform }) {
   }
 }
 
-function QuoteCard({ quote }: { quote: ConversationQuote }) {
+function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: string }) {
   const { targetProps, isOver, tagged } = useStickerTarget(
     () => ({
       circleId: "culture",
@@ -68,7 +68,7 @@ function QuoteCard({ quote }: { quote: ConversationQuote }) {
       }`}
     >
       {tagged !== undefined && <StickerBadge shade={tagged} />}
-      <div className="torn-card px-5 py-4">
+      <div className={`torn-card px-5 py-4 ${stock}`}>
         <div className="flex items-center justify-between gap-3 text-xs text-graphite">
           <span className="flex min-w-0 items-center gap-1.5">
             <PlatformIcon platform={quote.platform} />
@@ -146,8 +146,8 @@ export function TheConversation({ id }: { id: string }) {
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
-          {quotes.map((q) => (
-            <QuoteCard key={q.id} quote={q} />
+          {quotes.map((q, i) => (
+            <QuoteCard key={q.id} quote={q} stock={["", "stock-soft", "stock-crumple"][i % 3]} />
           ))}
         </div>
       </div>

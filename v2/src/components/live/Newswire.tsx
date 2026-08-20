@@ -18,7 +18,7 @@ const categoryText: Record<NewsItem["categoryColor"], string> = {
 /* the wire mixes paper crops as it runs down the column; keyed to
    the item, not the row index, so a new article folding in at the top
    does not reshuffle every texture below it */
-const PAPER_STOCKS = ["", "stock-soft", "", "stock-crumple", "", "stock-soft"];
+const PAPER_STOCKS = ["", "stock-soft", "stock-crumple"];
 
 function stockFor(id: string): string {
   let sum = 0;
