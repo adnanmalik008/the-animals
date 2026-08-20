@@ -58,11 +58,12 @@ function NewswireCard({
       {...targetProps}
       className={`group/row relative isolate ${isNew ? "fold-in" : ""}`}
     >
-      {/* the paper slides in behind the row on hover, and stays while open */}
+      {/* the paper slides in behind the row on hover, and stays while open.
+          It sits at 50% so the headline and summary stay easy to read. */}
       <div
         aria-hidden
         className={`paper-fill pointer-events-none absolute -inset-x-1 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
-          expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
+          expanded ? "opacity-50" : "opacity-0 group-hover/row:opacity-50"
         }`}
       />
 
