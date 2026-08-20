@@ -15,7 +15,7 @@ const categoryText: Record<NewsItem["categoryColor"], string> = {
   purple: "text-purple bg-purple/15",
 };
 
-/* the wire mixes real paper stocks as it runs down the column; keyed to
+/* the wire mixes paper crops as it runs down the column; keyed to
    the item, not the row index, so a new article folding in at the top
    does not reshuffle every texture below it */
 const PAPER_STOCKS = ["", "stock-soft", "", "stock-crumple", "", "stock-soft"];
@@ -61,7 +61,7 @@ function NewswireCard({
       {/* the paper slides in behind the row on hover, and stays while open */}
       <div
         aria-hidden
-        className={`torn-strip pointer-events-none absolute -inset-x-1 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
+        className={`paper-fill pointer-events-none absolute -inset-x-1 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
           expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
         }`}
       />
