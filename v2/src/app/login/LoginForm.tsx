@@ -48,7 +48,7 @@ export function LoginForm({ next }: { next: string }) {
         disabled={pending}
         className="mt-5 self-start bg-ink px-8 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-orange disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
       >
-        {pending ? "Checking…" : "Say the password"}
+        {pending ? "Logging in…" : "Log in"}
       </button>
     </form>
   );

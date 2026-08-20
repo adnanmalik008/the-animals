@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getCurrentBoard } from "@/lib/server/boards";
 import { LoginForm } from "./LoginForm";
 
 export const metadata: Metadata = {
@@ -28,7 +27,6 @@ export default async function LoginPage({
   searchParams,
 }: PageProps<"/login">) {
   const params = await searchParams;
-  const board = await getCurrentBoard();
   const next = typeof params.next === "string" ? params.next : "/";
   const adminHint = params.admin === "1";
 
@@ -77,7 +75,7 @@ export default async function LoginPage({
       <section className="relative flex min-w-0 flex-col">
         <Ticker
           items={[
-            `board: ${board.clientName}`,
+            "The Animals",
             "private wire",
             "authorized eyes only",
             "Dispatch No. 00",
@@ -93,10 +91,10 @@ export default async function LoginPage({
               className="absolute -right-2 -top-8 h-10 w-10 rotate-12 drop-shadow-sm"
             />
             <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.3em] text-graphite">
-              {adminHint ? "Team access · The Animals" : `${board.clientName} · private board`}
+              {adminHint ? "Team access · The Animals" : "The Animals · private board"}
             </p>
             <h1 className="mt-3 font-serif text-5xl font-semibold leading-[0.95] tracking-tight lg:text-6xl">
-              Say the password.
+              Log in.
             </h1>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-graphite">
               {adminHint
