@@ -79,8 +79,8 @@ body {
    In Their Inbox, On Stage, and The Conversation. */
 .torn-card {
   position: relative;
-  /* a light veil keeps long passages readable over the scan's stains */
-  background-image: linear-gradient(rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.34)),
+  /* the veil holds the paper at the same strength as the Newswire fill */
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)),
     url("/assets/textures/paper-master.jpg");
   background-size: cover;
   background-position: 50% 60%;
