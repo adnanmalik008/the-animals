@@ -3,16 +3,19 @@
 import { useActionState } from "react";
 import { login, type LoginState } from "./actions";
 
+/* Poster-style form: typed lines on the page, ink slab to submit. */
+const labelClass =
+  "flex flex-col gap-1 font-mono text-[10px] font-semibold uppercase tracking-[0.22em] text-graphite";
 const inputClass =
-  "w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-graphite/60 outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
+  "w-full border-0 border-b-2 border-ink bg-transparent px-0 py-2.5 font-serif text-xl text-ink placeholder:text-ink/25 outline-none focus-visible:border-orange autofill:[-webkit-box-shadow:inset_0_0_0_1000px_#ffffff] autofill:[-webkit-text-fill-color:#000]";
 
 export function LoginForm({ next }: { next: string }) {
   const [state, action, pending] = useActionState<LoginState, FormData>(login, {});
 
   return (
-    <form action={action} className="mt-6 flex flex-col gap-3">
+    <form action={action} className="mt-6 flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
-      <label className="flex flex-col gap-1.5 text-sm font-medium">
+      <label className={labelClass}>
         Username
         <input
           name="username"
@@ -22,7 +25,7 @@ export function LoginForm({ next }: { next: string }) {
           className={inputClass}
         />
       </label>
-      <label className="flex flex-col gap-1.5 text-sm font-medium">
+      <label className={labelClass}>
         Password
         <input
           name="password"
@@ -35,7 +38,7 @@ export function LoginForm({ next }: { next: string }) {
       </label>
 
       {state.error && (
-        <p role="alert" className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
+        <p role="alert" className="rounded-lg bg-red/15 px-3 py-2 text-sm text-red">
           {state.error}
         </p>
       )}
@@ -43,9 +46,9 @@ export function LoginForm({ next }: { next: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="mt-2 rounded-full bg-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-hover disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+        className="mt-5 self-start bg-ink px-8 py-3 text-sm font-bold uppercase tracking-[0.18em] text-white transition-colors hover:bg-orange disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
       >
-        {pending ? "Signing in…" : "Sign in"}
+        {pending ? "Checking…" : "Say the password"}
       </button>
     </form>
   );
