@@ -94,7 +94,7 @@ export default async function LoginPage({
               {adminHint ? "Team access · The Animals" : "The Animals · private board"}
             </p>
             <h1 className="mt-3 font-serif text-5xl font-semibold leading-[0.95] tracking-tight lg:text-6xl">
-              Log in.
+              Step into the room.
             </h1>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-graphite">
               {adminHint
