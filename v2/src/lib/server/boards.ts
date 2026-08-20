@@ -31,7 +31,10 @@ export interface BoardUserRecord {
 
 const DEFAULT_SLUG = process.env.DEFAULT_BOARD_SLUG || "adidas";
 
-/** Fixture board shown when the CMS is not configured or slug is unknown. */
+/** Fallback board, used when the CMS is unreachable or the slug has no row.
+    Protected by default: a deleted board or a database hiccup must never
+    publish a client's board to the open web. Set PUBLIC_DEMO_BOARD=1 for a
+    deliberately public demo. */
 export function fixtureBoard(): BoardRecord {
   return {
     id: "fixture",
@@ -41,7 +44,7 @@ export function fixtureBoard(): BoardRecord {
     briefQuestion: fixtureMeta.briefQuestion,
     progressPct: fixtureMeta.progressPct,
     userDisplayName: fixtureMeta.userName,
-    isProtected: false,
+    isProtected: process.env.PUBLIC_DEMO_BOARD !== "1",
   };
 }
 
