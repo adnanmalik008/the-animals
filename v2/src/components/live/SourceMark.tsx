@@ -1,40 +1,34 @@
 import type { NewsSource } from "@/data/board";
 
-/* Publisher marks for the wire. Real logo assets where we have them,
-   typographic wordmarks (drawn to each masthead's style) otherwise. */
+/* Publisher marks for the wire — the real mastheads, captured from the
+   design source. Bloomberg is styled text there too, so it stays text. */
 
-const icons: Partial<Record<NewsSource, string>> = {
-  "The New York Times": "/assets/source-logos/nytimes.png",
-};
-
-/* full wordmark images, used instead of styled text */
-const wordmarkImg: Partial<Record<NewsSource, string>> = {
-  "New York Post": "/assets/source-logos/ny-post-wordmark.png",
-};
-
-const wordmark: Record<NewsSource, string> = {
-  Bloomberg: "font-sans text-[15px] font-extrabold tracking-[-0.02em] text-ink",
-  "The New York Times": "font-serif text-sm font-bold tracking-tight",
-  CNN: "font-sans text-[17px] font-black italic tracking-[-0.06em] text-red",
-  MSN: "font-sans text-[15px] font-bold lowercase tracking-tight text-blue",
-  "New York Post": "font-serif text-sm font-black uppercase italic tracking-tight",
-  CNBC: "font-sans text-[15px] font-bold uppercase tracking-[0.08em] text-ink",
+const marks: Partial<Record<NewsSource, { src: string; h: string; w: number; hPx: number }>> = {
+  "The New York Times": { src: "/assets/source-logos/nyt-masthead.png", h: "h-[21px]", w: 129, hPx: 21 },
+  CNN: { src: "/assets/source-logos/cnn.png", h: "h-[19px]", w: 39, hPx: 19 },
+  MSN: { src: "/assets/source-logos/msn.png", h: "h-[19px]", w: 51, hPx: 19 },
+  "Fox News": { src: "/assets/source-logos/fox-news.png", h: "h-[23px]", w: 24, hPx: 23 },
+  "New York Post": { src: "/assets/source-logos/ny-post-wordmark.png", h: "h-[17px]", w: 115, hPx: 17 },
+  CNBC: { src: "/assets/source-logos/cnbc.png", h: "h-[23px]", w: 31, hPx: 23 },
 };
 
 export function SourceMark({ source, className = "" }: { source: NewsSource; className?: string }) {
-  const icon = icons[source];
-  const img = wordmarkImg[source];
+  const mark = marks[source];
   return (
-    <span className={`inline-flex items-center gap-1.5 leading-none ${className}`}>
-      {icon && (
+    <span className={`inline-flex items-center leading-none ${className}`}>
+      {mark ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={icon} alt="" aria-hidden className="h-4 w-4 shrink-0 rounded-[3px]" />
-      )}
-      {img ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={img} alt={source} width={98} height={15} className="h-3.5 w-auto" />
+        <img
+          src={mark.src}
+          alt={source}
+          width={mark.w}
+          height={mark.hPx}
+          className={`w-auto ${mark.h}`}
+        />
       ) : (
-        <span className={wordmark[source]}>{source}</span>
+        <span className="font-sans text-[15px] font-extrabold tracking-[-0.02em] text-ink">
+          {source}
+        </span>
       )}
     </span>
   );

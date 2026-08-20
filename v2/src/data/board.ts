@@ -6,6 +6,7 @@ export type NewsSource =
   | "The New York Times"
   | "CNN"
   | "MSN"
+  | "Fox News"
   | "New York Post"
   | "CNBC";
 
@@ -92,6 +93,19 @@ export const newsItems: NewsItem[] = [
       "Moderation decisions on political speech keep pulling professional platforms into culture-war coverage, with advertisers watching closely.",
     body:
       "LinkedIn found itself at the centre of a moderation storm this week after removing a post supportive of immigration enforcement that the platform labelled hateful, then partially walking the decision back after an appeal.\n\nThe episode is the latest in a series testing whether a professional network can hold a narrower speech standard than the open platforms without alienating half its audience. Advertisers, for their part, have been conspicuously quiet: brand-safety teams privately say the professional context is precisely why they spend there, and they would rather the platform err on the side of removal.\n\nThe company says enforcement decisions are made against published community policies, not politics. Critics on both sides say the published policies are broad enough to justify either outcome — which is, in effect, the problem.",
+  },
+  {
+    id: "nw-fox",
+    source: "Fox News",
+    category: "Politics",
+    categoryColor: "red",
+    headline: "LinkedIn under fire after pro-ICE post removed as 'hateful'",
+    author: "@ELENI COUREA",
+    timeAgo: "2m ago",
+    summary:
+      "The takedown is drawing accusations of one-sided moderation from conservative commentators and a handful of advertisers.",
+    body:
+      "The removal of a pro-ICE post on LinkedIn has become the latest flashpoint in the running argument over who gets moderated on professional networks — and who doesn't.\n\nConservative commentators spent the day surfacing posts from the opposite side of the immigration debate that remain online, arguing the network enforces its rules in one direction. LinkedIn says the removed post violated existing policy against hateful content and that reports against other posts are being reviewed in order.\n\nThe stakes are commercial as much as political: the platform's pitch to advertisers rests on being the internet's most brand-safe feed, and every moderation fight tests whether that promise can survive contact with politics.",
   },
   {
     id: "nw-5",
