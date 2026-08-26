@@ -5,6 +5,9 @@ import { LiveClock } from "./LiveClock";
 
 export function BrandBar() {
   const boardMeta = useBoardMeta();
+  /* close each pass with a full stop so the loop reads as a sentence */
+  const q = boardMeta.briefQuestion.trim();
+  const question = /[.?!]$/.test(q) ? q : q + ".";
 
   return (
     <div className="bg-card border-b border-line">
@@ -24,10 +27,11 @@ export function BrandBar() {
           <div className="min-w-0">
             <p className="font-serif text-lg font-bold sm:text-xl">{boardMeta.briefDate}</p>
             <div className="relative overflow-hidden">
-              {/* the gap lives inside each copy so the -50% loop wraps seamlessly */}
+              {/* the gap lives inside each copy so the -50% loop wraps seamlessly;
+                  a full stop closes each pass and the gap stays tight */}
               <div className="marquee-track text-sm text-graphite sm:text-base">
-                <span className="pr-16">{boardMeta.briefQuestion}</span>
-                <span aria-hidden className="pr-16">{boardMeta.briefQuestion}</span>
+                <span className="pr-6">{question}</span>
+                <span aria-hidden className="pr-6">{question}</span>
               </div>
             </div>
           </div>
