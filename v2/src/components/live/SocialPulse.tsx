@@ -178,7 +178,7 @@ export function SocialPulse({ id }: { id: string }) {
   return (
     <Module
       id={id}
-      eyebrow="Field Notes № 02"
+      eyebrow="Field Notes"
       title="Social Pulse"
       variant="editorial"
       headerExtra={

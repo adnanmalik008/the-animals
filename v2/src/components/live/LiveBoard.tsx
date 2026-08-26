@@ -29,7 +29,7 @@ function renderEditorial(id: string) {
   switch (id) {
     case "newswire":
       return (
-        <Module key={id} id={id} eyebrow="Dispatch № 01" title="Newswire" variant="editorial">
+        <Module key={id} id={id} eyebrow="Dispatch" title="Newswire" variant="editorial">
           <Newswire />
         </Module>
       );

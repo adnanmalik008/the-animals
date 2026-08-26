@@ -29,7 +29,7 @@ export function OnStage({ id }: { id: string }) {
   );
 
   return (
-    <Module id={id} eyebrow="Transmission № 04" title="On Stage" variant="editorial">
+    <Module id={id} eyebrow="Transmission" title="On Stage" variant="editorial">
       <div
         className="pt-4"
         onMouseEnter={() => setPaused(true)}

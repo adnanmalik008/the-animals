@@ -112,7 +112,7 @@ function NewswireCard({
               onClick={() => onOpen(item)}
               className="mt-2 inline-flex items-center gap-1 pb-1 text-sm font-medium text-orange hover:text-orange-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
             >
-              Read full article
+              Read summary
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
                 <path d="M7 17L17 7M9 7h8v8" />
               </svg>

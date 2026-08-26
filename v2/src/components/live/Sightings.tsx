@@ -61,7 +61,7 @@ export function Sightings({ id }: { id: string }) {
   }, []);
 
   return (
-    <Module id={id} eyebrow="Correspondence № 06" title="Sightings" variant="editorial">
+    <Module id={id} eyebrow="Correspondence" title="Sightings" variant="editorial">
       <div className="pt-4">
         <div className="overflow-hidden px-0.5 py-1">
           <div

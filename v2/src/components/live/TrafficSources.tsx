@@ -5,7 +5,8 @@ import { trafficChannels } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
-/* Static filter pills — the underlying windows are a later API phase. */
+/* Static context labels. Not controls: the window is fixed until the
+   CMS drives it, so they carry no dropdown affordance. */
 const filters = [
   {
     label: "Jan 2026",
@@ -44,19 +45,15 @@ export function TrafficSources({ id }: { id: string }) {
 
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {filters.map((f) => (
-              <button
+              <span
                 key={f.label}
-                type="button"
-                className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink shadow-sm transition-colors hover:bg-bg2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+                className="flex items-center gap-1.5 rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-ink shadow-sm"
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="text-graphite" aria-hidden>
                   {f.icon}
                 </svg>
                 {f.label}
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" className="text-graphite" aria-hidden>
-                  <path d="M6 9l6 6 6-6" />
-                </svg>
-              </button>
+              </span>
             ))}
           </div>
 

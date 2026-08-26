@@ -118,7 +118,7 @@ export function TheConversation({ id }: { id: string }) {
   return (
     <Module
       id={id}
-      eyebrow="Observation № 03"
+      eyebrow="Observation"
       title="The Conversation"
       variant="editorial"
     >

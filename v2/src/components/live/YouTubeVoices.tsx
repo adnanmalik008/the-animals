@@ -159,17 +159,6 @@ function VideoCard({ video, onOpen }: { video: CreatorVideo; onOpen: (v: Creator
 
         <h3 className="mt-2.5 font-serif text-base font-semibold leading-snug">{video.title}</h3>
         <p className="mt-0.5 truncate text-xs text-graphite">{video.description}</p>
-        <a
-          href={video.link ?? "#"}
-          target={video.link ? "_blank" : undefined}
-          rel={video.link ? "noreferrer" : undefined}
-          className="mt-1.5 inline-flex items-center gap-1 font-serif text-sm text-orange hover:text-orange-hover"
-        >
-          Read full article
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <path d="M7 17L17 7M9 7h8v8" />
-          </svg>
-        </a>
       </article>
     </StickerDropZone>
   );
@@ -193,7 +182,7 @@ export function YouTubeVoices({ id }: { id: string }) {
   }, []);
 
   return (
-    <Module id={id} eyebrow="Field Notes № 08" title="YouTube Voices" variant="editorial">
+    <Module id={id} eyebrow="Field Notes" title="YouTube Voices" variant="editorial">
       <div className="pt-4">
         <div className="overflow-hidden px-0.5 py-1">
           <div

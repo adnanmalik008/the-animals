@@ -86,10 +86,10 @@ function PodcastRow({ item }: { item: PodcastItem }) {
             loading="lazy"
             className="aspect-square w-full object-cover shadow-sm"
           />
-          <p className="mt-2 text-sm font-bold text-ink">{item.show}</p>
-          <p className="mt-0.5 flex items-baseline justify-between gap-2 text-[11px] text-graphite">
-            <span className="min-w-0">{item.network}</span>
-            <span className="shrink-0 tabular-nums">{item.timestamp}</span>
+          <p className="mt-2 text-center text-sm font-bold text-ink">{item.show}</p>
+          <p className="mt-0.5 text-center text-[11px] leading-relaxed text-graphite">
+            <span className="block">{item.network}</span>
+            <span className="block tabular-nums">{item.timestamp}</span>
           </p>
         </div>
         <Annotation item={item} />
@@ -100,7 +100,7 @@ function PodcastRow({ item }: { item: PodcastItem }) {
 
 export function OnTheAirwaves({ id }: { id: string }) {
   return (
-    <Module id={id} eyebrow="Dispatch № 07" title="On the Airwaves" variant="editorial">
+    <Module id={id} eyebrow="Dispatch" title="On the Airwaves" variant="editorial">
       <div className="flex flex-col gap-5 pt-4">
         {podcastItems.map((item) => (
           <PodcastRow key={item.id} item={item} />

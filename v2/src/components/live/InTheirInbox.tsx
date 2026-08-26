@@ -53,7 +53,7 @@ function InboxItem({ item }: { item: NewsletterItem }) {
 
 export function InTheirInbox({ id }: { id: string }) {
   return (
-    <Module id={id} eyebrow="Bulletin № 05" title="In Their Inbox" variant="editorial">
+    <Module id={id} eyebrow="Bulletin" title="In Their Inbox" variant="editorial">
       <div className="pt-4">
         <div className="torn-card divide-y divide-ink/10 px-5 py-4 sm:px-6">
           {newsletterItems.map((item) => (

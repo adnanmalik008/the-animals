@@ -107,6 +107,15 @@ export function ModuleColumn({
   );
 }
 
+/* Sections can be reordered, so a running 01…09 would lie. Each module
+   carries its own two-digit file number, derived from its id so it never
+   changes between renders. */
+function fileNumber(id: string): string {
+  let sum = 0;
+  for (let i = 0; i < id.length; i += 1) sum = (sum * 31 + id.charCodeAt(i)) >>> 0;
+  return String(10 + (sum % 90));
+}
+
 export function Module({
   id,
   eyebrow,
@@ -170,7 +179,7 @@ export function Module({
       {eyebrow && (
         <p className="mb-1 flex items-center gap-3 font-serif text-sm text-graphite">
           <span className="inline-block h-px w-8 bg-graphite/50" aria-hidden />
-          {eyebrow}
+          {eyebrow} № {fileNumber(id)}
         </p>
       )}
 
@@ -204,7 +213,7 @@ export function Module({
             {title}
           </span>
         </button>
-        {headerExtra}
+        {open && headerExtra}
       </div>
 
       <div

@@ -62,7 +62,7 @@ export function Notepad({ id }: { id: string }) {
   return (
     <Module
       id={id}
-      eyebrow="Notepad № 09"
+      eyebrow="Notepad"
       title="Notepad"
       variant="editorial"
       headerExtra={
