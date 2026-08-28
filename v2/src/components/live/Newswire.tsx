@@ -7,24 +7,8 @@ import { ArticleModal } from "./ArticleModal";
 import { SourceMark } from "./SourceMark";
 import { StickerBadge, useStickerTarget } from "./stickers";
 
-const categoryText: Record<NewsItem["categoryColor"], string> = {
-  orange: "text-orange bg-orange/10",
-  blue: "text-blue bg-blue/10",
-  green: "text-green bg-green/10",
-  red: "text-red bg-red/10",
-  purple: "text-purple bg-purple/15",
-};
-
-/* the wire mixes paper crops as it runs down the column; keyed to
-   the item, not the row index, so a new article folding in at the top
-   does not reshuffle every texture below it */
-const PAPER_STOCKS = ["", "stock-soft", "stock-crumple"];
-
-function stockFor(id: string): string {
-  let sum = 0;
-  for (let i = 0; i < id.length; i += 1) sum = (sum * 31 + id.charCodeAt(i)) >>> 0;
-  return PAPER_STOCKS[sum % PAPER_STOCKS.length];
-}
+/* the design chips every category the same peach pill */
+const chipClass = "text-orange bg-orange/10";
 
 function NewswireCard({
   item,
@@ -51,22 +35,11 @@ function NewswireCard({
     `news:${item.id}`
   );
 
-  const stock = stockFor(item.id);
-
   return (
     <article
       {...targetProps}
-      className={`group/row relative isolate ${isNew ? "fold-in" : ""}`}
+      className={`group/row relative transition-colors ${isNew ? "fold-in" : ""}`}
     >
-      {/* the paper slides in behind the row on hover, and stays while open.
-          It sits at 50% so the headline and summary stay easy to read. */}
-      <div
-        aria-hidden
-        className={`paper-fill pointer-events-none absolute -inset-x-1 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${stock} ${
-          expanded ? "opacity-50" : "opacity-0 group-hover/row:opacity-50"
-        }`}
-      />
-
       {tagged !== undefined && <StickerBadge shade={tagged} />}
 
       <div
@@ -77,7 +50,7 @@ function NewswireCard({
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />
           <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${categoryText[item.categoryColor]}`}
+            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${chipClass}`}
           >
             {item.category}
           </span>
