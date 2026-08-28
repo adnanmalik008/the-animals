@@ -72,8 +72,26 @@ body {
   background-repeat: repeat;
 }
 
-/* Editorial cards sit on the column's paper, as in the design: no
-   sheet of their own, just a hairline and the texture showing through. */
+/* A torn sheet of paper, from one asset in any colour.
+   The ragged edge is a mask (so it follows the card), the crumple is the
+   paper scan multiplied over --paper-tint (so the grain never smears),
+   and each publisher supplies its own tint. */
+.torn-sheet {
+  background-color: var(--paper-tint, #eae4e1);
+  background-image: url("/assets/textures/paper-master.jpg");
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+  -webkit-mask-image: url("/assets/textures/torn-mask.png");
+  -webkit-mask-size: 100% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("/assets/textures/torn-mask.png");
+  mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
+}
+
+/* Editorial cards sit on the column's paper, as in the design */
 .torn-card {
   position: relative;
 }

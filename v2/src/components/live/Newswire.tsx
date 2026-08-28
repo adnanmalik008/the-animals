@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { incomingNewsItem as fixtureIncoming, newsItems as fixtureItems, type NewsItem } from "@/data/board";
+import {
+  incomingNewsItem as fixtureIncoming,
+  newsItems as fixtureItems,
+  type NewsItem,
+  type NewsSource,
+} from "@/data/board";
 import { useModuleData } from "@/components/board/BoardDataContext";
 import { ArticleModal } from "./ArticleModal";
 import { SourceMark } from "./SourceMark";
@@ -9,6 +14,18 @@ import { StickerBadge, useStickerTarget } from "./stickers";
 
 /* the design chips every category the same peach pill */
 const chipClass = "text-orange bg-orange/10";
+
+/* each publisher tears its own shade of paper, sampled from the design;
+   one torn asset takes the tint, so there is no per-source image */
+const PAPER_TINT: Record<NewsSource, string> = {
+  Bloomberg: "#eae4e1",
+  "The New York Times": "#e9e1d4",
+  CNN: "#e4d8d0",
+  MSN: "#dddbcd",
+  "Fox News": "#d5d8ca",
+  "New York Post": "#dde3df",
+  CNBC: "#eadcd5",
+};
 
 function NewswireCard({
   item,
@@ -38,8 +55,17 @@ function NewswireCard({
   return (
     <article
       {...targetProps}
-      className={`group/row relative transition-colors ${isNew ? "fold-in" : ""}`}
+      className={`group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
     >
+      {/* the torn sheet slides in behind the row on hover and stays open */}
+      <div
+        aria-hidden
+        style={{ ["--paper-tint" as string]: PAPER_TINT[item.source] }}
+        className={`torn-sheet pointer-events-none absolute -inset-x-2 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${
+          expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
+        }`}
+      />
+
       {tagged !== undefined && <StickerBadge shade={tagged} />}
 
       <div
