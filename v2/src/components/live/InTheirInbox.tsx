@@ -12,9 +12,9 @@ import { StickerBadge, useStickerTarget } from "./stickers";
 
 function InboxItem({ item }: { item: NewsletterItem }) {
   /* sticker drop files the send into the News circle */
-  const { targetProps, isOver, tagged } = useStickerTarget(
+  const { targetProps, isOver, tagged, resolvedKey } = useStickerTarget(
     () => ({
-      circleId: "culture",
+      circleId: "key-influencers",
       headline: item.subject,
       source: item.name,
       category: "Newsletter",
@@ -30,7 +30,7 @@ function InboxItem({ item }: { item: NewsletterItem }) {
         tagged !== undefined ? "ring-2 ring-orange/60" : isOver ? "ring-2 ring-orange" : ""
       }`}
     >
-      {tagged !== undefined && <StickerBadge shade={tagged} />}
+      {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-serif text-lg font-bold leading-snug sm:text-xl">{item.name}</h3>
         <span className="shrink-0 text-xs text-graphite">{item.timeAgo}</span>

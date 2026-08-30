@@ -1,6 +1,12 @@
 "use client";
 
-import { useCallback, useState, type CSSProperties, type DragEvent } from "react";
+import {
+  useCallback,
+  useState,
+  type DragEvent,
+  type PointerEvent as ReactPointerEvent,
+  type RefObject,
+} from "react";
 import type { InsightItem, TopicCircle } from "@/lib/insights";
 import { AddInsightPopover } from "./AddInsightPopover";
 import { CircleIcon } from "./CircleIcon";
@@ -8,6 +14,14 @@ import { InsightCard, INSIGHT_DRAG_TYPE } from "./InsightCard";
 import { circleBadge, circleBorderSoft, circleText, circleTint, focusRing } from "./palette";
 
 const DIAMETER: Record<TopicCircle["size"], number> = { sm: 280, md: 380, lg: 460 };
+const MIN_DIAMETER = 220;
+const MAX_DIAMETER = 520;
+
+export interface CircleLayout {
+  x: number;
+  y: number;
+  diameter: number;
+}
 
 /* Slight horizontal offsets so stacked cards read like a loose pile (Figma frame 3). */
 const OFFSETS = [-12, 14, 2];
@@ -107,26 +121,93 @@ export function TopicCircleView({
   onAddSave,
   onMoveInsight,
   lavaClass,
-  position,
-  popoverFlip = false,
+  layout,
+  boardRef,
+  onLayoutChange,
+  onDelete,
 }: SharedProps & {
   lavaClass: string;
-  position: CSSProperties;
-  /** Open the Add Insight popover above the circle (bottom-anchored circles would clip below). */
-  popoverFlip?: boolean;
+  layout: CircleLayout;
+  boardRef: RefObject<HTMLDivElement | null>;
+  onLayoutChange: (circleId: string, layout: CircleLayout) => void;
+  onDelete: (circleId: string) => void;
 }) {
-  const d = DIAMETER[circle.size];
+  const d = layout.diameter || DIAMETER[circle.size];
   const visible = insights.slice(-3);
   const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
+  const [manipulating, setManipulating] = useState(false);
+
+  const beginMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    if (e.button !== 0 || (e.target as HTMLElement).closest("button,textarea,input,select")) return;
+    const board = boardRef.current;
+    if (!board) return;
+    e.preventDefault();
+    const start = { x: e.clientX, y: e.clientY, layout };
+    const boardRect = board.getBoundingClientRect();
+    setManipulating(true);
+
+    const move = (event: PointerEvent) => {
+      const widthPct = (start.layout.diameter / Math.max(board.offsetWidth, 1)) * 100;
+      const heightPct = (start.layout.diameter / Math.max(board.offsetHeight, 1)) * 100;
+      onLayoutChange(circle.id, {
+        ...start.layout,
+        x: Math.max(0, Math.min(100 - widthPct, start.layout.x + ((event.clientX - start.x) / boardRect.width) * 100)),
+        y: Math.max(0, Math.min(100 - heightPct, start.layout.y + ((event.clientY - start.y) / boardRect.height) * 100)),
+      });
+    };
+    const end = () => {
+      setManipulating(false);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end, { once: true });
+  };
+
+  const beginResize = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (e.button !== 0) return;
+    const board = boardRef.current;
+    if (!board) return;
+    e.preventDefault();
+    e.stopPropagation();
+    const start = { x: e.clientX, y: e.clientY, layout };
+    const renderedScale = board.getBoundingClientRect().width / Math.max(board.offsetWidth, 1);
+    setManipulating(true);
+
+    const move = (event: PointerEvent) => {
+      const delta = Math.max(event.clientX - start.x, event.clientY - start.y) / Math.max(renderedScale, 0.01);
+      onLayoutChange(circle.id, {
+        ...start.layout,
+        diameter: Math.max(MIN_DIAMETER, Math.min(MAX_DIAMETER, start.layout.diameter + delta)),
+      });
+    };
+    const end = () => {
+      setManipulating(false);
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end, { once: true });
+  };
+
+  const resizeBy = (amount: number) =>
+    onLayoutChange(circle.id, {
+      ...layout,
+      diameter: Math.max(MIN_DIAMETER, Math.min(MAX_DIAMETER, layout.diameter + amount)),
+    });
 
   return (
     // z-20 lifts an open popover above the fuse circle (z-10) — the lava
     // transform creates a stacking context that would otherwise trap it
-    <div className={`absolute ${addOpen || isOver ? "z-20" : ""}`} style={position}>
-      <div className={lavaClass}>
+    <div
+      className={`absolute touch-none ${addOpen || isOver || manipulating ? "z-20" : ""}`}
+      style={{ left: `${layout.x}%`, top: `${layout.y}%` }}
+    >
+      <div className={manipulating ? "" : lavaClass}>
         <div
           {...dropProps}
-          className={`relative flex flex-col items-center rounded-full transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
+          onPointerDown={beginMove}
+          className={`group/circle relative flex cursor-move flex-col items-center rounded-full transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
             isOver ? "ring-2 ring-orange ring-offset-4 ring-offset-bg" : ""
           }`}
           style={{ width: d, height: d }}
@@ -166,12 +247,47 @@ export function TopicCircleView({
             className="absolute bottom-6 left-1/2 -translate-x-1/2"
           />
 
+          {!circle.builtIn && (
+            <button
+              type="button"
+              onClick={() => onDelete(circle.id)}
+              aria-label={`Delete ${circle.name} circle`}
+              title="Delete circle"
+              className={`absolute right-[9%] top-[12%] flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card/90 text-graphite opacity-0 shadow-sm transition-opacity hover:text-red group-hover/circle:opacity-100 focus-visible:opacity-100 ${focusRing}`}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+                <path d="M4 7h16M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" />
+              </svg>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onPointerDown={beginResize}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowRight" || e.key === "ArrowUp" || e.key === "+") {
+                e.preventDefault();
+                resizeBy(16);
+              } else if (e.key === "ArrowLeft" || e.key === "ArrowDown" || e.key === "-") {
+                e.preventDefault();
+                resizeBy(-16);
+              }
+            }}
+            aria-label={`Resize ${circle.name} circle`}
+            title="Drag to resize"
+            className={`absolute bottom-[7%] right-[7%] flex h-9 w-9 cursor-nwse-resize items-center justify-center rounded-full border border-line bg-card/90 text-graphite opacity-0 shadow-sm transition-opacity group-hover/circle:opacity-100 focus-visible:opacity-100 ${focusRing}`}
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+              <path d="M8 16 16 8M11 17h6v-6" />
+            </svg>
+          </button>
+
           {addOpen && (
             <AddInsightPopover
               onClose={() => onAddToggle(null)}
               onSave={(text) => onAddSave(circle.id, text)}
               className={`absolute left-1/2 z-30 w-80 -translate-x-1/2 ${
-                popoverFlip ? "bottom-[92%]" : "top-[86%]"
+                layout.y > 50 ? "bottom-[92%]" : "top-[86%]"
               }`}
             />
           )}

@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
 import { podcastItems, type PodcastCover, type PodcastItem } from "@/data/live-extra";
 import { StickerDropZone } from "./stickers";
+import { CarouselArrow } from "./SocialPulse";
 
 /* ============================================================
    On the Airwaves — podcast watch. Real show artwork from the
@@ -37,7 +39,7 @@ function Annotation({ item }: { item: PodcastItem }) {
     case "sticky":
       return (
         <div className="relative max-w-[290px] rotate-[1.5deg] p-4 shadow-[0_3px_10px_rgba(0,0,0,0.14)]" style={{ background: "#f8dcc7" }}>
-          <p className="text-[13px] leading-relaxed text-ink">{item.note}</p>
+          <p className="text-center text-[13px] leading-relaxed text-ink">{item.note}</p>
           {/* folded corner */}
           <span
             aria-hidden
@@ -50,11 +52,11 @@ function Annotation({ item }: { item: PodcastItem }) {
       return (
         <div className="relative mt-2 max-w-[300px] bg-card p-4 pt-4 shadow-[0_2px_8px_rgba(0,0,0,0.10)]">
           <MiniSpiral />
-          <p className="text-xs leading-relaxed text-graphite">{item.note}</p>
+          <p className="text-center text-xs leading-relaxed text-graphite">{item.note}</p>
         </div>
       );
     default:
-      return <p className="max-w-[320px] font-serif text-sm leading-relaxed text-ink/90">{item.note}</p>;
+      return <p className="max-w-[320px] text-center font-serif text-sm leading-relaxed text-ink/90">{item.note}</p>;
   }
 }
 
@@ -74,7 +76,7 @@ function PodcastRow({ item }: { item: PodcastItem }) {
       })}
     >
       <div
-        className={`flex flex-col gap-4 py-2 sm:grid sm:grid-cols-[168px_1fr] sm:gap-6 ${
+        className={`paper-card flex flex-col gap-4 p-4 sm:grid sm:grid-cols-[168px_1fr] sm:gap-6 ${
           item.noteStyle === "plain" ? "sm:items-start" : "sm:items-center"
         }`}
       >
@@ -99,12 +101,48 @@ function PodcastRow({ item }: { item: PodcastItem }) {
 }
 
 export function OnTheAirwaves({ id }: { id: string }) {
+  const [index, setIndex] = useState(0);
+
   return (
     <Module id={id} eyebrow="Dispatch" title="On the Airwaves" variant="editorial">
-      <div className="flex flex-col gap-5 pt-4">
-        {podcastItems.map((item) => (
-          <PodcastRow key={item.id} item={item} />
-        ))}
+      <div className="pt-4">
+        <div className="overflow-hidden px-0.5 py-1">
+          <div
+            className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
+            style={{ transform: `translateX(-${index * 100}%)` }}
+          >
+            {podcastItems.map((podcast) => (
+              <div key={podcast.id} className="w-full shrink-0 px-1">
+                <PodcastRow item={podcast} />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="mt-3 flex items-center justify-center gap-3">
+          <CarouselArrow
+            dir="prev"
+            label="Previous podcast"
+            disabled={index === 0}
+            onClick={() => setIndex((value) => Math.max(0, value - 1))}
+          />
+          <div className="flex items-center gap-1.5" aria-label={`${index + 1} of ${podcastItems.length}`}>
+            {podcastItems.map((podcast, dot) => (
+              <span
+                key={podcast.id}
+                aria-hidden
+                className={`h-1.5 rounded-full transition-all ${
+                  dot === index ? "w-5 bg-orange" : "w-1.5 bg-silver"
+                }`}
+              />
+            ))}
+          </div>
+          <CarouselArrow
+            dir="next"
+            label="Next podcast"
+            disabled={index === podcastItems.length - 1}
+            onClick={() => setIndex((value) => Math.min(podcastItems.length - 1, value + 1))}
+          />
+        </div>
       </div>
     </Module>
   );

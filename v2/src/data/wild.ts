@@ -12,6 +12,8 @@ export interface WildCam {
   id: string;
   /** YouTube video id of the 24/7 live stream */
   videoId: string;
+  /** Figma-exported cover still shown before the stream starts */
+  thumbnail?: string;
   emoji: string;
   name: string;
   location: string;
@@ -21,6 +23,7 @@ export const wildCams: WildCam[] = [
   {
     id: "tembe-elephants",
     videoId: "gdrNUUf-cQw",
+    thumbnail: "/assets/wild/chameleon.jpg",
     emoji: "\u{1F418}", // elephant
     name: "Elephant Watch",
     location: "Tembe Elephant Park · South Africa",
@@ -28,6 +31,7 @@ export const wildCams: WildCam[] = [
   {
     id: "namib-waterhole",
     videoId: "ydYDqZQpim8",
+    thumbnail: "/assets/wild/sloth.png",
     emoji: "\u{1F992}", // giraffe
     name: "Desert Waterhole",
     location: "Namib Desert · Namibia",
@@ -35,6 +39,7 @@ export const wildCams: WildCam[] = [
   {
     id: "big-bear-eagles",
     videoId: "B4-L2nfGcuE",
+    thumbnail: "/assets/wild/squirrel.jpg",
     emoji: "\u{1F985}", // eagle
     name: "Bald Eagle Nest",
     location: "Big Bear Valley · CA",
@@ -42,6 +47,7 @@ export const wildCams: WildCam[] = [
   {
     id: "cornell-feeders",
     videoId: "N609loYkFJo",
+    thumbnail: "/assets/wild/kitten.png",
     emoji: "\u{1F426}", // bird
     name: "Bird Feeders",
     location: "Cornell Lab, Sapsucker Woods · NY",
@@ -49,6 +55,7 @@ export const wildCams: WildCam[] = [
   {
     id: "tropical-reef",
     videoId: "DHUnz4dyb54",
+    thumbnail: "/assets/wild/deer.jpg",
     emoji: "\u{1F420}", // tropical fish
     name: "Tropical Reef",
     location: "Explore.org · Cayman Islands",
@@ -56,6 +63,7 @@ export const wildCams: WildCam[] = [
   {
     id: "earth-orbit",
     videoId: "P9C25Un7xaM",
+    thumbnail: "/assets/wild/giraffe.png",
     emoji: "\u{1F30D}", // earth
     name: "The Blue Marble",
     location: "ISS · Low Earth Orbit",

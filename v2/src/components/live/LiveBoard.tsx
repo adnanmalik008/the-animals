@@ -62,7 +62,7 @@ function renderData(id: string) {
           <StickerDropZone
             className="rounded-xl"
             insight={() => ({
-              circleId: "channels",
+              circleId: "media-hotspots",
               headline: `AI Search Visibility — score ${aiVisibility.score}, ${aiVisibility.mentionsLabel} mentions`,
               source: "Live board",
               category: "Signal",
@@ -79,7 +79,7 @@ function renderData(id: string) {
           <StickerDropZone
             className="rounded-xl"
             insight={() => ({
-              circleId: "channels",
+              circleId: "media-hotspots",
               headline: `Share of Voice — ${shareOfVoice[0].label} ${shareOfVoice[0].pct}% of conversation`,
               source: "Live board",
               category: "Signal",

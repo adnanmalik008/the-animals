@@ -20,6 +20,8 @@ export interface SocialPost {
   likes: string;
   comments: string;
   timeAgo: string;
+  image: string;
+  imageAlt: string;
 }
 
 export const socialPosts: SocialPost[] = [
@@ -31,6 +33,8 @@ export const socialPosts: SocialPost[] = [
     likes: "48.2K",
     comments: "1.2K",
     timeAgo: "3h ago",
+    image: "/assets/sightings/london.jpg",
+    imageAlt: "Run club gathering in London",
   },
   {
     id: "sp-2",
@@ -40,6 +44,8 @@ export const socialPosts: SocialPost[] = [
     likes: "2.4K",
     comments: "312",
     timeAgo: "5h ago",
+    image: "/assets/sightings/berlin.jpg",
+    imageAlt: "Performance footwear street sighting",
   },
   {
     id: "sp-3",
@@ -49,6 +55,8 @@ export const socialPosts: SocialPost[] = [
     likes: "12.6K",
     comments: "214",
     timeAgo: "7h ago",
+    image: "/assets/sightings/paris.jpg",
+    imageAlt: "Race-day street style",
   },
   {
     id: "sp-4",
@@ -58,6 +66,8 @@ export const socialPosts: SocialPost[] = [
     likes: "3.1K",
     comments: "428",
     timeAgo: "2h ago",
+    image: "/assets/sightings/ny.jpg",
+    imageAlt: "Marathon runners in New York",
   },
   {
     id: "sp-5",
@@ -67,6 +77,8 @@ export const socialPosts: SocialPost[] = [
     likes: "96K",
     comments: "2.3K",
     timeAgo: "1d ago",
+    image: "/assets/sightings/manchester.jpg",
+    imageAlt: "Runners meeting after a club run",
   },
   {
     id: "sp-6",
@@ -76,6 +88,8 @@ export const socialPosts: SocialPost[] = [
     likes: "8.4K",
     comments: "96",
     timeAgo: "12h ago",
+    image: "/assets/sightings/tokyo.jpg",
+    imageAlt: "Archive footwear display",
   },
   {
     id: "sp-7",
@@ -85,6 +99,8 @@ export const socialPosts: SocialPost[] = [
     likes: "1.8K",
     comments: "267",
     timeAgo: "9h ago",
+    image: "/assets/sightings/london.jpg",
+    imageAlt: "Community running group",
   },
   {
     id: "sp-8",
@@ -94,6 +110,8 @@ export const socialPosts: SocialPost[] = [
     likes: "5.7K",
     comments: "891",
     timeAgo: "6h ago",
+    image: "/assets/sightings/berlin.jpg",
+    imageAlt: "Terrace-inspired street style",
   },
   {
     id: "sp-9",
@@ -103,6 +121,8 @@ export const socialPosts: SocialPost[] = [
     likes: "33K",
     comments: "780",
     timeAgo: "1d ago",
+    image: "/assets/sightings/paris.jpg",
+    imageAlt: "Coach sharing a shoe rotation",
   },
 ];
 
@@ -354,6 +374,7 @@ export const topSites: Record<SiteTab, SiteGroup[]> = {
 /* ---------------- Opinion Leaders ---------------- */
 
 export type LeaderTone = "ember" | "ocean" | "moss" | "violet" | "sun";
+export type LeaderPlatform = "linkedin" | "instagram" | "youtube" | "tiktok" | "x";
 
 export interface OpinionLeader {
   id: string;
@@ -364,14 +385,15 @@ export interface OpinionLeader {
   role: string;
   eng: number; // engagement score 0-100
   followers: string;
+  platform: LeaderPlatform;
 }
 
 export const opinionLeaders: OpinionLeader[] = [
-  { id: "ol-1", name: "Kofi Mensah", initials: "KM", tone: "ember", role: "Run culture analyst", eng: 92, followers: "2.1M" },
-  { id: "ol-2", name: "Elsa Brandt", initials: "EB", tone: "ocean", role: "Performance gear reviewer", eng: 87, followers: "1.4M" },
-  { id: "ol-3", name: "Jay Okafor", initials: "JO", tone: "moss", role: "Marathon coach", eng: 84, followers: "980K" },
-  { id: "ol-4", name: "Mara Silva", initials: "MS", tone: "violet", role: "Run club organiser", eng: 79, followers: "640K" },
-  { id: "ol-5", name: "Tom Whitfield", initials: "TW", tone: "sun", role: "Track podcast host", eng: 75, followers: "420K" },
+  { id: "ol-1", name: "Kofi Mensah", initials: "KM", tone: "ember", role: "Run culture analyst", eng: 92, followers: "2.1M", platform: "linkedin" },
+  { id: "ol-2", name: "Elsa Brandt", initials: "EB", tone: "ocean", role: "Performance gear reviewer", eng: 87, followers: "1.4M", platform: "instagram" },
+  { id: "ol-3", name: "Jay Okafor", initials: "JO", tone: "moss", role: "Marathon coach", eng: 84, followers: "980K", platform: "youtube" },
+  { id: "ol-4", name: "Mara Silva", initials: "MS", tone: "violet", role: "Run club organiser", eng: 79, followers: "640K", platform: "tiktok" },
+  { id: "ol-5", name: "Tom Whitfield", initials: "TW", tone: "sun", role: "Track podcast host", eng: 75, followers: "420K", platform: "x" },
 ];
 
 /* ---------------- Reddit ---------------- */

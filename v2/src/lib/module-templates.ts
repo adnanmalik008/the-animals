@@ -47,7 +47,12 @@ export const MODULE_TEMPLATES: Record<string, unknown> = {
   "opinion-leaders": { leaders: opinionLeaders },
   reddit: { subreddits, influencers: redditors, insights: redditInsights },
   "app-store": appStoreVoice,
-  "traffic-sources": { channels: trafficChannels },
+  "traffic-sources": {
+    period: "Jan 2026",
+    region: "Worldwide",
+    scope: "All Traffic",
+    channels: trafficChannels,
+  },
   pulse: { spikes: wikiPulseSpikes, rows: wikiPulse },
   hiring: { summary: hiringSummary, rows: hiringRows },
   "wild-cams": { cams: wildCams },

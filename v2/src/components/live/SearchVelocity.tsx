@@ -59,7 +59,7 @@ export function SearchVelocity({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "breakout-themes",
           headline: `Search Velocity — “${lead.term}” ${lead.delta > 0 ? "+" : ""}${lead.delta}% branded search`,
           source: "Live board",
           category: "Signal",

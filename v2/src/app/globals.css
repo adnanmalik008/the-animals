@@ -91,9 +91,15 @@ body {
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
 }
 
-/* Editorial cards sit on the column's paper, as in the design */
-.torn-card {
+/* Full-bleed paper inside editorial cards, matching the Figma components. */
+.torn-card,
+.paper-card {
   position: relative;
+  background-color: rgba(241, 239, 235, 0.94);
+  background-image: url("/assets/textures/paper-master.jpg");
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: multiply;
 }
 
 /* the live sticker in the wheel gets a soft pop when it rotates up.
@@ -104,7 +110,7 @@ body {
   from { scale: 0.6; opacity: 0.4; }
   to { scale: 1; opacity: 1; }
 }
-.sticker-pop { animation: sticker-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.sticker-pop { animation: sticker-pop 1.25s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 /* the next sticker rolls down from the top slot into the center.
    Animates the native translate/scale properties so it composes with the
@@ -113,7 +119,7 @@ body {
   from { translate: -50% calc(-50% - 33px); scale: 0.65; }
   to { translate: -50% -50%; scale: 1; }
 }
-.sticker-roll { animation: sticker-roll 0.4s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.sticker-roll { animation: sticker-roll 1.1s cubic-bezier(0.22, 1, 0.36, 1) both; }
 
 @media (prefers-reduced-motion: reduce) {
   .sticker-pop, .sticker-roll { animation: none; }

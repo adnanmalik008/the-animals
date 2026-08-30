@@ -6,12 +6,12 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
 } from "react";
 import {
   addCircle,
   addInsight,
   moveInsight,
+  removeCircle,
   saveIdea,
   useBoardStore,
   type InsightItem,
@@ -22,24 +22,29 @@ import { FuseCircle } from "./FuseCircle";
 import { IdeasPanel } from "./IdeasPanel";
 import { NewCircleModal } from "./NewCircleModal";
 import { Toolbar } from "./Toolbar";
-import { TopicCircleView, TopicPanel } from "./TopicCircle";
+import { TopicCircleView, TopicPanel, type CircleLayout } from "./TopicCircle";
 import { circleText, focusRing } from "./palette";
 
-/* Quadrant homes for the four built-in circles; custom circles flow into free slots. */
-const BUILTIN_POS: Record<string, CSSProperties> = {
-  news: { left: "2.5%", top: "2%" },
-  channels: { right: "3%", top: "13%" },
-  social: { left: "3.5%", bottom: "1%" },
-  culture: { right: "3.5%", bottom: "2%" },
+const LAYOUT_STORE_KEY = "animals-circle-layouts-v1";
+
+/* Homes mirror the loose Figma constellation. Every circle can then be moved/resized. */
+const BUILTIN_LAYOUTS: Record<string, CircleLayout> = {
+  news: { x: 1.5, y: 3, diameter: 380 },
+  "key-influencers": { x: 29, y: 1, diameter: 280 },
+  "breakout-themes": { x: 55, y: 73, diameter: 280 },
+  "media-hotspots": { x: 73, y: 11, diameter: 340 },
+  social: { x: 1.5, y: 63, diameter: 380 },
+  "customer-opinion": { x: 28, y: 73, diameter: 260 },
+  culture: { x: 73, y: 65, diameter: 340 },
 };
 
-const FREE_POS: CSSProperties[] = [
-  { left: "33%", top: "0.5%" },
-  { left: "34%", bottom: "0.5%" },
-  { left: "0.5%", top: "36%" },
-  { right: "0.5%", top: "40%" },
-  { left: "17%", top: "18%" },
-  { right: "17%", bottom: "18%" },
+const CUSTOM_LAYOUTS: CircleLayout[] = [
+  { x: 35, y: 3, diameter: 280 },
+  { x: 36, y: 72, diameter: 280 },
+  { x: 3, y: 34, diameter: 280 },
+  { x: 78, y: 38, diameter: 280 },
+  { x: 17, y: 22, diameter: 260 },
+  { x: 64, y: 72, diameter: 260 },
 ];
 
 const LAVA = ["lava-a", "lava-b", "lava-c", "lava-d"];
@@ -65,6 +70,8 @@ export function AnomaliesBoard() {
   const [modalOpen, setModalOpen] = useState(false);
   const [addFor, setAddFor] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [savedLayouts, setSavedLayouts] = useState<Record<string, CircleLayout>>({});
+  const boardRef = useRef<HTMLDivElement>(null);
 
   const shakeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hintTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -78,6 +85,18 @@ export function AnomaliesBoard() {
     },
     []
   );
+
+  useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      try {
+        const raw = localStorage.getItem(LAYOUT_STORE_KEY);
+        if (raw) setSavedLayouts(JSON.parse(raw) as Record<string, CircleLayout>);
+      } catch {
+        /* corrupted/private storage — use the designed defaults */
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const insightsById = useMemo(
     () => new Map(insights.map((i) => [i.id, i])),
@@ -207,6 +226,38 @@ export function AnomaliesBoard() {
     [showToast]
   );
 
+  const updateCircleLayout = useCallback((circleId: string, layout: CircleLayout) => {
+    setSavedLayouts((prev) => {
+      const next = { ...prev, [circleId]: layout };
+      try {
+        localStorage.setItem(LAYOUT_STORE_KEY, JSON.stringify(next));
+      } catch {
+        /* in-memory movement still works */
+      }
+      return next;
+    });
+  }, []);
+
+  const deleteCircle = useCallback(
+    (circleId: string) => {
+      const circle = circleById.get(circleId);
+      if (!circle || circle.builtIn) return;
+      removeCircle(circleId);
+      setSavedLayouts((prev) => {
+        const next = { ...prev };
+        delete next[circleId];
+        try {
+          localStorage.setItem(LAYOUT_STORE_KEY, JSON.stringify(next));
+        } catch {
+          /* in-memory removal still works */
+        }
+        return next;
+      });
+      showToast(`${circle.name} circle deleted`);
+    },
+    [circleById, showToast]
+  );
+
   const copyLink = useCallback(() => {
     const url = window.location.href;
     if (navigator.clipboard?.writeText) {
@@ -218,10 +269,6 @@ export function AnomaliesBoard() {
       showToast("Couldn't copy link");
     }
   }, [showToast]);
-
-  const download = useCallback(() => {
-    window.print();
-  }, []);
 
   /* Escape closes the topmost layer. */
   useEffect(() => {
@@ -253,7 +300,6 @@ export function AnomaliesBoard() {
           zoom={zoom}
           onZoom={setZoom}
           onCopyLink={copyLink}
-          onDownload={download}
           ideasCount={ideas.length}
           ideasOpen={ideasOpen}
           onToggleIdeas={() => setIdeasOpen((v) => !v)}
@@ -262,23 +308,28 @@ export function AnomaliesBoard() {
       </div>
 
       {/* desktop board */}
-      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(880px,calc(100vh-8.5rem))] print:block print:min-h-[880px]">
+      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(1040px,calc(100vh-8.5rem))] print:block print:min-h-[1040px]">
         <div
+          ref={boardRef}
           className="absolute inset-0 print:!transform-none"
           style={{ transform: `scale(${zoom / 100})`, transformOrigin: "top center" }}
         >
           <div className="relative h-full w-full">
             {circles.map((c, i) => {
-              const builtin = c.builtIn ? BUILTIN_POS[c.id] : undefined;
-              const pos = builtin ?? FREE_POS[freeIdx++ % FREE_POS.length];
+              const fallback = c.builtIn
+                ? BUILTIN_LAYOUTS[c.id]
+                : CUSTOM_LAYOUTS[freeIdx++ % CUSTOM_LAYOUTS.length];
+              const layout = savedLayouts[c.id] ?? fallback ?? { x: 35, y: 3, diameter: 280 };
               return (
                 <TopicCircleView
                   key={c.id}
                   circle={c}
                   insights={byCircle.get(c.id) ?? []}
                   lavaClass={LAVA[i % LAVA.length]}
-                  position={pos}
-                  popoverFlip={pos.bottom !== undefined}
+                  layout={layout}
+                  boardRef={boardRef}
+                  onLayoutChange={updateCircleLayout}
+                  onDelete={deleteCircle}
                   selectedIds={slots}
                   onPick={pickInsight}
                   addOpen={addFor === c.id}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
 import { stageEvents } from "@/data/live";
 import { StickerBadge, useStickerTarget } from "./stickers";
+import { CarouselArrow } from "./SocialPulse";
 
 /* Keynote stages — what the category is saying from the podium. */
 export function OnStage({ id }: { id: string }) {
@@ -17,9 +18,9 @@ export function OnStage({ id }: { id: string }) {
     return () => clearInterval(t);
   }, [paused]);
 
-  const { targetProps, isOver, tagged } = useStickerTarget(
+  const { targetProps, isOver, tagged, resolvedKey } = useStickerTarget(
     () => ({
-      circleId: "culture",
+      circleId: "key-influencers",
       headline: current.quote,
       source: current.speaker,
       category: "Event",
@@ -52,7 +53,9 @@ export function OnStage({ id }: { id: string }) {
                         : ""
                   }`}
                 >
-                  {ev.id === current.id && tagged !== undefined && <StickerBadge shade={tagged} />}
+                  {ev.id === current.id && tagged !== undefined && (
+                    <StickerBadge tag={tagged} tagKey={resolvedKey} />
+                  )}
                   <div className="torn-card px-5 py-5 sm:px-6">
                     <div className="flex items-start justify-between gap-3">
                       <span className="text-xs font-bold uppercase tracking-wide">{ev.event}</span>
@@ -83,16 +86,11 @@ export function OnStage({ id }: { id: string }) {
         </div>
 
         <div className="mt-3 flex items-center justify-center gap-3">
-          <button
-            type="button"
+          <CarouselArrow
+            dir="prev"
+            label="Previous event"
             onClick={() => setIndex((i) => (i - 1 + stageEvents.length) % stageEvents.length)}
-            aria-label="Previous event"
-            className="flex h-8 w-8 items-center justify-center rounded-full border border-line bg-card text-ink shadow-sm transition-colors hover:bg-bg2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-          </button>
+          />
           <span className="flex items-center gap-1.5">
             {stageEvents.map((ev, i) => (
               <span
@@ -104,16 +102,11 @@ export function OnStage({ id }: { id: string }) {
               />
             ))}
           </span>
-          <button
-            type="button"
+          <CarouselArrow
+            dir="next"
+            label="Next event"
             onClick={() => setIndex((i) => (i + 1) % stageEvents.length)}
-            aria-label="Next event"
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-orange text-white shadow-sm transition-colors hover:bg-orange-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden>
-              <path d="M9 6l6 6-6 6" />
-            </svg>
-          </button>
+          />
         </div>
       </div>
     </Module>

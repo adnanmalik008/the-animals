@@ -49,28 +49,32 @@ interface StoreState {
 
 const STORAGE_KEY = "animals-board-v1";
 
+const BUILTIN_CIRCLES: TopicCircle[] = [
+  { id: "news", name: "News", color: "orange", icon: "news", size: "md", builtIn: true },
+  { id: "social", name: "Social", color: "blue", icon: "chat", size: "md", builtIn: true },
+  { id: "key-influencers", name: "Key Influencers", color: "purple", icon: "chat", size: "sm", builtIn: true },
+  { id: "culture", name: "Culture", color: "green", icon: "globe", size: "md", builtIn: true },
+  { id: "customer-opinion", name: "Customer Opinion", color: "red", icon: "chat", size: "sm", builtIn: true },
+  { id: "media-hotspots", name: "Media Hotspots", color: "yellow", icon: "signal", size: "md", builtIn: true },
+  { id: "breakout-themes", name: "Breakout Themes", color: "blue", icon: "stack", size: "sm", builtIn: true },
+];
+
 const DEFAULT_STATE: StoreState = {
-  circles: [
-    { id: "news", name: "News", color: "orange", icon: "news", size: "md", builtIn: true },
-    { id: "channels", name: "Channels", color: "yellow", icon: "signal", size: "md", builtIn: true },
-    { id: "social", name: "Social", color: "blue", icon: "chat", size: "md", builtIn: true },
-    { id: "culture", name: "Culture", color: "green", icon: "globe", size: "md", builtIn: true },
-    { id: "opinion-leaders", name: "Opinion Leaders", color: "purple", icon: "chat", size: "sm", builtIn: true },
-    { id: "name-2", name: "Name", color: "yellow", icon: "signal", size: "sm", builtIn: true },
-  ],
+  circles: BUILTIN_CIRCLES,
   insights: [
     { id: "seed-n1", circleId: "news", headline: "LinkedIn deepens video ad push, taps more publishers", source: "CNN", category: "Artificial Intelligence", categoryColor: "orange", createdAt: 1 },
     { id: "seed-n2", circleId: "news", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 2 },
     { id: "seed-n3", circleId: "news", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", createdAt: 3 },
-    { id: "seed-c1", circleId: "channels", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 4 },
+    { id: "seed-c1", circleId: "media-hotspots", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 4 },
     { id: "seed-s1", circleId: "social", headline: "LinkedIn under fire after pro-ICE post removed", source: "CNBC", category: "Politics", categoryColor: "red", createdAt: 5 },
     { id: "seed-s2", circleId: "social", headline: "LinkedIn deepens video ad push, taps more creators", source: "CNN", category: "Artificial Intelligence", categoryColor: "orange", createdAt: 6 },
     { id: "seed-s3", circleId: "social", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 7 },
     { id: "seed-s4", circleId: "social", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", createdAt: 8 },
     { id: "seed-cu1", circleId: "culture", headline: "LinkedIn under fire after pro-ICE post removed", source: "CNBC", category: "Politics", categoryColor: "red", createdAt: 9 },
     { id: "seed-cu2", circleId: "culture", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", createdAt: 10 },
-    { id: "seed-x1", circleId: "opinion-leaders", headline: "Kofi Mensah — run culture analyst, 2.1M followers", source: "Live board", category: "Voice", categoryColor: "purple", createdAt: 11 },
-    { id: "seed-x2", circleId: "name-2", headline: "MI5 warns of Chinese operatives using LinkedIn to r...", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 12 },
+    { id: "seed-x1", circleId: "key-influencers", headline: "Kofi Mensah — run culture analyst, 2.1M followers", source: "Live board", category: "Voice", categoryColor: "purple", createdAt: 11 },
+    { id: "seed-x2", circleId: "breakout-themes", headline: "MI5 warns of Chinese operatives using LinkedIn to recruit", source: "The New York Times", category: "Business", categoryColor: "blue", createdAt: 12 },
+    { id: "seed-o1", circleId: "customer-opinion", headline: "Fit inconsistency is now the most repeated customer complaint", source: "Live board", category: "Customer signal", categoryColor: "red", createdAt: 13 },
   ],
   ideas: [],
 };
@@ -91,6 +95,32 @@ function persist() {
   }
 }
 
+function migrateCircleId(id: CircleId): CircleId {
+  if (id === "channels") return "media-hotspots";
+  if (id === "opinion-leaders") return "key-influencers";
+  if (id === "name-2") return "breakout-themes";
+  return id;
+}
+
+function migrateState(parsed: Partial<StoreState>): StoreState {
+  const customCircles = (parsed.circles ?? [])
+    .filter((circle) => !circle.builtIn)
+    .map((circle) => ({ ...circle, id: migrateCircleId(circle.id) }))
+    .filter((circle) => !BUILTIN_CIRCLES.some((builtIn) => builtIn.id === circle.id));
+
+  return {
+    circles: [...BUILTIN_CIRCLES, ...customCircles],
+    insights: (parsed.insights ?? DEFAULT_STATE.insights).map((insight) => ({
+      ...insight,
+      circleId: migrateCircleId(insight.circleId),
+    })),
+    ideas: (parsed.ideas ?? DEFAULT_STATE.ideas).map((idea) => ({
+      ...idea,
+      circleIds: idea.circleIds.map(migrateCircleId) as [CircleId, CircleId],
+    })),
+  };
+}
+
 function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
@@ -98,11 +128,7 @@ function hydrate() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<StoreState>;
-      state = {
-        circles: parsed.circles?.length ? parsed.circles : DEFAULT_STATE.circles,
-        insights: parsed.insights ?? DEFAULT_STATE.insights,
-        ideas: parsed.ideas ?? DEFAULT_STATE.ideas,
-      };
+      state = migrateState(parsed);
       queueMicrotask(emit);
     }
   } catch {

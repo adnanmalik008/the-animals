@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import type { BoardRecord, BoardUserRecord } from "@/lib/server/boards";
-import { boardHost } from "@/lib/board-url";
 import {
   addUserAction,
   createBoardAction,

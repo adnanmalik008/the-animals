@@ -29,6 +29,14 @@ export function WildCamCard({ cam, index }: { cam: WildCam; index: number }) {
   const { ref, inView } = useInView<HTMLElement>(0.15);
   const [playing, setPlaying] = useState(false);
   const [thumbFailed, setThumbFailed] = useState(false);
+  const mediaShape = [
+    "aspect-[16/9]",
+    "aspect-[3/2]",
+    "aspect-square",
+    "aspect-[3/2]",
+    "aspect-[5/2]",
+    "aspect-square",
+  ][index % 6];
 
   return (
     <article
@@ -39,7 +47,7 @@ export function WildCamCard({ cam, index }: { cam: WildCam; index: number }) {
       }`}
     >
       {/* Media area — thumbnail first, iframe swapped in on play */}
-      <div className="relative aspect-video overflow-hidden rounded-lg bg-bg3">
+      <div className={`relative overflow-hidden bg-bg3 ${mediaShape}`}>
         {playing ? (
           <iframe
             src={`https://www.youtube.com/embed/${cam.videoId}?autoplay=1&mute=1`}
@@ -65,7 +73,7 @@ export function WildCamCard({ cam, index }: { cam: WildCam; index: number }) {
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
-                src={`https://img.youtube.com/vi/${cam.videoId}/hqdefault.jpg`}
+                src={cam.thumbnail ?? `https://img.youtube.com/vi/${cam.videoId}/hqdefault.jpg`}
                 alt={`${cam.name} — ${cam.location}`}
                 loading="lazy"
                 onError={() => setThumbFailed(true)}

@@ -1,30 +1,38 @@
 "use client";
 
+import { useModuleData } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { trafficChannels } from "@/data/live";
+import { trafficChannels as fixtureChannels, type TrafficChannel } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
 /* Static context labels. Not controls: the window is fixed until the
    CMS drives it, so they carry no dropdown affordance. */
-const filters = [
+const filterIcons = [
   {
-    label: "Jan 2026",
     icon: (
       <path d="M8 2v4M16 2v4M3 10h18M5 6h14a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
     ),
   },
   {
-    label: "Worldwide",
     icon: <path d="M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM3 12h18M12 3c2.5 2.5 3.8 5.6 3.8 9S14.5 21 12 21s-3.8-2.6-3.8-9S9.5 3 12 3z" />,
   },
   {
-    label: "All Traffic",
     icon: <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />,
   },
 ];
 
 export function TrafficSources({ id }: { id: string }) {
+  const cms = useModuleData<{
+    period?: string;
+    region?: string;
+    scope?: string;
+    channels?: TrafficChannel[];
+  }>("traffic-sources");
+  const trafficChannels = cms?.channels?.length ? cms.channels : fixtureChannels;
+  const filters = [cms?.period ?? "Jan 2026", cms?.region ?? "Worldwide", cms?.scope ?? "All Traffic"].map(
+    (label, index) => ({ label, icon: filterIcons[index].icon })
+  );
   const { ref, inView } = useInView<HTMLDivElement>();
   const lead = [...trafficChannels].sort((a, b) => b.value - a.value)[0];
 
@@ -33,7 +41,7 @@ export function TrafficSources({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "media-hotspots",
           headline: `Sources of Traffic — ${lead.label} leads web traffic`,
           source: "Live board",
           category: "Signal",

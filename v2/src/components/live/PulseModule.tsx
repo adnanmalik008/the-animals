@@ -23,7 +23,7 @@ export function PulseModule({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "breakout-themes",
           headline: `Wikipedia Pulse — ${lead.entity} spiking at ${lead.count}/${lead.window}`,
           source: "Live board",
           category: "Signal",

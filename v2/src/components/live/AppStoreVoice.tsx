@@ -73,7 +73,7 @@ export function AppStoreVoice({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "customer-opinion",
           headline: `App Store Voice — ${platform === "ios" ? "iOS" : "Android"} rating ${data.rating}, ${data.stats[2].value} ${data.stats[2].label.toLowerCase()} chatter`,
           source: "Live board",
           category: "Signal",

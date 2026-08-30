@@ -45,7 +45,6 @@ export function Toolbar({
   zoom,
   onZoom,
   onCopyLink,
-  onDownload,
   ideasCount,
   ideasOpen,
   onToggleIdeas,
@@ -54,7 +53,6 @@ export function Toolbar({
   zoom: number;
   onZoom: (zoom: number) => void;
   onCopyLink: () => void;
-  onDownload: () => void;
   ideasCount: number;
   ideasOpen: boolean;
   onToggleIdeas: () => void;
@@ -67,39 +65,41 @@ export function Toolbar({
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-0.5 rounded-full border border-line bg-card p-1.5 shadow-sm">
-        <IconButton label="Zoom in" onClick={zoomIn} disabled={idx >= ZOOM_LEVELS.length - 1}>
-          <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
-            <path d="M12 5v14M5 12h14" />
-          </svg>
-        </IconButton>
-        <IconButton label="Zoom out" onClick={zoomOut} disabled={idx <= 0}>
-          <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
-            <path d="M5 12h14" />
-          </svg>
-        </IconButton>
+        <div className="hidden items-center gap-0.5 lg:flex">
+          <IconButton label="Zoom in" onClick={zoomIn} disabled={idx >= ZOOM_LEVELS.length - 1}>
+            <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+          </IconButton>
+          <IconButton label="Zoom out" onClick={zoomOut} disabled={idx <= 0}>
+            <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
+              <path d="M5 12h14" />
+            </svg>
+          </IconButton>
 
-        <div className="relative mx-1">
-          <select
-            aria-label="Zoom level"
-            value={zoom}
-            onChange={(e) => onZoom(Number(e.target.value))}
-            className={`appearance-none rounded-full bg-bg2/80 py-1.5 pl-3.5 pr-8 text-sm font-medium text-ink ${focusRing}`}
-          >
-            {ZOOM_LEVELS.map((z) => (
-              <option key={z} value={z}>
-                {z}%
-              </option>
-            ))}
-          </select>
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            {...stroke}
-            className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-graphite"
-          >
-            <path d="m6 9 6 6 6-6" />
-          </svg>
+          <div className="relative mx-1">
+            <select
+              aria-label="Zoom level"
+              value={zoom}
+              onChange={(e) => onZoom(Number(e.target.value))}
+              className={`appearance-none rounded-full bg-bg2/80 py-1.5 pl-3.5 pr-8 text-sm font-medium text-ink ${focusRing}`}
+            >
+              {ZOOM_LEVELS.map((z) => (
+                <option key={z} value={z}>
+                  {z}%
+                </option>
+              ))}
+            </select>
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              {...stroke}
+              className="pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2 text-graphite"
+            >
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </div>
         </div>
 
         <IconButton label="Copy board link" onClick={onCopyLink}>
@@ -108,13 +108,6 @@ export function Toolbar({
             <path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.13a5 5 0 1 0 7.07 7.07l1.41-1.42" />
           </svg>
         </IconButton>
-        <IconButton label="Download board" onClick={onDownload}>
-          <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <path d="m7 10 5 5 5-5M12 15V3" />
-          </svg>
-        </IconButton>
-
         <span aria-hidden className="mx-1 h-6 w-px bg-line" />
 
         <button

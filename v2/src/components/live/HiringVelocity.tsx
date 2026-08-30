@@ -23,7 +23,7 @@ export function HiringVelocity({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "breakout-themes",
           headline: `Hiring Velocity — ${lead.label} ${lead.roles} open roles (${lead.delta > 0 ? "+" : ""}${lead.delta}%)`,
           source: "Live board",
           category: "Signal",

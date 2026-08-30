@@ -16,14 +16,14 @@ function SightingCard({ item }: { item: SightingItem }) {
     <StickerDropZone
       className="h-full rounded-lg"
       insight={() => ({
-        circleId: "channels",
+        circleId: "culture",
         headline: item.caption,
         source: item.city,
         category: "OOH",
         categoryColor: "green",
       })}
     >
-      <figure className="flex h-full flex-col border border-line/70 bg-card p-2.5 shadow-sm">
+      <figure className="paper-card flex h-full flex-col border border-line/70 p-2.5 shadow-sm">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={item.photo}

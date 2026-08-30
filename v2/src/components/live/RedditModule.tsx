@@ -58,10 +58,21 @@ export function RedditModule({ id }: { id: string }) {
       headerExtra={<TabPills items={tabs} active={tab} onChange={setTab} label="Reddit view" />}
     >
       <StickerDropZone
+        tagKey={`reddit:${tab}`}
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
-          headline: `Reddit — ${top.name} ${top.members} members, activity ${top.activity}`,
+          circleId:
+            tab === "influencers"
+              ? "key-influencers"
+              : tab === "insights"
+                ? "customer-opinion"
+                : "media-hotspots",
+          headline:
+            tab === "influencers"
+              ? `Reddit influencer — ${redditors[0].name}, ${redditors[0].karma}`
+              : tab === "insights"
+                ? redditInsightStates[state][0]
+                : `Reddit — ${top.name} ${top.members} members, activity ${top.activity}`,
           source: "Live board",
           category: "Signal",
           categoryColor: "orange",

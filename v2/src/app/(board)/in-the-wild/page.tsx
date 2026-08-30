@@ -25,11 +25,23 @@ export default async function InTheWildPage() {
         </div>
       </header>
 
-      {/* Live-cam grid */}
-      <div className="grid grid-cols-1 gap-8 pt-8 lg:grid-cols-2">
+      {/* Mobile keeps reading order; desktop uses two independent editorial columns. */}
+      <div className="flex flex-col gap-8 pt-8 lg:hidden">
         {wildCams.map((cam, i) => (
           <WildCamCard key={cam.id} cam={cam} index={i} />
         ))}
+      </div>
+      <div className="hidden grid-cols-2 gap-8 pt-8 lg:grid">
+        <div className="flex flex-col gap-8">
+          {wildCams.map((cam, i) =>
+            i % 2 === 0 ? <WildCamCard key={cam.id} cam={cam} index={i} /> : null
+          )}
+        </div>
+        <div className="flex flex-col gap-8">
+          {wildCams.map((cam, i) =>
+            i % 2 === 1 ? <WildCamCard key={cam.id} cam={cam} index={i} /> : null
+          )}
+        </div>
       </div>
     </main>
   );

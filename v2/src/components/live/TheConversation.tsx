@@ -49,9 +49,9 @@ function PlatformIcon({ platform }: { platform: ConversationPlatform }) {
 }
 
 function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: string }) {
-  const { targetProps, isOver, tagged } = useStickerTarget(
+  const { targetProps, isOver, tagged, resolvedKey } = useStickerTarget(
     () => ({
-      circleId: "culture",
+      circleId: "social",
       headline: quote.text,
       source: conversationPlatformLabel[quote.platform],
       category: "Conversation",
@@ -67,7 +67,7 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
         tagged !== undefined ? "ring-2 ring-orange/60" : isOver ? "ring-2 ring-orange" : ""
       }`}
     >
-      {tagged !== undefined && <StickerBadge shade={tagged} />}
+      {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className={`torn-card px-5 py-4 ${stock}`}>
         <div className="flex items-center justify-between gap-3 text-xs text-graphite">
           <span className="flex min-w-0 items-center gap-1.5">

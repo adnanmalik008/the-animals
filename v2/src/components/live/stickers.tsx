@@ -12,7 +12,7 @@ import {
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
 } from "react";
-import { addInsight, useBoardStore, type InsightItem } from "@/lib/insights";
+import { addInsight, removeInsight, useBoardStore, type InsightItem } from "@/lib/insights";
 
 /* ============================================================
    Stickers — the Live → Anomalies routing gesture.
@@ -23,17 +23,26 @@ import { addInsight, useBoardStore, type InsightItem } from "@/lib/insights";
    ============================================================ */
 
 export const STICKER_MIME = "animals/sticker";
+export const PLACED_STICKER_MIME = "animals/placed-sticker";
 
 export type InsightPayload = Omit<InsightItem, "id" | "createdAt">;
+
+interface StickerTag {
+  shade: number;
+  x: number;
+  y: number;
+  insightId?: string;
+}
 
 interface StickerCtxValue {
   /** how many stickers have been used — drives the Rolodex roll */
   used: number;
   armedSticker: number | null;
   toggleArm: () => void;
-  /** shade index stuck on a given target, or undefined */
-  tagOf: (key: string) => number | undefined;
-  applySticker: (key: string, payload: InsightPayload) => boolean;
+  /** sticker stuck on a given target, or undefined */
+  tagOf: (key: string) => StickerTag | undefined;
+  applySticker: (key: string, payload: InsightPayload, position?: Pick<StickerTag, "x" | "y">) => boolean;
+  removeSticker: (key: string) => void;
 }
 
 const StickerCtx = createContext<StickerCtxValue>({
@@ -42,6 +51,7 @@ const StickerCtx = createContext<StickerCtxValue>({
   toggleArm: () => {},
   tagOf: () => undefined,
   applySticker: () => false,
+  removeSticker: () => {},
 });
 
 const TAG_STORE_KEY = "animals-sticker-tags";
@@ -50,7 +60,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   const { circles } = useBoardStore();
   const [used, setUsed] = useState(0);
   const [armed, setArmed] = useState(false);
-  const [tags, setTags] = useState<Record<string, number>>({});
+  const [tags, setTags] = useState<Record<string, StickerTag>>({});
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
@@ -59,7 +69,17 @@ export function StickerProvider({ children }: { children: ReactNode }) {
     const raf = requestAnimationFrame(() => {
       try {
         const raw = localStorage.getItem(TAG_STORE_KEY);
-        if (raw) setTags(JSON.parse(raw) as Record<string, number>);
+        if (raw) {
+          const parsed = JSON.parse(raw) as Record<string, StickerTag | number>;
+          setTags(
+            Object.fromEntries(
+              Object.entries(parsed).map(([key, value]) => [
+                key,
+                typeof value === "number" ? { shade: value, x: 6, y: 10 } : value,
+              ])
+            )
+          );
+        }
       } catch {
         /* unavailable or corrupted — start clean */
       }
@@ -75,12 +95,20 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const applySticker = useCallback(
-    (key: string, payload: InsightPayload) => {
+    (key: string, payload: InsightPayload, position = { x: 6, y: 10 }) => {
       const shade = used % 3;
-      addInsight(payload);
+      const insight = addInsight(payload);
 
       setTags((prev) => {
-        const next = { ...prev, [key]: shade };
+        const next = {
+          ...prev,
+          [key]: {
+            shade,
+            x: Math.max(4, Math.min(96, position.x)),
+            y: Math.max(6, Math.min(94, position.y)),
+            insightId: insight.id,
+          },
+        };
         try {
           localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
         } catch {
@@ -104,6 +132,25 @@ export function StickerProvider({ children }: { children: ReactNode }) {
     [used]
   );
 
+  const removeSticker = useCallback((key: string) => {
+    setTags((prev) => {
+      const tag = prev[key];
+      if (!tag) return prev;
+      if (tag.insightId) removeInsight(tag.insightId);
+      const next = { ...prev };
+      delete next[key];
+      try {
+        localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
+      } catch {
+        /* quota/private mode — in-memory only */
+      }
+      return next;
+    });
+    setToast({ msg: "Sticker returned to the tray", key: Date.now() });
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(null), 2400);
+  }, []);
+
   /* Escape disarms */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -120,8 +167,9 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       toggleArm: () => setArmed((v) => !v),
       tagOf: (key: string) => tags[key],
       applySticker,
+      removeSticker,
     }),
-    [used, armed, tags, applySticker]
+    [used, armed, tags, applySticker, removeSticker]
   );
 
   return (
@@ -156,39 +204,88 @@ function Toast({ msg }: { msg: string }) {
 
 /* A stuck sticker badge, rendered on tagged cards and modules —
    the real sticker asset, tilted slightly so it reads as hand-placed. */
-export function StickerBadge({ shade, className = "" }: { shade: number; className?: string }) {
+export function StickerBadge({
+  shade,
+  tag,
+  tagKey,
+  className = "",
+}: {
+  shade?: number;
+  tag?: StickerTag;
+  tagKey?: string;
+  className?: string;
+}) {
+  const { removeSticker } = useContext(StickerCtx);
+  const value = tag ?? { shade: shade ?? 0, x: 6, y: 10 };
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src="/assets/stickers/sticker-red.png"
-      alt="Tagged for Anomalies"
-      title="Tagged for Anomalies"
-      draggable={false}
-      className={`pointer-events-none absolute -left-1 top-1 z-10 h-8 w-8 drop-shadow-md ${className}`}
-      style={{ transform: `rotate(${((shade % 3) - 1) * 14}deg)` }}
-    />
+    <button
+      type="button"
+      draggable={Boolean(tagKey)}
+      aria-label="Sticker tagged for Anomalies. Drag it back to the sticker tray to remove it."
+      title="Drag back to the sticker tray to remove"
+      onDragStart={(e) => {
+        if (!tagKey) return;
+        e.stopPropagation();
+        e.dataTransfer.setData(PLACED_STICKER_MIME, tagKey);
+        e.dataTransfer.effectAllowed = "move";
+      }}
+      onClick={(e) => e.stopPropagation()}
+      onKeyDown={(e) => {
+        if (!tagKey || (e.key !== "Delete" && e.key !== "Backspace")) return;
+        e.preventDefault();
+        removeSticker(tagKey);
+      }}
+      className={`absolute z-20 h-8 w-8 cursor-grab rounded-full drop-shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${className}`}
+      style={{
+        left: `${value.x}%`,
+        top: `${value.y}%`,
+        translate: "-50% -50%",
+        rotate: `${((value.shade % 3) - 1) * 14}deg`,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/assets/stickers/sticker-red.png"
+        alt=""
+        draggable={false}
+        className="pointer-events-none h-full w-full"
+      />
+    </button>
   );
 }
 
 /* ---------------- the floating tray ---------------- */
 
 export function StickerTray() {
-  const { used, armedSticker, toggleArm } = useContext(StickerCtx);
+  const { used, armedSticker, toggleArm, removeSticker } = useContext(StickerCtx);
   const liveStickerRef = useRef<HTMLImageElement | null>(null);
   const [inHand, setInHand] = useState(false);
-
-  /* a successful drop advances `used` — the dragged sticker is gone,
-     so stop hiding the (new) center sticker */
-  useEffect(() => {
-    setInHand(false);
-  }, [used]);
+  const [removeOver, setRemoveOver] = useState(false);
 
   return (
     <div
       role="toolbar"
       aria-label="Sticker wheel — drag the top sticker onto a card or module to send it to Anomalies, or press it and then choose a target"
-      className={`fixed bottom-4 right-4 z-40 h-[105px] w-[60px] rounded-full border border-line bg-card shadow-[0_2px_10px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-out motion-reduce:transition-none lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ${
-        armedSticker !== null ? "scale-105" : ""
+      onDragOver={(e) => {
+        if (!e.dataTransfer.types.includes(PLACED_STICKER_MIME)) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = "move";
+        setRemoveOver(true);
+      }}
+      onDragLeave={() => setRemoveOver(false)}
+      onDrop={(e) => {
+        const key = e.dataTransfer.getData(PLACED_STICKER_MIME);
+        if (!key) return;
+        e.preventDefault();
+        setRemoveOver(false);
+        removeSticker(key);
+      }}
+      className={`fixed bottom-4 right-4 z-40 h-[105px] w-[60px] rounded-full border bg-card shadow-[0_2px_10px_rgba(0,0,0,0.12)] transition-[transform,border-color,background-color] duration-500 ease-out motion-reduce:transition-none lg:bottom-auto lg:left-1/2 lg:right-auto lg:top-1/2 lg:-translate-x-1/2 lg:-translate-y-1/2 ${
+        removeOver
+          ? "scale-110 border-orange bg-orange/10"
+          : armedSticker !== null
+            ? "scale-105 border-line"
+            : "border-line"
       }`}
     >
       {/* the rest of the roll: orange stickers half-showing at both ends,
@@ -272,11 +369,11 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     []
   );
 
-  const stick = useCallback(() => {
+  const stick = useCallback((position?: Pick<StickerTag, "x" | "y">) => {
     const key = resolveKey();
     /* one sticker per target — re-sticking would file duplicates */
     if (tagOf(key) !== undefined) return;
-    applySticker(key, payloadRef.current());
+    applySticker(key, payloadRef.current(), position);
   }, [applySticker, resolveKey, tagOf]);
 
   const onClick = useCallback(() => {
@@ -314,13 +411,18 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
       e.preventDefault();
       e.stopPropagation();
       setIsOver(false);
-      stick();
+      const rect = e.currentTarget.getBoundingClientRect();
+      stick({
+        x: ((e.clientX - rect.left) / Math.max(rect.width, 1)) * 100,
+        y: ((e.clientY - rect.top) / Math.max(rect.height, 1)) * 100,
+      });
     },
     [stick]
   );
 
   /* read under the same key stick() writes, or keyless zones never show their sticker */
-  const tagged = tagOf(tagKey ?? getPayload().headline.slice(0, 80));
+  const resolvedKey = tagKey ?? getPayload().headline.slice(0, 80);
+  const tagged = tagOf(resolvedKey);
 
   const armed = armedSticker !== null;
   return {
@@ -337,8 +439,9 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     },
     /* highlight every target while a sticker is armed so the next click is obvious */
     isOver: isOver || armed,
-    /** shade index of the sticker stuck here, or undefined */
+    /** placement of the sticker stuck here, or undefined */
     tagged,
+    resolvedKey,
     /** kept for callers that only need the drop flash */
     justDropped: tagged !== undefined,
   };
@@ -357,7 +460,7 @@ export function StickerDropZone({
   className?: string;
   children: ReactNode;
 }) {
-  const { targetProps, isOver, tagged } = useStickerTarget(insight, tagKey);
+  const { targetProps, isOver, tagged, resolvedKey } = useStickerTarget(insight, tagKey);
   return (
     <div
       {...targetProps}
@@ -365,7 +468,7 @@ export function StickerDropZone({
         tagged !== undefined ? "ring-2 ring-orange/60" : isOver ? "ring-2 ring-orange" : ""
       } ${className}`}
     >
-      {tagged !== undefined && <StickerBadge shade={tagged} />}
+      {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       {children}
     </div>
   );

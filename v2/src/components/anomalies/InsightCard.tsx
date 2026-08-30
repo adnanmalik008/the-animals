@@ -8,16 +8,6 @@ import { circleText, focusRing, type CircleColor } from "./palette";
 /* Custom MIME type carrying the insight id during HTML5 drag. */
 export const INSIGHT_DRAG_TYPE = "animals/insight";
 
-/* Text wordmarks standing in for publisher logos (mirrors live/SourceMark). */
-const sourceStyles: Record<string, string> = {
-  Bloomberg: "font-sans text-sm font-extrabold tracking-tight",
-  "The New York Times": "font-serif text-sm font-bold tracking-tight",
-  CNN: "font-sans text-sm font-black tracking-tighter text-red",
-  MSN: "font-sans text-sm font-bold italic",
-  "New York Post": "font-serif text-sm font-black uppercase tracking-tight",
-  CNBC: "font-sans text-sm font-bold tracking-wide",
-};
-
 export function InsightCard({
   insight,
   color,
@@ -41,8 +31,9 @@ export function InsightCard({
 }) {
   const body = (
     <>
-      <span className="flex items-center justify-between gap-2">
-        {insight.author ? (
+      {(insight.author || insight.category) && (
+        <span className="flex items-center justify-between gap-2">
+          {insight.author ? (
           <span className="flex min-w-0 items-center gap-1.5">
             <span
               aria-hidden
@@ -50,28 +41,23 @@ export function InsightCard({
             />
             <span className="truncate text-xs font-bold text-ink">{insight.author}</span>
           </span>
-        ) : (
-          <span
-            className={`min-w-0 truncate leading-none text-ink ${
-              sourceStyles[insight.source ?? ""] ?? "font-sans text-xs font-bold uppercase tracking-wide"
-            }`}
-          >
-            {insight.source ?? "Note"}
-          </span>
-        )}
-        {insight.category && (
-          <span className={`shrink-0 text-xs font-medium ${circleText[color]}`}>
-            {insight.category}
-          </span>
-        )}
-      </span>
-      <span className="mt-1.5 line-clamp-2 font-serif text-sm leading-snug text-ink">
+          ) : (
+            <span />
+          )}
+          {insight.category && (
+            <span className={`shrink-0 text-xs font-medium ${circleText[color]}`}>
+              {insight.category}
+            </span>
+          )}
+        </span>
+      )}
+      <span className="mt-1.5 line-clamp-2 font-serif text-sm leading-snug text-ink group-hover/card:line-clamp-none group-focus-visible/card:line-clamp-none">
         {insight.headline}
       </span>
     </>
   );
 
-  const base = `relative w-full rounded-lg border border-line/60 bg-card px-3.5 py-2.5 text-left shadow-[0_1px_4px_rgba(0,0,0,0.09)] ${
+  const base = `group/card relative w-full rounded-lg border border-line/60 bg-card px-3.5 py-2.5 text-left shadow-[0_1px_4px_rgba(0,0,0,0.09)] ${
     selected ? "ring-2 ring-orange/60" : ""
   } ${className}`;
 

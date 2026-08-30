@@ -28,7 +28,7 @@ export function TopSites({ id }: { id: string }) {
       <StickerDropZone
         className="rounded-xl"
         insight={() => ({
-          circleId: "channels",
+          circleId: "media-hotspots",
           headline: `Top Sites — ${leader.label} over-indexes at ${leader.audience}% vs ${leader.average}% US average`,
           source: "Live board",
           category: "Signal",
