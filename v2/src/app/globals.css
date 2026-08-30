@@ -76,17 +76,36 @@ body {
    The ragged edge is a mask (so it follows the card), the crumple is the
    paper scan multiplied over --paper-tint (so the grain never smears),
    and each publisher supplies its own tint. */
+/* the row is the query container the sheet's torn bands are sized against */
+.torn-host {
+  container-type: inline-size;
+}
+
 .torn-sheet {
+  /* The sheet is 3-sliced, because the card changes height between states
+     (ar 6.5 collapsed, 3.6 open) and one stretched mask squashed the torn
+     teeth by 1.8x. Only the flat middle 82% of the scan stretches; the
+     ragged top and bottom bands stay pinned to their natural size.
+     Bands are sized in cqw — a share of the sheet's WIDTH, never its
+     height — so they scale with the column and never distort. */
+  --torn-top: 2.595cqw;
+  --torn-bottom: 2.838cqw;
   background-color: var(--paper-tint, #eae4e1);
   background-image: url("/assets/textures/paper-master.jpg");
   background-size: cover;
   background-position: center;
   background-blend-mode: multiply;
-  -webkit-mask-image: url("/assets/textures/torn-mask.png");
-  -webkit-mask-size: 100% 100%;
+  -webkit-mask-image: url("/assets/textures/torn-top.png"),
+    url("/assets/textures/torn-mid.png"), url("/assets/textures/torn-bottom.png");
+  -webkit-mask-size: 100% var(--torn-top),
+    100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
+  -webkit-mask-position: top center, center, bottom center;
   -webkit-mask-repeat: no-repeat;
-  mask-image: url("/assets/textures/torn-mask.png");
-  mask-size: 100% 100%;
+  mask-image: url("/assets/textures/torn-top.png"),
+    url("/assets/textures/torn-mid.png"), url("/assets/textures/torn-bottom.png");
+  mask-size: 100% var(--torn-top),
+    100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
+  mask-position: top center, center, bottom center;
   mask-repeat: no-repeat;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
 }

@@ -55,7 +55,7 @@ function NewswireCard({
   return (
     <article
       {...targetProps}
-      className={`group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
+      className={`torn-host group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
     >
       {/* the torn sheet slides in behind the row on hover and stays open */}
       <div
