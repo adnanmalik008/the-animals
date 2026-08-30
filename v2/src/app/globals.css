@@ -218,10 +218,14 @@ body {
   animation: grow-x 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* tiled Animals watermark for In the Wild */
+/* tiled Animals watermark for In the Wild — the real wordmark on the
+   lattice the design uses (153.7,-41.4)/(25.9,95); sixteen columns close
+   the diagonal, so the tile repeats seamlessly */
 .watermark-bg {
   background-color: var(--bg);
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='200'%3E%3Cg transform='rotate(-14 130 100)' fill='%23000000' fill-opacity='0.05' font-family='Arial Black, Arial, sans-serif' font-weight='900'%3E%3Ctext x='60' y='84' font-size='13'%3EThe%3C/text%3E%3Ctext x='78' y='106' font-size='30'%3EAni%3C/text%3E%3Ctext x='84' y='134' font-size='30'%3Emals%3C/text%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("/assets/wild/watermark-tile.png");
+  background-size: 2459px 665px;
+  background-repeat: repeat;
 }
 
 @media (prefers-reduced-motion: reduce) {
