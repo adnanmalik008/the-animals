@@ -222,7 +222,10 @@ export function Module({
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        <div className="min-h-0 overflow-hidden">{children}</div>
+        {/* the collapse clip is widened to the column's padding and given it
+            back, so a row can bleed its paper to the panel edge without the
+            content moving */}
+        <div className="min-h-0 overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8">{children}</div>
       </div>
     </section>
   );

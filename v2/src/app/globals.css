@@ -88,8 +88,12 @@ body {
      ragged top and bottom bands stay pinned to their natural size.
      Bands are sized in cqw — a share of the sheet's WIDTH, never its
      height — so they scale with the column and never distort. */
-  --torn-top: 2.595cqw;
-  --torn-bottom: 2.838cqw;
+  /* the sheet bleeds past its row to the panel edge, so the bands are a
+     share of the BLED width, not of the container alone */
+  --bleed: 1rem;
+  --torn-w: calc(100cqw + var(--bleed) * 2);
+  --torn-top: calc(var(--torn-w) * 0.02595);
+  --torn-bottom: calc(var(--torn-w) * 0.02838);
   background-color: var(--paper-tint, #eae4e1);
   background-image: url("/assets/textures/paper-master.jpg");
   background-size: cover;
@@ -108,6 +112,12 @@ body {
   mask-position: top center, center, bottom center;
   mask-repeat: no-repeat;
   filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
+}
+
+@media (min-width: 40rem) {
+  .torn-sheet {
+    --bleed: 2rem;
+  }
 }
 
 /* Full-bleed paper inside editorial cards, matching the Figma components. */
