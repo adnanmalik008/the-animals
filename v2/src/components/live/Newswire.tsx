@@ -61,7 +61,9 @@ function NewswireCard({
       <div
         aria-hidden
         style={{ ["--paper-tint" as string]: PAPER_TINT[item.source] }}
-        className="torn-sheet pointer-events-none absolute -inset-x-2 -inset-y-1 -z-10 opacity-100"
+        className={`torn-sheet pointer-events-none absolute -inset-x-2 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${
+          expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
+        }`}
       />
 
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}

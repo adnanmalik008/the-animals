@@ -10,6 +10,7 @@ import {
   useState,
   type DragEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type MouseEvent,
   type ReactNode,
 } from "react";
 import { addInsight, removeInsight, useBoardStore, type InsightItem } from "@/lib/insights";
@@ -376,10 +377,23 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     applySticker(key, payloadRef.current(), position);
   }, [applySticker, resolveKey, tagOf]);
 
-  const onClick = useCallback(() => {
-    if (armedSticker === null) return;
-    stick();
-  }, [armedSticker, stick]);
+  /* both paths place the sticker where the pointer landed */
+  const pointFrom = (e: { currentTarget: HTMLElement; clientX: number; clientY: number }) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    return {
+      x: ((e.clientX - rect.left) / Math.max(rect.width, 1)) * 100,
+      y: ((e.clientY - rect.top) / Math.max(rect.height, 1)) * 100,
+    };
+  };
+
+  const onClick = useCallback(
+    (e: MouseEvent<HTMLElement>) => {
+      if (armedSticker === null) return;
+      /* keyboard activation reports 0,0 — fall back to the default corner */
+      stick(e.detail === 0 ? undefined : pointFrom(e));
+    },
+    [armedSticker, stick]
+  );
 
   /* armed targets are reachable and actionable by keyboard */
   const onKeyDown = useCallback(
@@ -411,11 +425,7 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
       e.preventDefault();
       e.stopPropagation();
       setIsOver(false);
-      const rect = e.currentTarget.getBoundingClientRect();
-      stick({
-        x: ((e.clientX - rect.left) / Math.max(rect.width, 1)) * 100,
-        y: ((e.clientY - rect.top) / Math.max(rect.height, 1)) * 100,
-      });
+      stick(pointFrom(e));
     },
     [stick]
   );
