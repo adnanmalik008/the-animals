@@ -2,22 +2,29 @@ import { Module } from "@/components/modules/ModuleColumn";
 import {
   aiObservations,
   aiProfiles,
+  paidObservations,
+  paidSearch,
   searchLandscape,
+  searchObservations,
   type AiPlatformId,
   type AiProfile,
+  type PaidSearchCard,
   type SearchLandscapeCard,
   type SeoStat,
+  type TextAd,
 } from "@/data/competition";
+import { BrandMark } from "./BrandMark";
 import { DarkPanel, GroupHeading, Kicker, bigTitle } from "./ui";
 
 /* "How People Find Them" — the AI Search Visibility layout re-rendered
    dark per competitor, then per-brand SEO stat cards. Fully static. */
 
-const platformDot: Record<AiPlatformId, string> = {
-  chatgpt: "bg-green",
-  grok: "bg-white",
-  claude: "bg-orange",
-  gemini: "bg-blue",
+/* the design lists each model behind its own mark, not a colour dot */
+const platformLogo: Record<AiPlatformId, string> = {
+  chatgpt: "/assets/ai/chatgpt.png",
+  grok: "/assets/ai/grok.png",
+  claude: "/assets/ai/claude.png",
+  gemini: "/assets/ai/gemini.png",
 };
 
 function StatBox({
@@ -62,7 +69,8 @@ function AiProfileCard({ profile }: { profile: AiProfile }) {
           {profile.platforms.map((p) => (
             <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
               <span className="flex items-center gap-2 text-sm font-medium text-white">
-                <span className={`h-3 w-3 rounded-full ${platformDot[p.id]}`} aria-hidden />
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={platformLogo[p.id]} alt="" aria-hidden className="h-4 w-4 shrink-0 object-contain" />
                 {p.name}
               </span>
               <span className="flex items-center gap-2 text-xs tabular-nums">
@@ -109,6 +117,50 @@ function SeoStatCell({ stat }: { stat: SeoStat }) {
   );
 }
 
+function ObservationPanel({ text }: { text: string }) {
+  return (
+    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <p className="text-sm font-medium text-orange">Observations</p>
+      <p className="mt-1.5 text-xs leading-relaxed text-white/70">{text}</p>
+    </div>
+  );
+}
+
+/* a paid result as the SERP renders it: mark, headline, url, body */
+function TextAdRow({ id, ad }: { id: PaidSearchCard["id"]; ad: TextAd }) {
+  return (
+    <li className="flex gap-2.5 py-3 first:pt-0">
+      <BrandMark id={id} size={22} className="mt-0.5" />
+      <div className="min-w-0">
+        <p className="text-sm font-semibold leading-snug text-white">{ad.headline}</p>
+        <p className="mt-1 flex items-center gap-1 text-[11px] text-white/50">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <circle cx="12" cy="12" r="10" />
+            <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" />
+          </svg>
+          {ad.url}
+        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-white/70">{ad.body}</p>
+      </div>
+    </li>
+  );
+}
+
+function PaidSearchCardView({ card }: { card: PaidSearchCard }) {
+  return (
+    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+      <p className="mb-1 text-xs text-white/60">
+        <span className="font-semibold text-white/85">Sample Text Ads</span> {card.name}
+      </p>
+      <ul className="divide-y divide-white/[0.08]">
+        {card.ads.map((ad) => (
+          <TextAdRow key={ad.headline} id={card.id} ad={ad} />
+        ))}
+      </ul>
+    </article>
+  );
+}
+
 function SeoCard({ card }: { card: SearchLandscapeCard }) {
   return (
     <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
@@ -139,10 +191,7 @@ export function FindThem({ id }: { id: string }) {
           ))}
         </div>
 
-        <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-          <p className="text-sm font-medium text-orange">Observations</p>
-          <p className="mt-1.5 text-xs leading-relaxed text-white/70">{aiObservations}</p>
-        </div>
+        <ObservationPanel text={aiObservations} />
 
         <div className="mt-10">
           <Kicker>Search Footprint</Kicker>
@@ -152,6 +201,18 @@ export function FindThem({ id }: { id: string }) {
               <SeoCard key={card.id} card={card} />
             ))}
           </div>
+          <ObservationPanel text={searchObservations} />
+        </div>
+
+        <div className="mt-10">
+          <Kicker>Paid Search</Kicker>
+          <GroupHeading>Words They Pay For</GroupHeading>
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+            {paidSearch.map((card) => (
+              <PaidSearchCardView key={card.id} card={card} />
+            ))}
+          </div>
+          <ObservationPanel text={paidObservations} />
         </div>
       </DarkPanel>
     </Module>

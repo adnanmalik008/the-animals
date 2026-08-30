@@ -2,8 +2,9 @@ import { Module } from "@/components/modules/ModuleColumn";
 import { analystNote } from "@/data/competition";
 import { panelTitle } from "./ui";
 
-/* Animal View — the agency's editorial read. A white card set against
-   the dark board, serif italic, framed by giant orange quote marks. Static. */
+/* Animal View — the agency's editorial read. The design sets it on a
+   grey panel a shade above the board (#2b2b2b), serif italic in light
+   grey, framed by giant orange quote marks. Static. */
 
 export function AnimalView({ id }: { id: string }) {
   return (
@@ -17,8 +18,8 @@ export function AnimalView({ id }: { id: string }) {
         </span>
       }
     >
-      <div className="mt-4 rounded-3xl bg-[#f4f2ee] p-6 text-ink sm:p-9">
-        <p className="text-sm font-semibold tracking-tight">{analystNote.headline}</p>
+      <div className="mt-4 rounded-3xl bg-[#2b2b2b] p-6 text-white sm:p-9">
+        <p className="text-sm font-semibold tracking-tight text-white">{analystNote.headline}</p>
 
         <div className="relative mt-4 pl-10 pr-6 sm:pl-14 sm:pr-10">
           <span
@@ -28,9 +29,9 @@ export function AnimalView({ id }: { id: string }) {
             &ldquo;
           </span>
 
-          <div className="space-y-4 font-serif text-[15px] italic leading-relaxed text-graphite">
+          <div className="space-y-4 font-serif text-[15px] italic leading-relaxed text-white/60">
             <p>
-              <strong className="font-bold uppercase not-italic tracking-wide text-ink">
+              <strong className="font-bold uppercase not-italic tracking-wide text-white">
                 {analystNote.lede}
               </strong>{" "}
               {analystNote.paragraphs[0]}

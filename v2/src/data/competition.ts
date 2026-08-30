@@ -152,43 +152,52 @@ export const homepageCards: ShowUpCard[] = [
 export interface SocialCard {
   id: BrandId;
   name: string;
-  handle: string;
-  post: string;
-  likes: string;
-  caption: string;
   observation: string;
 }
 
+/* Social Feed — "Twelve Squares of Identity": the first twelve tiles of
+   each brand's grid, captured from the design. */
 export const socialCards: SocialCard[] = [
   {
     id: "patagonia",
     name: "Patagonia",
-    handle: "@patagonia",
-    post: "Repair is a radical act. Worn Wear tour dates below.",
-    likes: "48.2K",
-    caption: "“Repair is a radical act.”",
     observation:
-      "The feed stays activism-forward even as the homepage retreats — deliberate channel-split messaging.",
+      "Documentary aesthetic. Real people, real places. Still the most editorial feed, but noticeably less protest, more product.",
   },
   {
     id: "arcteryx",
     name: "Arc'teryx",
-    handle: "@arcteryx",
-    post: "48 hours in the alpine. One shell.",
-    likes: "31.7K",
-    caption: "“48 hours in the alpine. One shell.”",
     observation:
-      "Athlete UGC re-posts dominate the grid — community as a content pipeline the brand curates, not creates.",
+      "Cold palette, alpine-only. Disciplined to the point of narrow — no lifestyle, no compromise on the mountain.",
   },
   {
     id: "northface",
     name: "The North Face",
-    handle: "@thenorthface",
-    post: "City summits count too.",
-    likes: "64.9K",
-    caption: "“City summits count too.”",
     observation:
-      "Urban styling on mountain product — the feed courts the commuter, not the climber.",
+      "Warm palette, sun-drenched. Feed reads editorial travel more than technical outdoor — broadening beyond core.",
+  },
+];
+
+/* In Market — "Their Window Display": the display ad each brand is
+   running, the layer where the positioning slips. */
+export const marketCards: SocialCard[] = [
+  {
+    id: "patagonia",
+    name: "Patagonia",
+    observation:
+      "Discount-forward. 'Up to 50% off' undercuts the mission halo — the biggest signal of category pressure in the whole row.",
+  },
+  {
+    id: "arcteryx",
+    name: "Arc'teryx",
+    observation:
+      "Cinematic, minimal copy. Leans on craft and silhouette. Feels the most premium of the three.",
+  },
+  {
+    id: "northface",
+    name: "The North Face",
+    observation:
+      "Athlete-forward, product hero. Familiar formula, low risk, high recognition — the safest play in the row.",
   },
 ];
 
@@ -324,6 +333,77 @@ export const searchLandscape: SearchLandscapeCard[] = [
 /* ---------------- On the Horizon ---------------- */
 
 export type HorizonStatus = "hot" | "warm" | "watch";
+
+/* ---------------- Words They Pay For (Paid Search) ---------------- */
+
+export interface TextAd {
+  headline: string;
+  url: string;
+  body: string;
+}
+
+export interface PaidSearchCard {
+  id: BrandId;
+  name: string;
+  ads: TextAd[];
+}
+
+export const searchObservations =
+  "The North Face owns the organic empire on sheer scale, but Patagonia is bleeding — the only brand with negative organic growth. Arc'teryx is the quiet climber, growing traffic and paid keywords fastest despite the smallest footprint. All three are ramping paid spend, signalling the organic well is drying up.";
+
+export const paidSearch: PaidSearchCard[] = [
+  {
+    id: "patagonia",
+    name: "Patagonia",
+    ads: [
+      {
+        headline: "Patagonia® Official Site. Now Up to 50% Off",
+        url: "patagonia.com",
+        body: "Patagonia Web Specials Are Now Up to 50% Off — Including Select New Styles. Shop Men's, Women's, Kids' & Baby and Packs & Gear.",
+      },
+      {
+        headline: "Patagonia® Clothing & Gear. Outdoor Clothing & Gear",
+        url: "patagonia.com",
+        body: "Shop Patagonia® Clothing and Gear Built for Lifetimes of Doing What You Love. Guaranteed Quality. Profits Go to the Planet. Ironclad Guarantee. 1% for the Planet®",
+      },
+    ],
+  },
+  {
+    id: "arcteryx",
+    name: "Arc'teryx",
+    ads: [
+      {
+        headline: "Arc'teryx Official. Technical Apparel & Footwear",
+        url: "https://arcteryx.com",
+        body: "Arc'teryx Gore-Tex shells, alpine packs, and climbing gear. Engineered for the alpine. Free shipping on orders $99+. Lifetime guarantee on materials.",
+      },
+      {
+        headline: "Arc'teryx® Beta Jacket. Lightweight Gore-Tex Shell",
+        url: "https://arcteryx.com",
+        body: "The Beta is our most versatile shell — packable, waterproof, and built for everything from the trail to the summit. Shop the latest colors and sizes.",
+      },
+    ],
+  },
+  {
+    id: "northface",
+    name: "The North Face",
+    ads: [
+      {
+        headline: "The North Face® Official Site. Free Shipping Over $50",
+        url: "https://www.thenorthface.com",
+        body: "Shop The North Face® jackets, gear & footwear built for the outdoors. Free shipping on orders $50+. Members earn rewards on every purchase.",
+      },
+      {
+        headline: "The North Face® Summit Series. Engineered for the Mountain",
+        url: "https://www.thenorthface.com",
+        body: "Athlete-tested expedition gear from base camp to summit. Shop the Summit Series collection. Built for the most demanding alpine conditions.",
+      },
+    ],
+  },
+];
+
+export const paidObservations =
+  "The copy is interchangeable. Free shipping, technical language, guarantee claims — nothing here reveals a brand you couldn't guess with the logo removed. Patagonia's discount-led lines are the biggest tell of category pressure; the eco-hero brand is now bidding on sale.";
 
 export const horizonLegend: { status: HorizonStatus; label: string }[] = [
   { status: "hot", label: "Hot — imminent" },
