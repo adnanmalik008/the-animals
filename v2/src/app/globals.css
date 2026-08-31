@@ -52,6 +52,16 @@
   --color-paper-deep: var(--paper-deep);
   --font-sans: var(--font-inter);
   --font-serif: var(--font-source-serif);
+  /* The design sets the section titles in SF Pro Display. It is Apple's
+     system face, so it resolves natively there and falls back to Inter —
+     the closest grotesque we already load — everywhere else. */
+  --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, var(--font-inter),
+    system-ui, sans-serif;
+}
+
+:root {
+  /* one strength for every paper surface — veil and card alike */
+  --paper-strength: 0.55;
 }
 
 body {
@@ -82,7 +92,9 @@ body {
 }
 
 .torn-sheet {
-  /* The sheet is 3-sliced, because the card changes height between states
+  /* Texture and mask both come from the Live page's own asset,
+     aged-crumpled-paper-strip-with-torn-edges (239:4705).
+     The sheet is 3-sliced, because the card changes height between states
      (ar 6.5 collapsed, 3.6 open) and one stretched mask squashed the torn
      teeth by 1.8x. Only the flat middle 82% of the scan stretches; the
      ragged top and bottom bands stay pinned to their natural size.
@@ -92,8 +104,8 @@ body {
      share of the BLED width, not of the container alone */
   --bleed: 1rem;
   --torn-w: calc(100cqw + var(--bleed) * 2);
-  --torn-top: calc(var(--torn-w) * 0.02595);
-  --torn-bottom: calc(var(--torn-w) * 0.02838);
+  --torn-top: calc(var(--torn-w) * 0.00894);
+  --torn-bottom: calc(var(--torn-w) * 0.01195);
   background-color: var(--paper-tint, #eae4e1);
   background-image: url("/assets/textures/paper-master.jpg");
   background-size: cover;
@@ -121,14 +133,56 @@ body {
 }
 
 /* Full-bleed paper inside editorial cards, matching the Figma components. */
-.torn-card,
-.paper-card {
-  position: relative;
-  background-color: rgba(241, 239, 235, 0.94);
+/* The Conversation and In Their Inbox show their paper on hover only, and
+   softer than a card — the module's own paper already sits underneath. */
+/* the hover fade lives here so it shares --paper-strength with the cards */
+.quote-row .paper-veil,
+.inbox-row .paper-veil {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.quote-row:hover .paper-veil,
+.inbox-row:hover .paper-veil {
+  opacity: var(--paper-strength);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quote-row .paper-veil,
+  .inbox-row .paper-veil {
+    transition: none;
+  }
+}
+
+.paper-veil {
+  background-color: var(--paper);
   background-image: url("/assets/textures/paper-master.jpg");
   background-position: center;
   background-size: cover;
   background-blend-mode: multiply;
+}
+
+/* Paper cards draw the same veil at the same strength, so every section's
+   paper reads alike — the card just shows it permanently rather than on hover. */
+.torn-card,
+.paper-card {
+  position: relative;
+  isolation: isolate;
+}
+
+.torn-card::before,
+.paper-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background-color: var(--paper);
+  background-image: url("/assets/textures/paper-master.jpg");
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: multiply;
+  opacity: var(--paper-strength);
 }
 
 /* the live sticker in the wheel gets a soft pop when it rotates up.

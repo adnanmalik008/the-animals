@@ -5,9 +5,9 @@ import { newsletterItems, type NewsletterItem } from "@/data/live-extra";
 import { StickerBadge, useStickerTarget } from "./stickers";
 
 /* ============================================================
-   In Their Inbox — newsletter watch. A single torn sheet holds
-   the week's must-open sends, separated by hairlines like an
-   inbox printout pinned to the board.
+   In Their Inbox — newsletter watch. The week's must-open sends
+   are separated by hairlines like an inbox printout, and the
+   torn paper only lifts under the send you're reading.
    ============================================================ */
 
 function InboxItem({ item }: { item: NewsletterItem }) {
@@ -26,10 +26,18 @@ function InboxItem({ item }: { item: NewsletterItem }) {
   return (
     <article
       {...targetProps}
-      className={`relative rounded-md py-4 transition-shadow duration-300 first:pt-1 last:pb-1 motion-reduce:transition-none ${
+      className={`inbox-row relative isolate rounded-md py-4 transition-shadow duration-300 first:pt-1 last:pb-1 motion-reduce:transition-none ${
         tagged !== undefined ? "ring-2 ring-orange/60" : isOver ? "ring-2 ring-orange" : ""
       }`}
     >
+      {/* paper fades in behind the send on hover. It bleeds past the list's
+          own padding out to the column edge, the way Newswire's sheet does,
+          so the strip reads as a sheet slid under the row rather than a
+          floating panel. */}
+      <div
+        aria-hidden
+        className="paper-veil pointer-events-none absolute inset-y-0 -inset-x-9 -z-10 sm:-inset-x-14"
+      />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-serif text-lg font-bold leading-snug sm:text-xl">{item.name}</h3>
@@ -55,7 +63,7 @@ export function InTheirInbox({ id }: { id: string }) {
   return (
     <Module id={id} eyebrow="Bulletin" title="In Their Inbox" variant="editorial">
       <div className="pt-4">
-        <div className="torn-card divide-y divide-ink/10 px-5 py-4 sm:px-6">
+        <div className="divide-y divide-ink/10 px-5 py-4 sm:px-6">
           {newsletterItems.map((item) => (
             <InboxItem key={item.id} item={item} />
           ))}
