@@ -212,7 +212,9 @@ export function Module({
               titleClassName ||
               (variant === "editorial"
                 ? "font-serif text-3xl font-semibold tracking-tight sm:text-4xl"
-                : "text-xl font-bold uppercase tracking-tight sm:text-2xl")
+                : /* SF Pro Display Semibold with no tracking, per the design's
+                     type panel — the same face the section titles use */
+                  "font-display text-xl font-semibold uppercase tracking-normal sm:text-2xl")
             }
           >
             {title}
