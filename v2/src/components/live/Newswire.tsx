@@ -74,7 +74,7 @@ function NewswireCard({
           /* while a sticker is armed the row reads as its own rounded card,
              like every other drop target, so the rule between rows steps aside */
           expanded || isOver ? "" : "border-b border-ink/10"
-        } ${isOver ? "rounded-xl ring-2 ring-orange" : ""}`}
+        } ${isOver ? "rounded-xl ring-2 ring-orange ring-offset-4 ring-offset-transparent" : ""}`}
       >
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />

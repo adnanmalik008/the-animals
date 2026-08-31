@@ -39,7 +39,7 @@ export function OnStage({ id }: { id: string }) {
         {/* the slide clip only needs to hide the neighbours horizontally, so
             it is given vertical room back — otherwise it shaves the drop
             target's ring off the top */}
-        <div className="overflow-hidden -my-1 py-1">
+        <div className="overflow-hidden -mx-1 px-1 -my-3 py-3">
           <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${index * 100}%)` }}
@@ -50,9 +50,9 @@ export function OnStage({ id }: { id: string }) {
                   {...(ev.id === current.id ? targetProps : {})}
                   className={`relative rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
                     ev.id === current.id && tagged !== undefined
-                      ? "ring-2 ring-orange/60"
+                      ? "ring-2 ring-orange/60 ring-offset-4 ring-offset-transparent"
                       : ev.id === current.id && isOver
-                        ? "ring-2 ring-orange"
+                        ? "ring-2 ring-orange ring-offset-4 ring-offset-transparent"
                         : ""
                   }`}
                 >

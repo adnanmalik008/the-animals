@@ -106,7 +106,10 @@ export function OnTheAirwaves({ id }: { id: string }) {
   return (
     <Module id={id} eyebrow="Dispatch" title="On the Airwaves" variant="editorial">
       <div className="pt-4">
-        <div className="overflow-hidden px-0.5 py-1">
+        {/* the clip only has to hide the neighbouring slides horizontally, so it is
+            given room back for the drop ring — 4px out is the slide's own gutter,
+            which is as far as it can go before the next card bleeds in */}
+        <div className="overflow-hidden -mx-1 px-1.5 -my-2 py-3">
           <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${index * 100}%)` }}
