@@ -69,9 +69,12 @@ function NewswireCard({
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
 
       <div
-        className={`px-1 py-3.5 transition-colors ${
-          expanded ? "" : "border-b border-ink/10"
-        } ${isOver ? "ring-2 ring-orange" : ""}`}
+        /* the design's row is a fixed 123px tall, whatever the headline */
+        className={`min-h-[123px] px-1 py-3.5 transition-colors ${
+          /* while a sticker is armed the row reads as its own rounded card,
+             like every other drop target, so the rule between rows steps aside */
+          expanded || isOver ? "" : "border-b border-ink/10"
+        } ${isOver ? "rounded-xl ring-2 ring-orange" : ""}`}
       >
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />
@@ -88,7 +91,15 @@ function NewswireCard({
           aria-expanded={expanded}
           className="mt-1.5 block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
         >
-          <h3 className="font-serif text-lg leading-snug sm:text-xl">{item.headline}</h3>
+          <h3
+            className={`font-serif text-lg leading-snug sm:text-xl ${
+              /* the design's rows are a fixed 123px, so a long headline
+                 truncates rather than wrapping; opening it shows the rest */
+              expanded ? "" : "line-clamp-1"
+            }`}
+          >
+            {item.headline}
+          </h3>
         </button>
 
         <div className="mt-1.5 flex items-center justify-between gap-3 text-xs text-graphite">
@@ -149,7 +160,8 @@ export function Newswire() {
 
   return (
     <>
-      <div className="flex flex-col pt-3">
+      {/* 123px row + 8px gap = the design's 131px pitch */}
+      <div className="flex flex-col gap-2 pt-3">
         {items.map((item) => (
           <NewswireCard
             key={item.id}
