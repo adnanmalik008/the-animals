@@ -10,55 +10,32 @@ import {
 } from "@/data/live";
 import { StickerDropZone } from "./stickers";
 
-/* ---------------- inline platform icons ---------------- */
+/* ---------------- platform marks ---------------- */
+
+/* the real brand marks exported from the design — tiktok, instagram and x are
+   monochrome black there, reddit keeps its orange roundel */
+const platformMark: Record<SocialPlatform, string> = {
+  tiktok: "/assets/social/tiktok.svg",
+  reddit: "/assets/social/reddit.svg",
+  instagram: "/assets/social/instagram.svg",
+  x: "/assets/social/x.svg",
+};
+
+/* the marks aren't square, so the box is fixed and the artwork letterboxes
+   inside it rather than stretching */
+function Mark({ src, size }: { src: string; size: number }) {
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt="" style={{ width: size, height: size }} className="object-contain" />
+  );
+}
 
 export function PlatformIcon({ platform, size = 16 }: { platform: SocialPlatform; size?: number }) {
-  switch (platform) {
-    case "tiktok":
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className="text-black [filter:drop-shadow(-1px_0_#25F4EE)_drop-shadow(1px_0_#FE2C55)]" aria-hidden>
-          <path d="M12.53.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" />
-        </svg>
-      );
-    case "reddit":
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="text-[#ff4500]" aria-hidden>
-          <ellipse cx="12" cy="14" rx="7.5" ry="5.4" />
-          <path d="M12 8.7l1.2-4.2 3.3.8" />
-          <circle cx="17.1" cy="5.6" r="1.2" fill="currentColor" stroke="none" />
-          <circle cx="4.1" cy="11.6" r="1.5" />
-          <circle cx="19.9" cy="11.6" r="1.5" />
-          <circle cx="9.3" cy="13.5" r="1" fill="currentColor" stroke="none" />
-          <circle cx="14.7" cy="13.5" r="1" fill="currentColor" stroke="none" />
-          <path d="M9.3 16.4c1.8 1.3 3.6 1.3 5.4 0" />
-        </svg>
-      );
-    case "instagram":
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" className="text-[#e1306c]" aria-hidden>
-          <rect x="3" y="3" width="18" height="18" rx="5" />
-          <circle cx="12" cy="12" r="4.1" />
-          <circle cx="17.3" cy="6.7" r="1.1" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case "x":
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-          <path d="M18.9 1.15h3.68l-8.04 9.19L24 22.85h-7.41l-5.8-7.59-6.64 7.59H.47l8.6-9.83L0 1.15h7.59l5.25 6.93L18.9 1.15zm-1.29 19.49h2.04L6.49 3.24H4.3l13.31 17.4z" />
-        </svg>
-      );
-  }
+  return <Mark src={platformMark[platform]} size={size} />;
 }
 
 function AllIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
-      <path d="M4 7h9M17.5 7H20M4 12h3M11 12h9M4 17h11M19 17h1" />
-      <circle cx="15" cy="7" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="9" cy="12" r="1.6" fill="currentColor" stroke="none" />
-      <circle cx="17" cy="17" r="1.6" fill="currentColor" stroke="none" />
-    </svg>
-  );
+  return <Mark src="/assets/social/all.svg" size={size} />;
 }
 
 /* ---------------- carousel arrow ---------------- */
@@ -196,6 +173,8 @@ export function SocialPulse({ id }: { id: string }) {
         <div className="ml-auto flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter posts by platform">
           {filters.map((f) => {
             const active = filter === f.id;
+            /* the marks are images now, so the active pill knocks them back to
+               white with a filter rather than currentColor */
             return (
               <button
                 key={f.id}
@@ -209,8 +188,8 @@ export function SocialPulse({ id }: { id: string }) {
                 title={f.label}
                 className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 sm:h-9 sm:w-9 ${
                   active
-                    ? "border-orange bg-orange text-white"
-                    : "border-line bg-card text-ink hover:border-graphite/40"
+                    ? "border-orange bg-orange [&_img]:brightness-0 [&_img]:invert"
+                    : "border-line bg-card hover:border-graphite/40"
                 }`}
               >
                 {f.id === "all" ? <AllIcon /> : <PlatformIcon platform={f.id} />}

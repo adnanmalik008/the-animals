@@ -165,6 +165,9 @@ export interface CreatorVideo {
   /** thumbnail wordmark, two segments — second renders in the blue box */
   markA: string;
   markB: string;
+  /** the design's own thumbnail; the growth banner, play button and
+      wordmark are part of the artwork, so nothing is drawn over it */
+  thumb: string;
   link?: string;
   /** YouTube id; when set, the fullscreen player streams the real video */
   videoId?: string;
@@ -173,6 +176,7 @@ export interface CreatorVideo {
 export const creatorVideos: CreatorVideo[] = [
   {
     id: "yv-1",
+    thumb: "/assets/youtube/blueprint.jpg",
     title: "The Evo SL effect: a running reset",
     description: "How one daily trainer rewired sneaker YouTube's entire review economy.",
     growthFrom: "0 followers",
@@ -182,6 +186,7 @@ export const creatorVideos: CreatorVideo[] = [
   },
   {
     id: "yv-2",
+    thumb: "/assets/youtube/stride.jpg",
     title: "Run clubs: the US perspective",
     description: "US coverage examining social running's takeover of city culture.",
     growthFrom: "12K followers",
@@ -191,6 +196,7 @@ export const creatorVideos: CreatorVideo[] = [
   },
   {
     id: "yv-3",
+    thumb: "/assets/youtube/blueprint.jpg",
     title: "Terrace shoes, explained in 12 minutes",
     description: "From Spezial forums to front rows — how the terraces conquered retail.",
     growthFrom: "3K followers",
@@ -200,6 +206,7 @@ export const creatorVideos: CreatorVideo[] = [
   },
   {
     id: "yv-4",
+    thumb: "/assets/youtube/stride.jpg",
     title: "Marathon majors are broken",
     description: "Lottery odds, charity bids, and the economics locking runners out.",
     growthFrom: "40K followers",

@@ -7,60 +7,22 @@ import { CarouselArrow } from "./SocialPulse";
 import { StickerDropZone } from "./stickers";
 
 /* ============================================================
-   YouTube Voices — creator watch. Mock thumbnails (pure CSS)
-   carry a white growth banner: where the channel started, and
-   where covering this beat has taken it.
+   YouTube Voices — creator watch. The thumbnails are the design's
+   own artwork (239:4988): the white growth banner, the play button
+   and the channel wordmark are baked into each image, so nothing
+   is drawn over them.
    ============================================================ */
-
-function GrowthBanner({ from, to }: { from: string; to: string }) {
-  return (
-    <div className="absolute left-0 right-0 top-3 flex items-center gap-2 bg-white px-2 py-1.5 shadow-sm">
-      <span className="shrink-0 text-[10px] font-bold leading-none text-ink">{from}</span>
-      {/* dashed arrow */}
-      <svg className="h-2.5 min-w-0 flex-1" viewBox="0 0 100 10" preserveAspectRatio="none" aria-hidden>
-        <line x1="0" y1="5" x2="92" y2="5" stroke="currentColor" strokeWidth="1.6" strokeDasharray="4 3" className="text-ink" />
-        <path d="M92 1l7 4-7 4z" fill="currentColor" className="text-ink" />
-      </svg>
-      <span className="shrink-0 bg-bg3 px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">{to}</span>
-    </div>
-  );
-}
 
 /* The thumbnail art, shared by the card and the fullscreen stage. */
 function Thumbnail({ video, large = false }: { video: CreatorVideo; large?: boolean }) {
   return (
-    <>
-      {/* faint desk glow */}
-      <div
-        aria-hidden
-        className="absolute inset-0"
-        style={{ background: "radial-gradient(ellipse 60% 55% at 50% 62%, rgba(255,255,255,0.14), transparent 70%)" }}
-      />
-      <GrowthBanner from={video.growthFrom} to={video.growthTo} />
-      <span
-        className={`absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-ink shadow-md ${
-          large ? "h-16 w-16" : "h-10 w-10"
-        }`}
-        aria-hidden
-      >
-        <svg width={large ? 24 : 14} height={large ? 24 : 14} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M8 5v14l11-7z" />
-        </svg>
-      </span>
-      {/* channel wordmark */}
-      <span className="absolute bottom-2.5 left-0 right-0 flex items-baseline justify-center gap-1 lowercase">
-        <span className={`font-extrabold tracking-tight text-white ${large ? "text-4xl" : "text-lg"}`}>
-          {video.markA}
-        </span>
-        <span
-          className={`rounded-sm bg-blue2 px-1 pb-0.5 font-extrabold leading-none tracking-tight text-white ${
-            large ? "text-4xl" : "text-lg"
-          }`}
-        >
-          {video.markB}
-        </span>
-      </span>
-    </>
+    /* eslint-disable-next-line @next/next/no-img-element */
+    <img
+      src={video.thumb}
+      alt={video.title}
+      loading={large ? undefined : "lazy"}
+      className="absolute inset-0 h-full w-full object-cover"
+    />
   );
 }
 
@@ -144,7 +106,7 @@ function VideoCard({ video, onOpen }: { video: CreatorVideo; onOpen: (v: Creator
       })}
     >
       <article className="flex h-full flex-col">
-        {/* thumbnail mock — dark CSS art, no external images */}
+        {/* the design's own thumbnail; the gradient only shows while it loads */}
         <button
           type="button"
           onClick={() => onOpen(video)}
