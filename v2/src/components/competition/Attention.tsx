@@ -1,6 +1,8 @@
 import { Module } from "@/components/modules/ModuleColumn";
 import { channelMix, type ChannelBubble, type CompetitorMix } from "@/data/competition";
 import { BrandMark } from "./BrandMark";
+import { AnimalView } from "./AnimalView";
+import { MediaOverlap } from "./MediaOverlap";
 import { DarkPanel, Kicker, Subtitle, bigTitle } from "./ui";
 
 /* "What's Driving Their Attention" — radial channel-bubble ring per competitor.
@@ -130,7 +132,7 @@ function CompetitorCard({ mix }: { mix: CompetitorMix }) {
 
 export function Attention({ id }: { id: string }) {
   return (
-    <Module id={id} title="What's Driving Their Attention" titleClassName={bigTitle}>
+    <Module id={id} variant="panel" title="What's Driving Their Attention" titleClassName={bigTitle}>
       <Subtitle>How the category shows up.</Subtitle>
       <DarkPanel className="mt-5">
         <Kicker>Channel Mix</Kicker>
@@ -140,6 +142,12 @@ export function Attention({ id }: { id: string }) {
           ))}
         </div>
       </DarkPanel>
+
+      {/* the design pairs the overlap matrix with this section's read */}
+      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <MediaOverlap />
+        <AnimalView section={id} />
+      </div>
     </Module>
   );
 }

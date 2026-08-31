@@ -8,6 +8,7 @@ import {
   type HorizonStatus,
 } from "@/data/competition";
 import { BrandMark } from "./BrandMark";
+import { AnimalView } from "./AnimalView";
 import { DarkPanel, Subtitle, bigTitle } from "./ui";
 
 /* "On the Horizon" — forward signals per competitor. Static. */
@@ -79,7 +80,7 @@ function BrandColumn({ column }: { column: HorizonColumn }) {
 
 export function Horizon({ id }: { id: string }) {
   return (
-    <Module id={id} title="On the Horizon" titleClassName={bigTitle}>
+    <Module id={id} variant="panel" title="On the Horizon" titleClassName={bigTitle}>
       <Subtitle>
         What the competition is about to do — investments, patents, hires and deals that
         reveal the next move before the launch.
@@ -108,6 +109,7 @@ export function Horizon({ id }: { id: string }) {
           ))}
         </div>
       </DarkPanel>
+      <AnimalView section={id} className="mt-5" />
     </Module>
   );
 }

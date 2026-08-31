@@ -1,11 +1,9 @@
 "use client";
 
 import { ModuleColumn } from "@/components/modules/ModuleColumn";
-import { AnimalView } from "./AnimalView";
 import { Attention } from "./Attention";
 import { FindThem } from "./FindThem";
 import { Horizon } from "./Horizon";
-import { MediaOverlap } from "./MediaOverlap";
 import { ShowUp } from "./ShowUp";
 
 /* Competition — the dark editorial board. One full-width column on a
@@ -15,10 +13,6 @@ function renderModule(id: string) {
   switch (id) {
     case "attention":
       return <Attention key={id} id={id} />;
-    case "media-overlap":
-      return <MediaOverlap key={id} id={id} />;
-    case "animal-view":
-      return <AnimalView key={id} id={id} />;
     case "show-up":
       return <ShowUp key={id} id={id} />;
     case "find-them":
@@ -32,17 +26,14 @@ function renderModule(id: string) {
 
 export function CompetitionBoard() {
   return (
-    <main className="w-full flex-1 bg-ink text-white">
+    /* the design floats the sections as dark slabs on the light page, so the
+       canvas stays light and each Module carries its own black panel */
+    <main className="w-full flex-1 bg-bg text-ink">
       <div className="mx-auto max-w-[1560px]">
         <ModuleColumn
-          ids={[
-            "attention",
-            "media-overlap",
-            "animal-view",
-            "show-up",
-            "find-them",
-            "horizon",
-          ]}
+          /* four sections, as the design has them — Media Overlap and each
+             section's Animal View live inside their section */
+          ids={["attention", "show-up", "find-them", "horizon"]}
           render={renderModule}
           className="px-4 py-6 sm:px-8"
         />

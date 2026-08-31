@@ -25,7 +25,7 @@ import { wildCams } from "@/data/wild";
 import {
   aiObservations,
   aiProfiles,
-  analystNote,
+  analystNotes,
   channelMix,
   homepageCards,
   horizon,
@@ -58,7 +58,7 @@ export const MODULE_TEMPLATES: Record<string, unknown> = {
   "wild-cams": { cams: wildCams },
   "channel-mix": { competitors: channelMix },
   "media-overlap": { brands: overlapBrands, rows: mediaOverlap },
-  "animal-view": analystNote,
+  "animal-view": analystNotes,
   "show-up": { homepage: homepageCards, social: socialCards },
   "ai-profile": { rows: aiProfiles, observations: aiObservations },
   "search-landscape": { rows: searchLandscape },

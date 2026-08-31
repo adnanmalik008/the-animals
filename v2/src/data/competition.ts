@@ -102,17 +102,61 @@ export const sharedByAllCount = mediaOverlap.filter(isSharedByAll).length;
 
 /* ---------------- Animal View ---------------- */
 
-export const analystNote = {
-  title: "Animal View",
-  date: "9 June 2026",
-  headline: "The Crowded Pond",
-  /** Rendered bold small-caps at the start of the first paragraph. */
-  lede: "Patagonia, Arc'teryx, and The North Face",
-  paragraphs: [
-    "are running the same play. Mountain imagery. Extreme conditions. A lone figure against an unforgiving landscape.",
-    "The message barely changes — only the logo does. Search and Social are universal. Every brand is bidding on the same intent, chasing the same scroll. The creative is aspirational and the copy is functional.",
-    "Performance credentials on the left, purpose signalling on the right. The category has agreed, without meeting, on what outdoor means: altitude, effort, and the implication that buying the jacket is the first step to becoming the person wearing it. This is the default brief. And it's already occupied.",
-  ],
+export interface AnalystNote {
+  title: string;
+  date: string;
+  headline: string;
+  /** Bold opener that runs into the first paragraph. */
+  lede?: string;
+  /** The Attention note sets its lede in small caps; Horizon keeps sentence case. */
+  ledeCaps?: boolean;
+  paragraphs: string[];
+}
+
+/* Each of the four sections closes on its own Animal View, as the design does. */
+export const analystNotes: Record<string, AnalystNote> = {
+  attention: {
+    title: "Animal View",
+    date: "9 June 2026",
+    headline: "The Crowded Pond",
+    lede: "Patagonia, Arc'teryx, and The North Face",
+    ledeCaps: true,
+    paragraphs: [
+      "are running the same play. Mountain imagery. Extreme conditions. A lone figure against an unforgiving landscape.",
+      "The message barely changes — only the logo does. Search and Social are universal. Every brand is bidding on the same intent, chasing the same scroll. The creative is aspirational and the copy is functional.",
+      "Performance credentials on the left, purpose signalling on the right. The category has agreed, without meeting, on what outdoor means: altitude, effort, and the implication that buying the jacket is the first step to becoming the person wearing it. This is the default brief. And it's already occupied.",
+    ],
+  },
+  "show-up": {
+    title: "Animal View",
+    date: "9 June 2026",
+    headline: "One World, Three Logos.",
+    paragraphs: [
+      "From homepage to display ad, the three brands render as variations of the same asset pack — mountains, weather, a solitary silhouette, a promise of capability. The First Word softens into lifestyle, the Twelve Squares look like the same mood board with different filters, and the Window Display is where the mask slips — even Patagonia is leading with a discount.",
+      "Above the fold each brand is aspirational; below the fold each is transactional. The distance between purpose and price is where every one of them lives — and none of them owns it.",
+      "Six layers, one world. Swap the logos and the story barely moves.",
+    ],
+  },
+  "find-them": {
+    title: "Animal View",
+    date: "9 June 2026",
+    headline: "Buying Back Their Own Audience.",
+    paragraphs: [
+      "Discovery is quietly shifting under all three. Arc'teryx is the only brand growing in both organic and AI citation — earning trust where the answer is written. Patagonia is the loudest voice in the model but the weakest to convert, and its organic traffic is falling — the paid spend hike is compensation, not strategy. The North Face still leads on scale but is coasting on legacy authority, not new signal.",
+      "The paid copy tells the same story: interchangeable headlines, free shipping, guarantee claims, discounts. A category paying Google to send back the traffic its brand used to earn.",
+      "The organic well is drying up. Everyone is bidding to stay visible on their own name.",
+    ],
+  },
+  horizon: {
+    title: "Animal View",
+    date: "9 June 2026",
+    headline: "The next 12 months are pre-written",
+    lede: "Patagonia",
+    paragraphs: [
+      "is investing in the chemistry story — PFAS-free, mycelium, repair-as-service. Arc'teryx is buying the community and shared foam IP it never grew. The North Face is quietly hedging out of cold weather entirely — cooling fabrics, modular fills, a Seoul hire that isn't about mountains.",
+      "None of this is on their homepages yet. All of it is in the filings, the funds, and the LinkedIn posts. The launch is a formality.",
+    ],
+  },
 };
 
 /* ---------------- How They Show Up ---------------- */

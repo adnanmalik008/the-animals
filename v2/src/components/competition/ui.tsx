@@ -2,9 +2,10 @@ import type { ReactNode } from "react";
 
 /* Small shared pieces for the dark Competition board. */
 
-/** MODULE title classes — huge black uppercase on the dark canvas. */
+/** Section titles — SF Pro Display Semibold 48px, 110% line height, no
+    letter spacing, per the design's type panel. */
 export const bigTitle =
-  "text-2xl font-black uppercase tracking-tight text-white sm:text-4xl";
+  "font-display text-[32px] font-semibold uppercase leading-[1.1] tracking-normal text-white sm:text-[48px]";
 
 /** Panel-style module title (Media Overlap / Animal View headers). */
 export const panelTitle = "text-lg font-semibold tracking-tight text-white";

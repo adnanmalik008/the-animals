@@ -14,6 +14,7 @@ import {
   type TextAd,
 } from "@/data/competition";
 import { BrandMark } from "./BrandMark";
+import { AnimalView } from "./AnimalView";
 import { DarkPanel, GroupHeading, Kicker, bigTitle } from "./ui";
 
 /* "How People Find Them" — the AI Search Visibility layout re-rendered
@@ -181,7 +182,7 @@ function SeoCard({ card }: { card: SearchLandscapeCard }) {
 
 export function FindThem({ id }: { id: string }) {
   return (
-    <Module id={id} title="How People Find Them" titleClassName={bigTitle}>
+    <Module id={id} variant="panel" title="How People Find Them" titleClassName={bigTitle}>
       <DarkPanel className="mt-5">
         <Kicker>Machine Vision</Kicker>
         <GroupHeading>Their AI Profile</GroupHeading>
@@ -215,6 +216,7 @@ export function FindThem({ id }: { id: string }) {
           <ObservationPanel text={paidObservations} />
         </div>
       </DarkPanel>
+      <AnimalView section={id} className="mt-5" />
     </Module>
   );
 }

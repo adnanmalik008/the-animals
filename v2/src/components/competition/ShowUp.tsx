@@ -7,6 +7,7 @@ import {
   type ShowUpCard,
   type SocialCard,
 } from "@/data/competition";
+import { AnimalView } from "./AnimalView";
 import { DarkPanel, GroupHeading, Kicker, bigTitle } from "./ui";
 
 /* "How They Show Up" — three layers of the same brand, captured from the
@@ -109,7 +110,7 @@ function MarketCard({ card }: { card: SocialCard }) {
 
 export function ShowUp({ id }: { id: string }) {
   return (
-    <Module id={id} title="How They Show Up" titleClassName={bigTitle}>
+    <Module id={id} variant="panel" title="How They Show Up" titleClassName={bigTitle}>
       <DarkPanel className="mt-5">
         <Kicker>Homepage</Kicker>
         <GroupHeading>Their First Word</GroupHeading>
@@ -139,6 +140,7 @@ export function ShowUp({ id }: { id: string }) {
           </div>
         </div>
       </DarkPanel>
+      <AnimalView section={id} className="mt-5" />
     </Module>
   );
 }

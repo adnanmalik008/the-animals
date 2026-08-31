@@ -1,14 +1,15 @@
-import { Module } from "@/components/modules/ModuleColumn";
 import {
   isSharedByAll,
   mediaOverlap,
   overlapBrands,
   sharedByAllCount,
 } from "@/data/competition";
-import { DarkPanel, panelTitle } from "./ui";
+import { DarkPanel } from "./ui";
 
-/* Media Overlap — dark presence matrix. Static except for the
-   cell-pulse on the dots of rows shared by all three brands. */
+/* Media Overlap — dark presence matrix. The design sits it beside the
+   Attention section's Animal View rather than giving it a section of its
+   own, so it is a card. Static except for the cell-pulse on the dots of
+   rows shared by all three brands. */
 
 function Dot({ present, shared, label }: { present: boolean; shared: boolean; label: string }) {
   if (!present) {
@@ -28,23 +29,20 @@ function Dot({ present, shared, label }: { present: boolean; shared: boolean; la
   );
 }
 
-export function MediaOverlap({ id }: { id: string }) {
+export function MediaOverlap({ className = "" }: { className?: string }) {
   return (
-    <Module
-      id={id}
-      title="Media Overlap"
-      titleClassName={panelTitle}
-      headerExtra={
-        <span className="ml-auto mr-8 whitespace-nowrap text-xs text-white/50">
+    <section aria-label="Media Overlap" className={className}>
+      <div className="flex items-baseline justify-between gap-4">
+        <h3 className="text-lg font-semibold tracking-tight text-white">Media Overlap</h3>
+        <span className="whitespace-nowrap text-xs text-white/50">
           {sharedByAllCount} shared by all
         </span>
-      }
-    >
+      </div>
       <DarkPanel className="mt-4">
         {/* relative + min-w-0: keeps the wide table clipped to the panel
             instead of stretching the page at mobile widths */}
         <div className="relative min-w-0 overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
+          <table className="w-full min-w-[430px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-white/10 text-left">
                 <th scope="col" className="py-2.5 pl-3 pr-4 font-serif text-sm font-normal italic text-white/40">
@@ -109,6 +107,6 @@ export function MediaOverlap({ id }: { id: string }) {
           </table>
         </div>
       </DarkPanel>
-    </Module>
+    </section>
   );
 }
