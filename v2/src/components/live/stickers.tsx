@@ -482,7 +482,7 @@ export function StickerDropZone({
     <div
       {...targetProps}
       className={`relative rounded-xl transition-shadow duration-300 motion-reduce:transition-none ${
-        tagged !== undefined ? "ring-2 ring-orange/60 ring-offset-4 ring-offset-transparent" : isOver ? "ring-2 ring-orange ring-offset-4 ring-offset-transparent" : ""
+        tagged !== undefined ? "outline-2 outline-orange/60 outline-offset-4" : isOver ? "outline-2 outline-orange outline-offset-4" : ""
       } ${className}`}
     >
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}

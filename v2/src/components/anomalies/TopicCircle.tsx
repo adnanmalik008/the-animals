@@ -315,7 +315,7 @@ export function TopicPanel({
     <section
       {...dropProps}
       className={`rounded-3xl p-4 transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
-        isOver ? "ring-2 ring-orange ring-offset-4 ring-offset-transparent" : ""
+        isOver ? "outline-2 outline-orange outline-offset-4" : ""
       }`}
       aria-label={circle.name}
     >

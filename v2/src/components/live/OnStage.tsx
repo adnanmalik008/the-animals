@@ -50,9 +50,9 @@ export function OnStage({ id }: { id: string }) {
                   {...(ev.id === current.id ? targetProps : {})}
                   className={`relative rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
                     ev.id === current.id && tagged !== undefined
-                      ? "ring-2 ring-orange/60 ring-offset-4 ring-offset-transparent"
+                      ? "outline-2 outline-orange/60 outline-offset-4"
                       : ev.id === current.id && isOver
-                        ? "ring-2 ring-orange ring-offset-4 ring-offset-transparent"
+                        ? "outline-2 outline-orange outline-offset-4"
                         : ""
                   }`}
                 >
