@@ -36,7 +36,10 @@ export function OnStage({ id }: { id: string }) {
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
       >
-        <div className="overflow-hidden">
+        {/* the slide clip only needs to hide the neighbours horizontally, so
+            it is given vertical room back — otherwise it shaves the drop
+            target's ring off the top */}
+        <div className="overflow-hidden -my-1 py-1">
           <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${index * 100}%)` }}

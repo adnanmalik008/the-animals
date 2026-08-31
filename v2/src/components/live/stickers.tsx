@@ -65,6 +65,20 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
+  /* updaters must stay pure — React may run them twice — so writes to the
+     insight store and to localStorage happen here, against a mirror of the
+     current tags rather than inside setTags */
+  const tagsRef = useRef(tags);
+  const commitTags = useCallback((next: Record<string, StickerTag>) => {
+    tagsRef.current = next;
+    setTags(next);
+    try {
+      localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
+    } catch {
+      /* quota/private mode — in-memory only */
+    }
+  }, []);
+
   /* tags survive a reload so a tagged article stays visibly tagged */
   useEffect(() => {
     const raf = requestAnimationFrame(() => {
@@ -72,14 +86,15 @@ export function StickerProvider({ children }: { children: ReactNode }) {
         const raw = localStorage.getItem(TAG_STORE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw) as Record<string, StickerTag | number>;
-          setTags(
-            Object.fromEntries(
-              Object.entries(parsed).map(([key, value]) => [
-                key,
-                typeof value === "number" ? { shade: value, x: 6, y: 10 } : value,
-              ])
-            )
+          const restored = Object.fromEntries(
+            Object.entries(parsed).map(([key, value]) => [
+              key,
+              typeof value === "number" ? { shade: value, x: 6, y: 10 } : value,
+            ])
           );
+          /* seed the mirror too, or the next sticker would drop the restored tags */
+          tagsRef.current = restored;
+          setTags(restored);
         }
       } catch {
         /* unavailable or corrupted — start clean */
@@ -100,22 +115,14 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       const shade = used % 3;
       const insight = addInsight(payload);
 
-      setTags((prev) => {
-        const next = {
-          ...prev,
-          [key]: {
-            shade,
-            x: Math.max(4, Math.min(96, position.x)),
-            y: Math.max(6, Math.min(94, position.y)),
-            insightId: insight.id,
-          },
-        };
-        try {
-          localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
-        } catch {
-          /* quota/private mode — in-memory only */
-        }
-        return next;
+      commitTags({
+        ...tagsRef.current,
+        [key]: {
+          shade,
+          x: Math.max(4, Math.min(96, position.x)),
+          y: Math.max(6, Math.min(94, position.y)),
+          insightId: insight.id,
+        },
       });
 
       /* Rolodex: the used sticker leaves; the queue advances */
@@ -130,27 +137,20 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       toastTimer.current = setTimeout(() => setToast(null), 2400);
       return true;
     },
-    [used]
+    [used, commitTags]
   );
 
   const removeSticker = useCallback((key: string) => {
-    setTags((prev) => {
-      const tag = prev[key];
-      if (!tag) return prev;
-      if (tag.insightId) removeInsight(tag.insightId);
-      const next = { ...prev };
-      delete next[key];
-      try {
-        localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
-      } catch {
-        /* quota/private mode — in-memory only */
-      }
-      return next;
-    });
+    const tag = tagsRef.current[key];
+    if (!tag) return;
+    if (tag.insightId) removeInsight(tag.insightId);
+    const next = { ...tagsRef.current };
+    delete next[key];
+    commitTags(next);
     setToast({ msg: "Sticker returned to the tray", key: Date.now() });
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2400);
-  }, []);
+  }, [commitTags]);
 
   /* Escape disarms */
   useEffect(() => {
@@ -262,6 +262,13 @@ export function StickerTray() {
   const liveStickerRef = useRef<HTMLImageElement | null>(null);
   const [inHand, setInHand] = useState(false);
   const [removeOver, setRemoveOver] = useState(false);
+
+  /* The live sticker is keyed on `used`, so a successful drop swaps it for a
+     fresh one mid-drag — the dragged element unmounts and its dragend never
+     fires. Clear the hand here too, or the centre slot stays empty. */
+  useEffect(() => {
+    setInHand(false);
+  }, [used]);
 
   return (
     <div

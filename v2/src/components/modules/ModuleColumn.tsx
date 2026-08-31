@@ -131,7 +131,7 @@ export function Module({
   titleClassName?: string;
   headerExtra?: ReactNode;
   children: ReactNode;
-  variant?: "plain" | "editorial";
+  variant?: "plain" | "editorial" | "panel";
 }) {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("Module must be used inside ModuleColumn");
@@ -151,9 +151,15 @@ export function Module({
         e.preventDefault();
         ctx.onDrop();
       }}
-      className={`group/module relative border-b border-line/70 py-4 transition-shadow ${
-        ctx.dragId === id ? "opacity-60" : ""
-      } ${isDragTarget ? "shadow-[inset_0_3px_0_0_var(--orange)]" : ""}`}
+      className={`group/module relative transition-shadow ${
+        /* Competition sets each section on its own rounded slab, the way the
+           design separates them; every other board keeps the ruled divider. */
+        variant === "panel"
+          ? "mb-10 rounded-3xl bg-ink px-5 py-6 text-white last:mb-0 sm:px-7"
+          : "border-b border-line/70 py-4"
+      } ${ctx.dragId === id ? "opacity-60" : ""} ${
+        isDragTarget ? "shadow-[inset_0_3px_0_0_var(--orange)]" : ""
+      }`}
     >
       {/* 6-dot drag handle */}
       <div
@@ -166,7 +172,10 @@ export function Module({
         title="Drag to reorder"
         aria-label={`Reorder ${title}`}
         role="button"
-        className="absolute right-2 top-4 cursor-grab rounded-md p-1.5 text-graphite/70 transition-colors hover:bg-ink/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 active:cursor-grabbing"
+        className={`absolute right-2 top-4 cursor-grab rounded-md p-1.5 text-graphite/70 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 active:cursor-grabbing ${
+          /* on a dark slab the ink hover would vanish into the panel */
+          variant === "panel" ? "hover:bg-white/10 hover:text-white" : "hover:bg-ink/5 hover:text-ink"
+        }`}
         tabIndex={0}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
@@ -198,7 +207,7 @@ export function Module({
             stroke="currentColor"
             strokeWidth="2.5"
             aria-hidden
-            className={`shrink-0 text-graphite transition-transform ${open ? "" : "-rotate-90"}`}
+            className={`shrink-0 text-graphite transition-transform ${open ? "rotate-180" : ""}`}
           >
             <path d="M6 9l6 6 6-6" />
           </svg>
@@ -222,10 +231,18 @@ export function Module({
           open ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
         }`}
       >
-        {/* the collapse clip is widened to the column's padding and given it
-            back, so a row can bleed its paper to the panel edge without the
-            content moving */}
-        <div className="min-h-0 overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8">{children}</div>
+        {/* The clip is widened and given the space straight back as padding, so
+            content never moves: horizontally so a row can bleed its paper to the
+            panel edge, vertically so a drop target's outward ring is not shaved
+            off at the boundary. The vertical pair is dropped while closed —
+            collapsed, the negative margin would have nothing to cancel it. */}
+        <div
+          className={`min-h-0 overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8 ${
+            open ? "-my-1 py-1" : ""
+          }`}
+        >
+          {children}
+        </div>
       </div>
     </section>
   );
