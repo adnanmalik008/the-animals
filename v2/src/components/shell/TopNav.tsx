@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { BoardProgress } from "./BoardProgress";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { useBoardMeta } from "@/components/board/BoardDataContext";
@@ -53,9 +54,7 @@ export function TopNav() {
               </Link>
             );
           })}
-          <span className="ml-1 rounded-full border border-line px-2.5 py-1 text-xs text-graphite">
-            {boardMeta.progressPct}%
-          </span>
+          <BoardProgress fallbackPct={boardMeta.progressPct} />
         </nav>
 
         {/* Right cluster */}
