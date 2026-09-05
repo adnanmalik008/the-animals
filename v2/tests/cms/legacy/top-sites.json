@@ -1,0 +1,152 @@
+{
+  "news": [
+    {
+      "id": "ts-n1",
+      "label": "CNN",
+      "audience": 78,
+      "average": 62
+    },
+    {
+      "id": "ts-n2",
+      "label": "BBC",
+      "audience": 92,
+      "average": 70
+    },
+    {
+      "id": "ts-n3",
+      "label": "NYT",
+      "audience": 64,
+      "average": 48
+    },
+    {
+      "id": "ts-n4",
+      "label": "Reuters",
+      "audience": 88,
+      "average": 58
+    },
+    {
+      "id": "ts-n5",
+      "label": "Bloomberg",
+      "audience": 71,
+      "average": 54
+    },
+    {
+      "id": "ts-n6",
+      "label": "TechCrunch",
+      "audience": 96,
+      "average": 66
+    },
+    {
+      "id": "ts-n7",
+      "label": "The Verge",
+      "audience": 82,
+      "average": 60
+    },
+    {
+      "id": "ts-n8",
+      "label": "Wired",
+      "audience": 90,
+      "average": 68
+    }
+  ],
+  "social": [
+    {
+      "id": "ts-s1",
+      "label": "Reddit",
+      "audience": 94,
+      "average": 61
+    },
+    {
+      "id": "ts-s2",
+      "label": "TikTok",
+      "audience": 88,
+      "average": 72
+    },
+    {
+      "id": "ts-s3",
+      "label": "Instagram",
+      "audience": 90,
+      "average": 78
+    },
+    {
+      "id": "ts-s4",
+      "label": "YouTube",
+      "audience": 97,
+      "average": 84
+    },
+    {
+      "id": "ts-s5",
+      "label": "Strava",
+      "audience": 82,
+      "average": 34
+    },
+    {
+      "id": "ts-s6",
+      "label": "X",
+      "audience": 58,
+      "average": 49
+    },
+    {
+      "id": "ts-s7",
+      "label": "Discord",
+      "audience": 46,
+      "average": 28
+    },
+    {
+      "id": "ts-s8",
+      "label": "Facebook",
+      "audience": 52,
+      "average": 64
+    }
+  ],
+  "searchai": [
+    {
+      "id": "ts-a1",
+      "label": "Google",
+      "audience": 98,
+      "average": 92
+    },
+    {
+      "id": "ts-a2",
+      "label": "ChatGPT",
+      "audience": 84,
+      "average": 58
+    },
+    {
+      "id": "ts-a3",
+      "label": "Gemini",
+      "audience": 62,
+      "average": 44
+    },
+    {
+      "id": "ts-a4",
+      "label": "Perplexity",
+      "audience": 48,
+      "average": 22
+    },
+    {
+      "id": "ts-a5",
+      "label": "Bing",
+      "audience": 34,
+      "average": 38
+    },
+    {
+      "id": "ts-a6",
+      "label": "Claude",
+      "audience": 41,
+      "average": 23
+    },
+    {
+      "id": "ts-a7",
+      "label": "Copilot",
+      "audience": 36,
+      "average": 30
+    },
+    {
+      "id": "ts-a8",
+      "label": "DuckDuckGo",
+      "audience": 22,
+      "average": 18
+    }
+  ]
+}

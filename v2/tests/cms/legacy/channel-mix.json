@@ -1,0 +1,139 @@
+{
+  "competitors": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "domain": "patagonia.com",
+      "activeLabel": "5 : 7",
+      "channels": [
+        {
+          "key": "direct",
+          "label": "Direct",
+          "pct": 16
+        },
+        {
+          "key": "referral",
+          "label": "Referral",
+          "pct": 0.7
+        },
+        {
+          "key": "social",
+          "label": "Social",
+          "pct": 26
+        },
+        {
+          "key": "organic",
+          "label": "Organic search",
+          "pct": 25
+        },
+        {
+          "key": "paid",
+          "label": "Paid search",
+          "pct": 0.6
+        },
+        {
+          "key": "display",
+          "label": "Display ADS",
+          "pct": 19
+        },
+        {
+          "key": "mail",
+          "label": "Mail",
+          "pct": 13
+        }
+      ],
+      "reachPct": 84,
+      "reachLabel": "High"
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "domain": "arcteryx.com",
+      "activeLabel": "5 : 7",
+      "channels": [
+        {
+          "key": "direct",
+          "label": "Direct",
+          "pct": 17
+        },
+        {
+          "key": "referral",
+          "label": "Referral",
+          "pct": 15
+        },
+        {
+          "key": "social",
+          "label": "Social",
+          "pct": 28
+        },
+        {
+          "key": "organic",
+          "label": "Organic search",
+          "pct": 24
+        },
+        {
+          "key": "paid",
+          "label": "Paid search",
+          "pct": 15
+        },
+        {
+          "key": "display",
+          "label": "Display ADS",
+          "pct": 0.7
+        },
+        {
+          "key": "mail",
+          "label": "Mail",
+          "pct": 0.6
+        }
+      ],
+      "reachPct": 30,
+      "reachLabel": "Low"
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "domain": "thenorthface.com",
+      "activeLabel": "5 : 7",
+      "channels": [
+        {
+          "key": "direct",
+          "label": "Direct",
+          "pct": 15
+        },
+        {
+          "key": "referral",
+          "label": "Referral",
+          "pct": 0.4
+        },
+        {
+          "key": "social",
+          "label": "Social",
+          "pct": 16
+        },
+        {
+          "key": "organic",
+          "label": "Organic search",
+          "pct": 28
+        },
+        {
+          "key": "paid",
+          "label": "Paid search",
+          "pct": 25
+        },
+        {
+          "key": "display",
+          "label": "Display ADS",
+          "pct": 15
+        },
+        {
+          "key": "mail",
+          "label": "Mail",
+          "pct": 0.5
+        }
+      ],
+      "reachPct": 56,
+      "reachLabel": "Medium"
+    }
+  ]
+}

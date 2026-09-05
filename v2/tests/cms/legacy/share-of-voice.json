@@ -1,0 +1,28 @@
+{
+  "rows": [
+    {
+      "id": "sov-brand",
+      "label": "Your Brand",
+      "pct": 42,
+      "color": "orange"
+    },
+    {
+      "id": "sov-nike",
+      "label": "Rival Co.",
+      "pct": 28,
+      "color": "blue"
+    },
+    {
+      "id": "sov-on",
+      "label": "Upstart Ltd",
+      "pct": 18,
+      "color": "green"
+    },
+    {
+      "id": "sov-nb",
+      "label": "Legacy Inc",
+      "pct": 12,
+      "color": "purple"
+    }
+  ]
+}

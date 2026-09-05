@@ -1,0 +1,145 @@
+{
+  "rows": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "stats": [
+        {
+          "label": "Authority Score",
+          "value": "76",
+          "tag": "Industry leader"
+        },
+        {
+          "label": "Ref. Domains",
+          "value": "61.7K"
+        },
+        {
+          "label": "Organic Traffic",
+          "value": "5.1M",
+          "delta": "-9.5%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Traffic",
+          "value": "200.7K",
+          "delta": "+34%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Traffic Share",
+          "value": "1.1M",
+          "delta": "-5.7%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Keywords",
+          "value": "1.1K",
+          "delta": "+23%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Branded Share",
+          "value": "29%"
+        },
+        {
+          "label": "Backlinks",
+          "value": "8.5M"
+        }
+      ]
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "stats": [
+        {
+          "label": "Authority Score",
+          "value": "73",
+          "tag": "Strong"
+        },
+        {
+          "label": "Ref. Domains",
+          "value": "24.3K"
+        },
+        {
+          "label": "Organic Traffic",
+          "value": "2.2M",
+          "delta": "-3.1%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Traffic",
+          "value": "88.4K",
+          "delta": "+51%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Traffic Share",
+          "value": "640K",
+          "delta": "-2.2%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Keywords",
+          "value": "720",
+          "delta": "+38%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Branded Share",
+          "value": "34%"
+        },
+        {
+          "label": "Backlinks",
+          "value": "3.1M"
+        }
+      ]
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "stats": [
+        {
+          "label": "Authority Score",
+          "value": "76",
+          "tag": "Industry leader"
+        },
+        {
+          "label": "Ref. Domains",
+          "value": "48.9K"
+        },
+        {
+          "label": "Organic Traffic",
+          "value": "4.4M",
+          "delta": "-6.8%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Traffic",
+          "value": "176.2K",
+          "delta": "+21%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Traffic Share",
+          "value": "990K",
+          "delta": "-4.9%",
+          "deltaTone": "down"
+        },
+        {
+          "label": "Paid Keywords",
+          "value": "1.4K",
+          "delta": "+12%",
+          "deltaTone": "up"
+        },
+        {
+          "label": "Branded Share",
+          "value": "41%"
+        },
+        {
+          "label": "Backlinks",
+          "value": "7.2M"
+        }
+      ]
+    }
+  ]
+}

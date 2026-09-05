@@ -1,0 +1,103 @@
+{
+  "posts": [
+    {
+      "id": "sp-1",
+      "platform": "tiktok",
+      "author": "@stridecollective",
+      "text": "POV: your Saturday run club has a waitlist longer than the marathon itself. 5:45am and 200 people showed up.",
+      "likes": "48.2K",
+      "comments": "1.2K",
+      "timeAgo": "3h ago",
+      "image": "/assets/sightings/london.jpg",
+      "imageAlt": "Run club gathering in London"
+    },
+    {
+      "id": "sp-2",
+      "platform": "reddit",
+      "author": "u/tempo_junkie",
+      "text": "Hot take: the Adizero Evo SL is the best daily trainer under $150 and it isn't close. Full 300-mile review inside.",
+      "likes": "2.4K",
+      "comments": "312",
+      "timeAgo": "5h ago",
+      "image": "/assets/sightings/berlin.jpg",
+      "imageAlt": "Performance footwear street sighting"
+    },
+    {
+      "id": "sp-3",
+      "platform": "instagram",
+      "author": "@sambasunday",
+      "text": "Sambas at the finish line, espresso in hand. Race day is a lifestyle now.",
+      "likes": "12.6K",
+      "comments": "214",
+      "timeAgo": "7h ago",
+      "image": "/assets/sightings/paris.jpg",
+      "imageAlt": "Race-day street style"
+    },
+    {
+      "id": "sp-4",
+      "platform": "x",
+      "author": "@lacedup_ldn",
+      "text": "adidas quietly seeding the new Evo to sub-3 marathoners only. Scarcity marketing meets PB culture.",
+      "likes": "3.1K",
+      "comments": "428",
+      "timeAgo": "2h ago",
+      "image": "/assets/sightings/ny.jpg",
+      "imageAlt": "Marathon runners in New York"
+    },
+    {
+      "id": "sp-5",
+      "platform": "tiktok",
+      "author": "@girlsthatrun",
+      "text": "Rating every run club in East London by their post-run pastry situation. Part 4: the croissant capital.",
+      "likes": "96K",
+      "comments": "2.3K",
+      "timeAgo": "1d ago",
+      "image": "/assets/sightings/manchester.jpg",
+      "imageAlt": "Runners meeting after a club run"
+    },
+    {
+      "id": "sp-6",
+      "platform": "instagram",
+      "author": "@trackhouse.archive",
+      "text": "1972 Munich spikes, restored stitch by stitch. Some shoes are museums.",
+      "likes": "8.4K",
+      "comments": "96",
+      "timeAgo": "12h ago",
+      "image": "/assets/sightings/tokyo.jpg",
+      "imageAlt": "Archive footwear display"
+    },
+    {
+      "id": "sp-7",
+      "platform": "reddit",
+      "author": "u/marathon_matt",
+      "text": "Pulled data from 400 Strava clubs: average group-run pace slowed 40s/mile since 2023. Social running is winning.",
+      "likes": "1.8K",
+      "comments": "267",
+      "timeAgo": "9h ago",
+      "image": "/assets/sightings/london.jpg",
+      "imageAlt": "Community running group"
+    },
+    {
+      "id": "sp-8",
+      "platform": "x",
+      "author": "@sneakerlawyer",
+      "text": "Terrace culture did more for adidas' 2025 balance sheet than every performance launch combined. Discuss.",
+      "likes": "5.7K",
+      "comments": "891",
+      "timeAgo": "6h ago",
+      "image": "/assets/sightings/berlin.jpg",
+      "imageAlt": "Terrace-inspired street style"
+    },
+    {
+      "id": "sp-9",
+      "platform": "tiktok",
+      "author": "@coachkofi",
+      "text": "Your shoes don't need more drop. You need more sleep. Anyway, here's my full rotation for 2026.",
+      "likes": "33K",
+      "comments": "780",
+      "timeAgo": "1d ago",
+      "image": "/assets/sightings/paris.jpg",
+      "imageAlt": "Coach sharing a shoe rotation"
+    }
+  ]
+}

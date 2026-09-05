@@ -1,0 +1,89 @@
+{
+  "quotes": [
+    {
+      "id": "cq-1",
+      "platform": "slack",
+      "context": "#shoe-lab · Run Club Collective",
+      "replyTo": "Is the Evo SL worth full retail?",
+      "text": "Half my club has stopped reading launch coverage entirely — the algorithm rewards rage-bait reviews now. The group chat is the only honest filter left.",
+      "author": "Priya N.",
+      "handle": "@priya.n",
+      "upvotes": 34,
+      "timeAgo": "2m ago"
+    },
+    {
+      "id": "cq-2",
+      "platform": "linkedin",
+      "context": "Comments · Run Culture Weekly post",
+      "replyTo": "The death of the brand ambassador",
+      "text": "The athletes I respect most quietly stopped posting. They DM, they pace club runs, they show up at 6am. The performance is exhausting.",
+      "author": "Sofia Alvarez",
+      "handle": "@sofia-alvarez",
+      "upvotes": 112,
+      "timeAgo": "38m ago"
+    },
+    {
+      "id": "cq-3",
+      "platform": "discord",
+      "context": "#gear-talk · Sub-3 Society",
+      "text": "Nobody in this server bought the last three colorways at retail. We're all watching the same two resale bots and pretending that's a community.",
+      "author": "Marcus Webb",
+      "handle": "@marcuswebb",
+      "upvotes": 58,
+      "timeAgo": "1h ago"
+    },
+    {
+      "id": "cq-4",
+      "platform": "whatsapp",
+      "context": "Sunday Long Run · 42 members",
+      "text": "The pacer-only drop got the whole chat talking again. First time a release felt like it was for us, not for the resellers.",
+      "author": "Dayo A.",
+      "handle": "@dayo.runs",
+      "upvotes": 21,
+      "timeAgo": "3h ago"
+    },
+    {
+      "id": "cq-5",
+      "platform": "slack",
+      "context": "#marathon-build · Distance Collective",
+      "text": "Carbon plates stopped being a flex. The flex now is showing up to a Tuesday session in whatever's already broken in.",
+      "author": "Jonas K.",
+      "handle": "@jonaskr",
+      "upvotes": 47,
+      "timeAgo": "5h ago"
+    },
+    {
+      "id": "cq-6",
+      "platform": "linkedin",
+      "context": "Comments · Sports Retail Digest post",
+      "replyTo": "Why run clubs beat billboards",
+      "text": "We measured it: one club captain seeding a shoe converts better than an entire out-of-home campaign. Community is the channel.",
+      "author": "Elena Marsh",
+      "handle": "@elena-marsh",
+      "upvotes": 89,
+      "timeAgo": "2h ago"
+    },
+    {
+      "id": "cq-7",
+      "platform": "discord",
+      "context": "#trail-den · Ultra Basement",
+      "replyTo": "Rotation check: what's actually getting miles?",
+      "text": "Everyone here owns the same six shoes. What we argue about is who actually runs in theirs.",
+      "author": "gravelghost",
+      "handle": "@gravelghost",
+      "upvotes": 33,
+      "timeAgo": "6h ago"
+    },
+    {
+      "id": "cq-8",
+      "platform": "whatsapp",
+      "context": "Track Tuesdays · 28 members",
+      "replyTo": "Kit order for autumn",
+      "text": "Vote's in: half the group wants the retro colours back. The new stuff photographs well but the old stuff gets worn.",
+      "author": "Nia T.",
+      "handle": "@nia.t",
+      "upvotes": 18,
+      "timeAgo": "8h ago"
+    }
+  ]
+}
