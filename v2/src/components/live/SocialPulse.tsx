@@ -12,8 +12,9 @@ import { StickerDropZone } from "./stickers";
 
 /* ---------------- platform marks ---------------- */
 
-/* the real brand marks exported from the design — tiktok, instagram and x are
-   monochrome black there, reddit keeps its orange roundel */
+/* the real brand marks exported from the design, recoloured to each platform's
+   official palette: tiktok's cyan/red glitch, instagram's gradient, reddit's
+   orange roundel. x's official mark is black, so it stays black */
 const platformMark: Record<SocialPlatform, string> = {
   tiktok: "/assets/social/tiktok.svg",
   reddit: "/assets/social/reddit.svg",
