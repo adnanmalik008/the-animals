@@ -9,45 +9,54 @@ import {
 } from "@/data/competition";
 import { BrandMark } from "./BrandMark";
 import { AnimalView } from "./AnimalView";
-import { DarkPanel, Subtitle, bigTitle } from "./ui";
+import { Subtitle, bigTitle } from "./ui";
 
-/* "On the Horizon" — forward signals per competitor. Static. */
+/* "On the Horizon" — forward signals per competitor, built to the design's
+   column: the brand on a 48px plate over "Forward Thesis", the thesis in
+   italic serif on a white/5 well, then one white/5 card per signal with a
+   kind chip, its date, a status dot, the headline, the detail, the source
+   and an orange-ruled "Implies". Static. */
 
+/* the legend's colours: hot in orange, warm in the second blue, watch in purple */
 const statusDot: Record<HorizonStatus, string> = {
-  hot: "bg-red",
-  warm: "bg-blue",
-  watch: "bg-green",
+  hot: "bg-orange",
+  warm: "bg-blue2",
+  watch: "bg-purple",
 };
 
 const kindChip: Record<HorizonKind, string> = {
-  Investment: "bg-orange/15 text-orange",
-  "R&D": "bg-green/15 text-green",
-  Hiring: "bg-blue/15 text-blue",
+  Investment: "bg-blue/10 text-blue",
+  "R&D": "bg-green/10 text-green",
+  Hiring: "bg-yellow/10 text-yellow",
 };
 
 function EventCard({ event }: { event: HorizonEvent }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-[#0d0d0d] p-4">
-      <div className="flex items-center gap-2">
-        <span
-          className={`rounded px-2 py-0.5 text-[10px] font-semibold ${kindChip[event.kind]}`}
-        >
-          {event.kind}
-        </span>
-        <span className="text-[11px] text-white/45">{event.date}</span>
-        <span
-          role="img"
-          aria-label={`Status: ${event.status}`}
-          className={`ml-auto h-2 w-2 rounded-full ${statusDot[event.status]}`}
-        />
+    <article className="flex flex-col gap-4 rounded-xl bg-white/5 p-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className={`rounded-full px-2 py-1 font-display text-sm ${kindChip[event.kind]}`}>{event.kind}</span>
+            <span className="font-display text-sm text-white/70">{event.date}</span>
+          </div>
+          <span
+            role="img"
+            aria-label={`Status: ${event.status}`}
+            className={`size-2 shrink-0 rounded-full ${statusDot[event.status]}`}
+          />
+        </div>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1.5">
+            <h5 className="font-display text-xl text-white">{event.headline}</h5>
+            <p className="font-display text-base leading-[1.4] text-white/70">{event.detail}</p>
+          </div>
+          <p className="font-display text-sm text-white/50">Source: {event.source}</p>
+        </div>
       </div>
-      <h5 className="mt-2.5 text-sm font-bold leading-snug text-white">{event.headline}</h5>
-      <p className="mt-1 text-xs leading-relaxed text-white/60">{event.detail}</p>
-      <p className="mt-1.5 text-[11px] text-white/35">Source: {event.source}</p>
       {event.implies && (
-        <div className="mt-3 border-l-2 border-orange pl-3">
-          <p className="text-[11px] font-semibold text-orange">Implies</p>
-          <p className="mt-0.5 text-xs leading-relaxed text-white/70">{event.implies}</p>
+        <div className="flex flex-col gap-[3px] rounded-xl border-l border-orange px-3 py-2">
+          <p className="font-display text-base text-orange">Implies</p>
+          <p className="font-display text-sm leading-[1.4] text-white">{event.implies}</p>
         </div>
       )}
     </article>
@@ -56,20 +65,18 @@ function EventCard({ event }: { event: HorizonEvent }) {
 
 function BrandColumn({ column }: { column: HorizonColumn }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/[0.03]">
-      <div className="flex items-center gap-3 p-4">
-        <BrandMark id={column.id} size={34} />
-        <div>
-          <h4 className="text-sm font-semibold text-white">{column.name}</h4>
-          <p className="text-[11px] text-white/45">Forward Thesis</p>
+    <div className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
+      <div className="flex items-center gap-4 border-b border-white/5 p-5">
+        <BrandMark id={column.id} size={48} rounded="rounded-xl" plate />
+        <div className="flex flex-col gap-1">
+          <h4 className="font-display text-xl font-medium text-white">{column.name}</h4>
+          <p className="font-display text-base text-white/70">Forward Thesis</p>
         </div>
       </div>
-      <div className="mx-4 rounded-lg border border-white/10 bg-white/[0.04] p-3">
-        <p className="font-serif text-xs italic leading-relaxed text-white/75">
-          {column.thesis}
-        </p>
-      </div>
-      <div className="space-y-3 p-4">
+      <div className="flex flex-col gap-2 p-5">
+        <div className="rounded-lg border border-white/5 bg-white/5 px-3 py-2">
+          <p className="font-serif text-sm italic leading-[1.4] text-white">{column.thesis}</p>
+        </div>
         {column.events.map((event) => (
           <EventCard key={event.headline} event={event} />
         ))}
@@ -86,15 +93,16 @@ export function Horizon({ id }: { id: string }) {
         reveal the next move before the launch.
       </Subtitle>
 
-      <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-1.5 text-xs text-white/60">
+      {/* the legend reads across in white at 18, 16px in like the design */}
+      <div className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 font-display text-lg leading-[1.1] text-white">
         {horizonLegend.map((item, i) => (
-          <span key={item.status} className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5">
-              <span className={`h-1.5 w-1.5 rounded-full ${statusDot[item.status]}`} aria-hidden />
+          <span key={item.status} className="flex items-center gap-3">
+            <span className="flex items-center gap-2">
+              <span className={`size-2 rounded-full ${statusDot[item.status]}`} aria-hidden />
               {item.label}
             </span>
             {i < horizonLegend.length - 1 && (
-              <span aria-hidden className="text-white/25">
+              <span aria-hidden className="text-base text-silver">
                 /
               </span>
             )}
@@ -102,14 +110,12 @@ export function Horizon({ id }: { id: string }) {
         ))}
       </div>
 
-      <DarkPanel className="mt-5">
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {horizon.map((column) => (
-            <BrandColumn key={column.id} column={column} />
-          ))}
-        </div>
-      </DarkPanel>
-      <AnimalView section={id} className="mt-4" />
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {horizon.map((column) => (
+          <BrandColumn key={column.id} column={column} />
+        ))}
+      </div>
+      <AnimalView section={id} className="mt-12" />
     </Module>
   );
 }

@@ -10,36 +10,48 @@ export const bigTitle =
 /** Panel-style module title (Media Overlap / Animal View headers). */
 export const panelTitle = "text-lg font-semibold tracking-tight text-white";
 
-/** Rounded near-black panel that wraps each section's content. */
-export function DarkPanel({
-  children,
-  className = "",
-}: {
-  children: ReactNode;
-  className?: string;
-}) {
+/** Uppercase kicker above a content group — SF Pro Display Regular 18 at
+    70%, 110% line height, no rule beneath, as the design sets "Machine
+    Vision" and its peers. */
+export function Kicker({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`min-w-0 rounded-3xl bg-bg3 p-5 sm:p-7 ${className}`}>{children}</div>
+    <p className={`font-display text-lg uppercase leading-[1.1] text-white/70 ${className}`}>{children}</p>
   );
 }
 
-/** Small uppercase tracking-widest kicker above a content group. */
-export function Kicker({ children }: { children: ReactNode }) {
-  return (
-    <p className="border-b border-white/10 pb-2.5 text-[11px] font-medium uppercase tracking-[0.28em] text-white/40">
-      {children}
-    </p>
-  );
-}
-
-/** Sentence-case group heading under a kicker. */
+/** Sentence-case group heading under a kicker — SF Pro Display Semibold 32,
+    110% line height, as the design sets "Their AI Profile" and its peers. */
 export function GroupHeading({ children }: { children: ReactNode }) {
   return (
-    <h3 className="mt-5 text-xl font-bold tracking-tight text-white">{children}</h3>
+    <h3 className="mt-8 font-display text-[32px] font-semibold leading-[1.1] text-white">{children}</h3>
   );
 }
 
-/** Muted subtitle line rendered directly under a module title. */
+/** Subtitle line under a section title — SF Pro Display Regular 18 at 70%,
+    16px below the title, set in with it. */
 export function Subtitle({ children }: { children: ReactNode }) {
-  return <p className="mt-1.5 max-w-xl text-sm text-white/50">{children}</p>;
+  return (
+    <p className="mt-4 max-w-4xl font-display text-lg leading-[1.1] text-white/70 sm:pl-12">{children}</p>
+  );
+}
+
+/** The design's Observations strip: an orange label over the read, on the
+    card grey with a hairline. */
+export function Observations({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <div className={`flex flex-col gap-1.5 rounded-2xl border border-white/5 bg-bg3 p-5 ${className}`}>
+      <p className="font-display text-xl text-orange">Observations</p>
+      <p className="font-display text-base leading-[1.4] text-white/70">{text}</p>
+    </div>
+  );
+}
+
+/** The same label and read inside a card, with no frame of its own. */
+export function ObservationsInline({ text }: { text: string }) {
+  return (
+    <div className="flex flex-col gap-1.5 p-5">
+      <p className="font-display text-xl text-orange">Observations</p>
+      <p className="font-display text-base leading-[1.4] text-white/70">{text}</p>
+    </div>
+  );
 }

@@ -15,19 +15,22 @@ import {
 } from "@/data/competition";
 import { BrandMark } from "./BrandMark";
 import { AnimalView } from "./AnimalView";
-import { DarkPanel, GroupHeading, Kicker, bigTitle } from "./ui";
+import { GroupHeading, Kicker, Observations, bigTitle } from "./ui";
 
 /* "How People Find Them" — the AI Search Visibility layout re-rendered
    dark per competitor, then per-brand SEO stat cards. Fully static. */
 
-/* the design lists each model behind its own mark, not a colour dot */
-const platformLogo: Record<AiPlatformId, string> = {
-  chatgpt: "/assets/ai/chatgpt.png",
-  grok: "/assets/ai/grok.png",
-  claude: "/assets/ai/claude.png",
-  gemini: "/assets/ai/gemini.png",
+/* the design lists each model behind its own mark: the file's raster tiles,
+   exported for the dark board — ChatGPT is its green app tile, Grok its white
+   plate — with the corner radius the file gives each */
+const platformMark: Record<AiPlatformId, { src: string; rounded: string }> = {
+  chatgpt: { src: "/assets/competition/ai-chatgpt.png", rounded: "rounded-[5px]" },
+  grok: { src: "/assets/competition/ai-grok.png", rounded: "rounded-[3px]" },
+  claude: { src: "/assets/competition/ai-claude.png", rounded: "" },
+  gemini: { src: "/assets/competition/ai-gemini.png", rounded: "" },
 };
 
+/* one tile of the black stats box: the figure in its colour over a muted label */
 function StatBox({
   value,
   label,
@@ -38,55 +41,80 @@ function StatBox({
   colorClass: string;
 }) {
   return (
-    <div className="flex-1 rounded-xl border border-white/12 bg-white/[0.03] px-3 py-2.5">
-      <span className={`block text-2xl font-bold tabular-nums ${colorClass}`}>{value}</span>
-      <span className="mt-0.5 block text-[11px] text-white/50">{label}</span>
+    <div className="min-w-0 flex-1 rounded-xl bg-bg3 px-4 py-2">
+      <span className={`block font-display text-[40px] font-medium leading-tight tabular-nums ${colorClass}`}>
+        {value}
+      </span>
+      <span className="mt-3 block font-display text-base leading-[1.1] text-white/50">{label}</span>
     </div>
+  );
+}
+
+/* the design's "Today" filter pill — its own filter and chevron glyphs */
+function TodayPill() {
+  return (
+    <span className="flex shrink-0 items-center gap-1 rounded-full bg-white/5 py-1.5 pl-3 pr-2 font-display text-base tracking-[-0.01em] text-white">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/assets/competition/filter-sort.svg" alt="" aria-hidden className="size-4" />
+      Today
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/assets/competition/chevron-down-small.svg" alt="" aria-hidden className="size-5" />
+    </span>
   );
 }
 
 function AiProfileCard({ profile }: { profile: AiProfile }) {
   return (
     <article>
-      <p className="mb-3 text-xs text-white/60">{profile.name}</p>
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <p className="text-sm font-semibold text-white">Ai Search Visibility</p>
-            <p className="mt-0.5 text-xs text-white/50">AI Platform Performance</p>
+      {/* the design's three cards are unlabelled placeholders; ours carry real
+          figures per brand, so the brand is named above in the card's own grey */}
+      <p className="mb-3 font-display text-base text-white/70">{profile.name}</p>
+      <div className="flex flex-col gap-8 rounded-2xl border border-white/5 bg-bg3 p-5">
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <p className="font-display text-xl font-semibold leading-[1.1] text-white">Ai Search Visibility</p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-display text-base leading-[1.1] text-white/70">AI Platform Performance</p>
+              <TodayPill />
+            </div>
           </div>
-          <span className="rounded-full border border-white/15 px-2.5 py-1 text-[11px] text-white/60">
-            Today
-          </span>
+
+          <div className="flex gap-1 rounded-2xl border border-white/15 bg-black p-1">
+            <StatBox value={String(profile.visibility)} label="AI Visibility" colorClass="text-orange" />
+            <StatBox value={profile.mentions} label="Mentions" colorClass="text-purple" />
+            <StatBox value={profile.cited} label="Cited Pages" colorClass="text-olive" />
+          </div>
         </div>
 
-        <div className="mt-4 flex gap-2">
-          <StatBox value={String(profile.visibility)} label="AI Visibility" colorClass="text-orange" />
-          <StatBox value={profile.mentions} label="Mentions" colorClass="text-purple" />
-          <StatBox value={profile.cited} label="Cited Pages" colorClass="text-yellow" />
-        </div>
-
-        <ul className="mt-3 divide-y divide-white/[0.08]">
-          {profile.platforms.map((p) => (
-            <li key={p.id} className="flex items-center justify-between gap-3 py-2.5">
-              <span className="flex items-center gap-2 text-sm font-medium text-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={platformLogo[p.id]} alt="" aria-hidden className="h-4 w-4 shrink-0 object-contain" />
-                {p.name}
-              </span>
-              <span className="flex items-center gap-2 text-xs tabular-nums">
-                <span className="flex items-center gap-1 text-white/85">
-                  <span className="h-1 w-1 rounded-full bg-orange" aria-hidden />
-                  {p.mentions}
+        <ul className="flex flex-col gap-4">
+          {profile.platforms.map((p, i) => {
+            const mark = platformMark[p.id];
+            return (
+              <li
+                key={p.id}
+                className={`flex items-center justify-between gap-3 pb-4 ${
+                  i < profile.platforms.length - 1 ? "border-b border-white/5" : ""
+                }`}
+              >
+                <span className="flex items-center gap-3 font-display text-xl font-medium leading-[1.1] text-white">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={mark.src} alt="" aria-hidden className={`size-6 shrink-0 object-cover ${mark.rounded}`} />
+                  {p.name}
                 </span>
-                <span className="text-white/30">/</span>
-                <span className="flex items-center gap-1 text-white/50">
-                  <span className="h-1 w-1 rounded-full bg-white/40" aria-hidden />
-                  {p.cited}
+                <span className="flex items-center gap-3 font-display text-lg leading-[1.1] tabular-nums text-white">
+                  <span className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-orange" aria-hidden />
+                    {p.mentions}
+                  </span>
+                  <span className="text-base text-silver">/</span>
+                  <span className="flex items-center gap-2">
+                    <span className="size-2 rounded-full bg-purple" aria-hidden />
+                    {p.cited}
+                  </span>
                 </span>
-              </span>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </div>
     </article>
@@ -95,67 +123,59 @@ function AiProfileCard({ profile }: { profile: AiProfile }) {
 
 function SeoStatCell({ stat }: { stat: SeoStat }) {
   return (
-    <div>
-      <div className="flex items-baseline gap-1.5">
-        <span className="text-lg font-bold tabular-nums text-white">{stat.value}</span>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <span className="font-display text-2xl font-medium leading-[1.1] tabular-nums text-white">{stat.value}</span>
         {stat.tag && (
-          <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] font-medium text-white/60">
+          <span className="rounded bg-white/5 px-2 py-px font-display text-xs leading-5 text-white/70">
             {stat.tag}
           </span>
         )}
         {stat.delta && (
           <span
-            className={`text-[11px] font-semibold tabular-nums ${
-              stat.deltaTone === "down" ? "text-red" : "text-green"
+            className={`font-display text-sm lowercase tabular-nums ${
+              stat.deltaTone === "down" ? "text-orange" : "text-green"
             }`}
           >
             {stat.delta}
           </span>
         )}
       </div>
-      <p className="mt-0.5 text-[11px] text-white/45">{stat.label}</p>
+      <p className="font-display text-sm text-white/70">{stat.label}</p>
     </div>
   );
 }
 
-function ObservationPanel({ text }: { text: string }) {
+/* a paid result as the SERP renders it: mark on a plate, headline, url, body */
+function TextAdRow({ id, ad, last }: { id: PaidSearchCard["id"]; ad: TextAd; last: boolean }) {
   return (
-    <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="text-sm font-medium text-orange">Observations</p>
-      <p className="mt-1.5 text-xs leading-relaxed text-white/70">{text}</p>
-    </div>
-  );
-}
-
-/* a paid result as the SERP renders it: mark, headline, url, body */
-function TextAdRow({ id, ad }: { id: PaidSearchCard["id"]; ad: TextAd }) {
-  return (
-    <li className="flex gap-2.5 py-3 first:pt-0">
-      <BrandMark id={id} size={22} className="mt-0.5" />
-      <div className="min-w-0">
-        <p className="text-sm font-semibold leading-snug text-white">{ad.headline}</p>
-        <p className="mt-1 flex items-center gap-1 text-[11px] text-white/50">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <circle cx="12" cy="12" r="10" />
-            <path d="M2 12h20M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20z" />
-          </svg>
-          {ad.url}
-        </p>
-        <p className="mt-1.5 text-xs leading-relaxed text-white/70">{ad.body}</p>
+    <li className={`flex flex-col gap-4 p-5 ${last ? "" : "border-b border-white/5"}`}>
+      <div className="flex items-start gap-3">
+        <BrandMark id={id} size={32} rounded="rounded-[4px]" plate />
+        <div className="flex min-w-0 flex-col gap-1">
+          <p className="font-display text-lg font-medium leading-[1.3] text-white">{ad.headline}</p>
+          <p className="flex items-center gap-2 font-display text-base text-white/70">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/assets/competition/globe.svg" alt="" aria-hidden className="size-4 shrink-0" />
+            {ad.url}
+          </p>
+        </div>
       </div>
+      <p className="font-display text-base leading-[1.4] text-white/70">{ad.body}</p>
     </li>
   );
 }
 
 function PaidSearchCardView({ card }: { card: PaidSearchCard }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="mb-1 text-xs text-white/60">
-        <span className="font-semibold text-white/85">Sample Text Ads</span> {card.name}
+    <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
+      <p className="flex items-center gap-2 border-b border-white/5 p-5 font-display text-base">
+        <span className="font-medium text-white">Sample Text Ads</span>
+        <span className="text-white/70">{card.name}</span>
       </p>
-      <ul className="divide-y divide-white/[0.08]">
-        {card.ads.map((ad) => (
-          <TextAdRow key={ad.headline} id={card.id} ad={ad} />
+      <ul>
+        {card.ads.map((ad, i) => (
+          <TextAdRow key={ad.headline} id={card.id} ad={ad} last={i === card.ads.length - 1} />
         ))}
       </ul>
     </article>
@@ -164,14 +184,13 @@ function PaidSearchCardView({ card }: { card: PaidSearchCard }) {
 
 function SeoCard({ card }: { card: SearchLandscapeCard }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      <div className="mb-5 flex items-center justify-between">
-        <span className="rounded bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-white/70">
-          SEO
-        </span>
-        <span className="text-xs text-white/60">{card.name}</span>
+    <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
+      <div className="flex items-center justify-between border-b border-white/5 p-5">
+        <span className="rounded-lg bg-white/5 px-2.5 py-1.5 font-display text-base leading-5 text-white/70">SEO</span>
+        <span className="font-display text-base text-white/70">{card.name}</span>
       </div>
-      <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+      {/* two columns, read down: the first half of the stats, then the second */}
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 p-5">
         {card.stats.map((stat) => (
           <SeoStatCell key={stat.label} stat={stat} />
         ))}
@@ -183,40 +202,34 @@ function SeoCard({ card }: { card: SearchLandscapeCard }) {
 export function FindThem({ id }: { id: string }) {
   return (
     <Module id={id} variant="panel" title="How People Find Them" titleClassName={bigTitle}>
-      <DarkPanel className="mt-5">
-        <Kicker>Machine Vision</Kicker>
-        <GroupHeading>Their AI Profile</GroupHeading>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {aiProfiles.map((profile) => (
-            <AiProfileCard key={profile.id} profile={profile} />
-          ))}
-        </div>
+      <Kicker className="mt-12">Machine Vision</Kicker>
+      <GroupHeading>Their AI Profile</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {aiProfiles.map((profile) => (
+          <AiProfileCard key={profile.id} profile={profile} />
+        ))}
+      </div>
+      <Observations text={aiObservations} className="mt-6" />
 
-        <ObservationPanel text={aiObservations} />
+      <Kicker className="mt-12">Search Footprint</Kicker>
+      <GroupHeading>Their Search Landscape</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {searchLandscape.map((card) => (
+          <SeoCard key={card.id} card={card} />
+        ))}
+      </div>
+      <Observations text={searchObservations} className="mt-6" />
 
-        <div className="mt-10">
-          <Kicker>Search Footprint</Kicker>
-          <GroupHeading>Their Search Landscape</GroupHeading>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {searchLandscape.map((card) => (
-              <SeoCard key={card.id} card={card} />
-            ))}
-          </div>
-          <ObservationPanel text={searchObservations} />
-        </div>
+      <Kicker className="mt-12">Paid Search</Kicker>
+      <GroupHeading>Words They Pay For</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {paidSearch.map((card) => (
+          <PaidSearchCardView key={card.id} card={card} />
+        ))}
+      </div>
+      <Observations text={paidObservations} className="mt-6" />
 
-        <div className="mt-10">
-          <Kicker>Paid Search</Kicker>
-          <GroupHeading>Words They Pay For</GroupHeading>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {paidSearch.map((card) => (
-              <PaidSearchCardView key={card.id} card={card} />
-            ))}
-          </div>
-          <ObservationPanel text={paidObservations} />
-        </div>
-      </DarkPanel>
-      <AnimalView section={id} className="mt-4" />
+      <AnimalView section={id} className="mt-12" />
     </Module>
   );
 }

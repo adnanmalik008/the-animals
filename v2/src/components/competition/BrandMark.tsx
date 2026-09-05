@@ -19,6 +19,7 @@ export function BrandMark({
   id,
   size = 28,
   rounded = "rounded-md",
+  plate = false,
   className = "",
 }: {
   id: BrandId;
@@ -26,6 +27,9 @@ export function BrandMark({
   size?: number | string;
   /** the tile's corner rounding, as a utility class */
   rounded?: string;
+  /** a translucent white plate instead of the brand's own tile colour —
+      the channel cards set every mark this way */
+  plate?: boolean;
   className?: string;
 }) {
   const mark = marks[id];
@@ -34,7 +38,9 @@ export function BrandMark({
     <span
       aria-hidden
       style={{ width: size, height: size }}
-      className={`inline-flex shrink-0 items-center justify-center overflow-hidden ${rounded} ${mark.tile} ${className}`}
+      className={`inline-flex shrink-0 items-center justify-center overflow-hidden ${rounded} ${
+        plate ? "bg-white/5" : mark.tile
+      } ${className}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img

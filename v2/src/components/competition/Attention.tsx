@@ -3,7 +3,7 @@ import { channelMix, type ChannelBubble, type CompetitorMix } from "@/data/compe
 import { AnimalView } from "./AnimalView";
 import { BrandMark } from "./BrandMark";
 import { MediaOverlap } from "./MediaOverlap";
-import { DarkPanel, Kicker, Subtitle, bigTitle } from "./ui";
+import { Kicker, Subtitle, bigTitle } from "./ui";
 
 /* "What's Driving Their Attention" — one card per competitor, built to the
    design's channel-ecosystem card: the brand in a rounded tile with its
@@ -41,7 +41,7 @@ function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number 
   const weak = bubble.pct < 1;
   return (
     <g>
-      <circle cx={x} cy={y} r={BUBBLE_R} className="fill-white/7" />
+      <circle cx={x} cy={y} r={BUBBLE_R} className="fill-white/10" />
       <text
         x={x}
         y={y}
@@ -58,7 +58,7 @@ function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number 
         textAnchor="middle"
         dominantBaseline="central"
         fontSize={26}
-        className="fill-white/65"
+        className="fill-white/70"
       >
         {bubble.label}
       </text>
@@ -70,8 +70,8 @@ function ChannelRing({ mix }: { mix: CompetitorMix }) {
   return (
     <div className="relative mt-2">
       <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="block h-auto w-full" aria-hidden>
-        {/* the enclosing ring, as faint as the design draws it */}
-        <circle cx={CX} cy={CY} r={OUTER_R} className="fill-none stroke-white/6" strokeWidth={1.5} />
+        {/* the enclosing disc: the card's own colour with a hairline edge */}
+        <circle cx={CX} cy={CY} r={OUTER_R} className="fill-bg3 stroke-white/5" strokeWidth={1.5} />
         <circle cx={CX} cy={CY} r={CENTER_R} className="fill-white/5" />
         {mix.channels.map((bubble, i) => (
           <Bubble key={bubble.key} bubble={bubble} x={BUBBLES[i].x} y={BUBBLES[i].y} />
@@ -86,7 +86,7 @@ function ChannelRing({ mix }: { mix: CompetitorMix }) {
           width: `${(TILE / VIEW_W) * 100}%`,
         }}
       >
-        <BrandMark id={mix.id} size="100%" rounded="rounded-[22%]" />
+        <BrandMark id={mix.id} size="100%" rounded="rounded-[25%]" plate />
       </div>
     </div>
   );
@@ -95,8 +95,8 @@ function ChannelRing({ mix }: { mix: CompetitorMix }) {
 function Globe() {
   return (
     <svg
-      width="15"
-      height="15"
+      width="16"
+      height="16"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -111,18 +111,22 @@ function Globe() {
 
 function ReachSlider({ pct, label }: { pct: number; label: string }) {
   return (
-    <div className="-mx-5 mt-5 border-t border-white/8 px-5 pt-5">
-      <div className="flex items-center justify-between text-[15px]">
-        <span className="text-white/70">Reach</span>
-        <span className="text-white">{label}</span>
+    <div className="-mx-5 mt-5 border-t border-white/5 px-5 pt-5">
+      <div className="flex items-center justify-between font-display text-base text-white">
+        <span>Reach</span>
+        <span>{label}</span>
       </div>
-      {/* the design's track is orange end to end; the knob carries the reading */}
-      <div className="relative mt-4 h-[3px] rounded-full bg-orange">
+      {/* the file's track: a white/5 rail, orange up to the knob, a white knob
+          with an orange centre, three 8px ticks beneath */}
+      <div className="relative mt-3 h-1.5 rounded-full bg-white/5">
+        <div className="absolute inset-y-0 left-0 rounded-full bg-orange" style={{ width: `${pct}%` }} />
         <span
           aria-hidden
-          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-orange bg-white"
+          className="absolute top-1/2 flex size-3 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white"
           style={{ left: `${pct}%` }}
-        />
+        >
+          <span className="size-1.5 rounded-full bg-orange" />
+        </span>
       </div>
       <div className="mt-2 flex justify-between" aria-hidden>
         <span className="h-2 w-px bg-white/20" />
@@ -136,22 +140,24 @@ function ReachSlider({ pct, label }: { pct: number; label: string }) {
 function CompetitorCard({ mix }: { mix: CompetitorMix }) {
   const active = mix.channels.filter((c) => c.pct >= 1).length;
   return (
-    <article className="rounded-2xl border border-white/8 bg-white/[0.035] px-5 pb-5">
-      {/* header — the rounded tile crops the mark, as in the design */}
-      <div className="flex items-center gap-3.5 py-4">
-        <BrandMark id={mix.id} size={48} rounded="rounded-[22%]" />
-        <h4 className="text-xl font-semibold text-white">{mix.name}</h4>
-        <span className="ml-auto flex items-center gap-2 text-[15px] text-white/55">
+    <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3 px-5 pb-5">
+      {/* header — the mark on a 48px white/5 tile whose corners crop it, as in the file */}
+      <div className="flex items-center gap-4 py-5">
+        <BrandMark id={mix.id} size={48} rounded="rounded-xl" plate />
+        <h4 className="font-display text-xl font-medium text-white">{mix.name}</h4>
+        <span className="ml-auto flex items-center gap-2 font-display text-base text-white/70">
           <Globe />
           {mix.domain}
         </span>
       </div>
 
-      <div className="-mx-5 border-t border-white/8 px-5 pt-6">
-        <div className="flex items-center justify-between text-[15px]">
-          <span className="font-medium text-orange">Channel Ecosystem</span>
-          <span className="tabular-nums text-white/50">
-            <span className="text-yellow">{active}</span> / {mix.channels.length} active
+      <div className="-mx-5 border-t border-white/5 px-5 pt-5">
+        <div className="flex items-center justify-between font-display text-base">
+          <span className="text-orange">Channel Ecosystem</span>
+          <span className="flex items-center gap-[3px] tabular-nums">
+            <span className="text-yellow">{active}</span>
+            <span className="text-white/15">/</span>
+            <span className="text-white/70">{mix.channels.length} active</span>
           </span>
         </div>
         <ChannelRing mix={mix} />
@@ -166,17 +172,15 @@ export function Attention({ id }: { id: string }) {
   return (
     <Module id={id} variant="panel" title="What's Driving Their Attention" titleClassName={bigTitle}>
       <Subtitle>How the category shows up.</Subtitle>
-      <DarkPanel className="mt-5">
-        <Kicker>Channel Mix</Kicker>
-        <div className="mt-5 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {channelMix.map((mix) => (
-            <CompetitorCard key={mix.id} mix={mix} />
-          ))}
-        </div>
-      </DarkPanel>
+      <Kicker className="mt-12">Channel Mix</Kicker>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {channelMix.map((mix) => (
+          <CompetitorCard key={mix.id} mix={mix} />
+        ))}
+      </div>
 
       {/* the design pairs the overlap matrix with this section's read */}
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="mt-12 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <MediaOverlap />
         <AnimalView section={id} />
       </div>

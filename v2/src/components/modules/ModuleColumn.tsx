@@ -146,7 +146,7 @@ export function Module({
         /* Competition sets each section on its own rounded slab, the way the
            design separates them; every other board keeps the ruled divider. */
         variant === "panel"
-          ? "mb-10 rounded-3xl bg-ink px-5 py-6 text-white last:mb-0 sm:px-7"
+          ? "mb-10 rounded-[32px] bg-ink px-4 pb-8 pt-10 text-white last:mb-0 sm:pb-12 sm:pt-[72px]"
           : "border-b border-line/70 py-4"
       } ${ctx.dragId === id ? "opacity-60" : ""} ${
         isDragTarget ? "shadow-[inset_0_3px_0_0_var(--orange)]" : ""
@@ -183,7 +183,12 @@ export function Module({
         </p>
       )}
 
-      <div className="flex items-center gap-2 pr-8">
+      <div
+        className={`flex items-center gap-2 pr-8 ${
+          /* the design sets a slab's title 64px in, its content 16px */
+          variant === "panel" ? "sm:pl-6" : ""
+        }`}
+      >
         <button
           type="button"
           onClick={() => ctx.toggle(id)}

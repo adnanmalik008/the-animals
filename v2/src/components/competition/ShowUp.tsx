@@ -8,7 +8,7 @@ import {
   type SocialCard,
 } from "@/data/competition";
 import { AnimalView } from "./AnimalView";
-import { DarkPanel, GroupHeading, Kicker, bigTitle } from "./ui";
+import { GroupHeading, Kicker, ObservationsInline, bigTitle } from "./ui";
 
 /* "How They Show Up" — three layers of the same brand, captured from the
    design: the homepage, the first twelve squares of the social grid, and
@@ -33,16 +33,9 @@ const displayAd: Record<BrandId, string> = {
   northface: "/assets/competition/ad-northface.jpg",
 };
 
-function Observations({ text }: { text: string }) {
-  return (
-    <div className="mt-4">
-      <p className="text-xs font-semibold text-orange">Observations</p>
-      <p className="mt-1 text-xs leading-relaxed text-white/70">{text}</p>
-    </div>
-  );
-}
-
-/* every card in the section is the same frame: label, capture, note */
+/* every card in the section is the design's frame: the brand's name in a
+   short header, the capture edge to edge on a white/10 well, the homepage's
+   line in italic serif between hairlines, and the Observations read */
 function CaptureCard({
   name,
   src,
@@ -59,14 +52,18 @@ function CaptureCard({
   observation: string;
 }) {
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
-      <p className="mb-3 text-xs text-white/60">{name}</p>
-      <div className={`overflow-hidden rounded-lg border border-white/10 bg-black ${aspect}`}>
+    <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
+      <p className="px-5 py-3 font-display text-base text-white/70">{name}</p>
+      <div className={`overflow-hidden bg-white/10 ${aspect}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover object-top" />
       </div>
-      {caption && <p className="mt-3 font-serif text-xs italic text-white/55">{caption}</p>}
-      <Observations text={observation} />
+      {caption && (
+        <p className="border-y border-white/5 px-5 py-3.5 font-serif text-sm font-light italic leading-[1.4] text-white">
+          {caption}
+        </p>
+      )}
+      <ObservationsInline text={observation} />
     </article>
   );
 }
@@ -77,7 +74,7 @@ function HomepageCard({ card }: { card: ShowUpCard }) {
       name={card.name}
       src={homepage[card.id]}
       alt={`${card.name} homepage`}
-      aspect="aspect-[16/10]"
+      aspect="aspect-[446/300]"
       caption={card.caption}
       observation={card.observation}
     />
@@ -90,7 +87,7 @@ function SocialGridCard({ card }: { card: SocialCard }) {
       name={card.name}
       src={socialGrid[card.id]}
       alt={`${card.name} social feed`}
-      aspect="aspect-[3/2]"
+      aspect="aspect-[446/300]"
       observation={card.observation}
     />
   );
@@ -102,7 +99,7 @@ function MarketCard({ card }: { card: SocialCard }) {
       name={card.name}
       src={displayAd[card.id]}
       alt={`${card.name} display ad`}
-      aspect="aspect-[3/4]"
+      aspect="aspect-[446/481]"
       observation={card.observation}
     />
   );
@@ -111,36 +108,31 @@ function MarketCard({ card }: { card: SocialCard }) {
 export function ShowUp({ id }: { id: string }) {
   return (
     <Module id={id} variant="panel" title="How They Show Up" titleClassName={bigTitle}>
-      <DarkPanel className="mt-5">
-        <Kicker>Homepage</Kicker>
-        <GroupHeading>Their First Word</GroupHeading>
-        <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-          {homepageCards.map((card) => (
-            <HomepageCard key={card.id} card={card} />
-          ))}
-        </div>
+      <Kicker className="mt-12">Homepage</Kicker>
+      <GroupHeading>Their First Word</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {homepageCards.map((card) => (
+          <HomepageCard key={card.id} card={card} />
+        ))}
+      </div>
 
-        <div className="mt-10">
-          <Kicker>Social Feed</Kicker>
-          <GroupHeading>Twelve Squares of Identity</GroupHeading>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {socialCards.map((card) => (
-              <SocialGridCard key={card.id} card={card} />
-            ))}
-          </div>
-        </div>
+      <Kicker className="mt-12">Social Feed</Kicker>
+      <GroupHeading>Twelve Squares of Identity</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {socialCards.map((card) => (
+          <SocialGridCard key={card.id} card={card} />
+        ))}
+      </div>
 
-        <div className="mt-10">
-          <Kicker>In Market</Kicker>
-          <GroupHeading>Their Window Display</GroupHeading>
-          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-            {marketCards.map((card) => (
-              <MarketCard key={card.id} card={card} />
-            ))}
-          </div>
-        </div>
-      </DarkPanel>
-      <AnimalView section={id} className="mt-4" />
+      <Kicker className="mt-12">In Market</Kicker>
+      <GroupHeading>Their Window Display</GroupHeading>
+      <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        {marketCards.map((card) => (
+          <MarketCard key={card.id} card={card} />
+        ))}
+      </div>
+
+      <AnimalView section={id} className="mt-12" />
     </Module>
   );
 }
