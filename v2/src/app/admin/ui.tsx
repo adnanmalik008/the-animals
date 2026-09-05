@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import type { BoardRecord, BoardUserRecord } from "@/lib/server/boards";
+import { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 import {
   addUserAction,
   createBoardAction,
@@ -12,14 +13,9 @@ import {
   type ActionState,
 } from "./actions";
 
-const input =
-  "w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-graphite/60 outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const label = "flex flex-col gap-1.5 text-sm font-medium";
-const primaryBtn =
-  "rounded-full bg-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-hover disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const quietBtn =
-  "rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-graphite transition-colors hover:bg-bg2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const card = "rounded-2xl border border-line bg-card p-6 shadow-sm";
+/* The class vocabulary now lives with the generated form, which has to look
+   like this page; re-exported here so an import of it keeps working. */
+export { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 
 function Feedback({ state }: { state: ActionState }) {
   if (state.error)
