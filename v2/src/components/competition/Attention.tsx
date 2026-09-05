@@ -1,128 +1,160 @@
 import { Module } from "@/components/modules/ModuleColumn";
 import { channelMix, type ChannelBubble, type CompetitorMix } from "@/data/competition";
-import { BrandMark } from "./BrandMark";
 import { AnimalView } from "./AnimalView";
+import { BrandMark } from "./BrandMark";
 import { MediaOverlap } from "./MediaOverlap";
 import { DarkPanel, Kicker, Subtitle, bigTitle } from "./ui";
 
-/* "What's Driving Their Attention" — radial channel-bubble ring per competitor.
-   Entirely static: bubbles sit at precomputed positions on a fixed square. */
+/* "What's Driving Their Attention" — one card per competitor, built to the
+   design's channel-ecosystem card: the brand in a rounded tile with its
+   domain, seven equal bubbles around the brand inside one faint enclosing
+   ring, each share in gold (red under 1%), and a reach slider below. The
+   ring is a single SVG in the design's own 840-unit card coordinates,
+   measured off the design export, so it scales with the card and nothing
+   in it is eyeballed. */
 
-const RING = 260; // px square
-const CENTER = RING / 2;
+/* the design's card is 840 units wide; the ring takes y 240–860 of it */
+const VIEW_W = 840;
+const VIEW_H = 620;
+const CX = 420;
+const CY = 308;
+const OUTER_R = 283;
+const CENTER_R = 86;
+const BUBBLE_R = 43;
+const TILE = 108;
+const LABEL_DY = 66;
 
-/** Precomputed ring positions (7 bubbles, from top going clockwise).
-    Order matches CompetitorMix.channels. Radius 92px. */
-const POSITIONS: { x: number; y: number }[] = [
-  { x: 130, y: 38 }, // Direct — top
-  { x: 202, y: 73 }, // Referral — upper right
-  { x: 220, y: 150 }, // Social — right
-  { x: 170, y: 213 }, // Organic search — lower right
-  { x: 90, y: 213 }, // Paid search — lower left
-  { x: 40, y: 150 }, // Display ADS — left
-  { x: 58, y: 73 }, // Mail — upper left
+/** bubble centres from the design; order matches CompetitorMix.channels
+    (Direct, Referral, Social, Organic search, Paid search, Display ADS, Mail) */
+const BUBBLES: { x: number; y: number }[] = [
+  { x: 419, y: 99 },
+  { x: 590, y: 199 },
+  { x: 613, y: 351 },
+  { x: 534, y: 487 },
+  { x: 306, y: 487 },
+  { x: 224, y: 351 },
+  { x: 250, y: 199 },
 ];
 
 function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number }) {
-  const strong = bubble.pct >= 10;
+  /* under 1% the share reads red; everything else gold */
   const weak = bubble.pct < 1;
-  const diameter = weak ? 34 : Math.max(38, Math.min(56, 30 + bubble.pct));
-
   return (
-    <div
-      className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
-      style={{ left: x, top: y }}
-    >
-      <span
-        style={{ width: diameter, height: diameter }}
-        className={`flex items-center justify-center rounded-full border text-[11px] font-semibold tabular-nums ${
-          strong
-            ? "border-white/25 bg-white/10 text-white"
-            : weak
-              ? "border-white/10 bg-transparent text-orange/70"
-              : "border-white/15 bg-white/5 text-white/80"
-        }`}
+    <g>
+      <circle cx={x} cy={y} r={BUBBLE_R} className="fill-white/7" />
+      <text
+        x={x}
+        y={y}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={30}
+        className={`font-semibold tabular-nums ${weak ? "fill-red" : "fill-yellow"}`}
       >
         {bubble.pct}%
-      </span>
-      <span className="mt-1 whitespace-nowrap text-[10px] text-white/45">
+      </text>
+      <text
+        x={x}
+        y={y + LABEL_DY}
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontSize={26}
+        className="fill-white/65"
+      >
         {bubble.label}
-      </span>
+      </text>
+    </g>
+  );
+}
+
+function ChannelRing({ mix }: { mix: CompetitorMix }) {
+  return (
+    <div className="relative mt-2">
+      <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="block h-auto w-full" aria-hidden>
+        {/* the enclosing ring, as faint as the design draws it */}
+        <circle cx={CX} cy={CY} r={OUTER_R} className="fill-none stroke-white/6" strokeWidth={1.5} />
+        <circle cx={CX} cy={CY} r={CENTER_R} className="fill-white/5" />
+        {mix.channels.map((bubble, i) => (
+          <Bubble key={bubble.key} bubble={bubble} x={BUBBLES[i].x} y={BUBBLES[i].y} />
+        ))}
+      </svg>
+      {/* the brand tile sits in the centre circle, sized in the ring's units */}
+      <div
+        className="absolute aspect-square -translate-x-1/2 -translate-y-1/2"
+        style={{
+          left: `${(CX / VIEW_W) * 100}%`,
+          top: `${(CY / VIEW_H) * 100}%`,
+          width: `${(TILE / VIEW_W) * 100}%`,
+        }}
+      >
+        <BrandMark id={mix.id} size="100%" rounded="rounded-[22%]" />
+      </div>
     </div>
+  );
+}
+
+function Globe() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" />
+    </svg>
   );
 }
 
 function ReachSlider({ pct, label }: { pct: number; label: string }) {
   return (
-    <div className="mt-5 border-t border-white/10 pt-4">
-      <div className="flex items-center justify-between text-xs">
-        <span className="text-white/55">Reach</span>
-        <span className="font-medium text-white/85">{label}</span>
+    <div className="-mx-5 mt-5 border-t border-white/8 px-5 pt-5">
+      <div className="flex items-center justify-between text-[15px]">
+        <span className="text-white/70">Reach</span>
+        <span className="text-white">{label}</span>
       </div>
-      <div className="relative mt-2.5 h-[3px] rounded-full bg-white/12">
-        <div
-          className="absolute inset-y-0 left-0 rounded-full bg-orange"
-          style={{ width: `${pct}%` }}
-        />
+      {/* the design's track is orange end to end; the knob carries the reading */}
+      <div className="relative mt-4 h-[3px] rounded-full bg-orange">
         <span
           aria-hidden
-          className="absolute top-1/2 h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border border-orange bg-white"
+          className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-orange bg-white"
           style={{ left: `${pct}%` }}
         />
+      </div>
+      <div className="mt-2 flex justify-between" aria-hidden>
+        <span className="h-2 w-px bg-white/20" />
+        <span className="h-2 w-px bg-white/20" />
+        <span className="h-2 w-px bg-white/20" />
       </div>
     </div>
   );
 }
 
 function CompetitorCard({ mix }: { mix: CompetitorMix }) {
+  const active = mix.channels.filter((c) => c.pct >= 1).length;
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
-      {/* header */}
-      <div className="flex items-center gap-2.5">
-        <BrandMark id={mix.id} size={28} />
-        <h4 className="text-sm font-semibold text-white">{mix.name}</h4>
-        <span className="ml-auto flex items-center gap-1.5 text-xs text-white/45">
-          <svg
-            width="12"
-            height="12"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.8"
-            aria-hidden
-          >
-            <circle cx="12" cy="12" r="9" />
-            <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" />
-          </svg>
+    <article className="rounded-2xl border border-white/8 bg-white/[0.035] px-5 pb-5">
+      {/* header — the rounded tile crops the mark, as in the design */}
+      <div className="flex items-center gap-3.5 py-4">
+        <BrandMark id={mix.id} size={48} rounded="rounded-[22%]" />
+        <h4 className="text-xl font-semibold text-white">{mix.name}</h4>
+        <span className="ml-auto flex items-center gap-2 text-[15px] text-white/55">
+          <Globe />
           {mix.domain}
         </span>
       </div>
 
-      {/* channel ecosystem label */}
-      <div className="mt-4 flex items-center justify-between text-xs">
-        <span className="font-medium text-orange">Channel Ecosystem</span>
-        <span className="tabular-nums text-white/50">{mix.activeLabel} active</span>
-      </div>
-
-      {/* radial bubble ring */}
-      <div className="mt-2 flex justify-center">
-        <div className="relative" style={{ width: RING, height: RING }}>
-          <span
-            aria-hidden
-            className="absolute rounded-full border border-white/[0.06]"
-            style={{ left: CENTER - 92, top: CENTER - 92, width: 184, height: 184 }}
-          />
-          {/* center brand circle */}
-          <div
-            className="absolute flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06]"
-            style={{ left: CENTER - 31, top: CENTER - 31, width: 62, height: 62 }}
-          >
-            <BrandMark id={mix.id} size={34} className="rounded-full" />
-          </div>
-          {mix.channels.map((bubble, i) => (
-            <Bubble key={bubble.key} bubble={bubble} x={POSITIONS[i].x} y={POSITIONS[i].y} />
-          ))}
+      <div className="-mx-5 border-t border-white/8 px-5 pt-6">
+        <div className="flex items-center justify-between text-[15px]">
+          <span className="font-medium text-orange">Channel Ecosystem</span>
+          <span className="tabular-nums text-white/50">
+            <span className="text-yellow">{active}</span> / {mix.channels.length} active
+          </span>
         </div>
+        <ChannelRing mix={mix} />
       </div>
 
       <ReachSlider pct={mix.reachPct} label={mix.reachLabel} />
