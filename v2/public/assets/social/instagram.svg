@@ -1,11 +1,16 @@
 <svg width="23.9859" height="23.9953" viewBox="0 0 23.9859 23.9953" fill="none" xmlns="http://www.w3.org/2000/svg">
 <defs>
 <linearGradient id="ig" x1="0" y1="1" x2="1" y2="0">
-<stop offset="0" stop-color="#FEDA75"/>
-<stop offset="0.25" stop-color="#FA7E1E"/>
-<stop offset="0.5" stop-color="#D62976"/>
-<stop offset="0.75" stop-color="#962FBF"/>
-<stop offset="1" stop-color="#4F5BD5"/>
+<stop offset="0" stop-color="#FFDC80"/>
+<stop offset="0.111" stop-color="#FCAF45"/>
+<stop offset="0.222" stop-color="#F77737"/>
+<stop offset="0.333" stop-color="#F56040"/>
+<stop offset="0.444" stop-color="#FD1D1D"/>
+<stop offset="0.556" stop-color="#E1306C"/>
+<stop offset="0.667" stop-color="#C13584"/>
+<stop offset="0.778" stop-color="#833AB4"/>
+<stop offset="0.889" stop-color="#5851DB"/>
+<stop offset="1" stop-color="#405DE6"/>
 </linearGradient>
 </defs>
 <g id="Vector">
