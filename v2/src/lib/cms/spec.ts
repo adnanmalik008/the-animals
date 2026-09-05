@@ -30,6 +30,7 @@ export interface TextareaSpec {
   label: string;
   help?: string;
   rows?: number;
+  maxLength?: number;
   optional?: true;
   default?: string;
 }

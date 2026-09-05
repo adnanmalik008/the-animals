@@ -15,6 +15,7 @@ const sample = defineModule({
   fields: {
     subtitle: f.text({ label: "Subtitle", default: "Hello", maxLength: 20 }),
     note: f.text({ label: "Note", optional: true }),
+    blurb: f.textarea({ label: "Blurb", rows: 3, maxLength: 20, optional: true }),
     count: f.number({ label: "Count", integer: true, min: 0, max: 100 }),
     ratio: f.number({ label: "Ratio", min: 0, max: 5 }),
     live: f.boolean({ label: "Live" }),
@@ -82,13 +83,16 @@ describe("schemaFor", () => {
   });
 
   it("turns an empty optional string into undefined", () => {
-    const out = schema.parse({ ...valid, note: "", logo: "" });
+    const out = schema.parse({ ...valid, note: "", logo: "", blurb: "" });
     expect(out.note).toBeUndefined();
     expect(out.logo).toBeUndefined();
+    expect(out.blurb).toBeUndefined();
   });
 
   it("enforces maxLength, integer, min/max and select membership", () => {
     expect(schema.safeParse({ ...valid, subtitle: "x".repeat(21) }).success).toBe(false);
+    expect(schema.safeParse({ ...valid, blurb: "x".repeat(20) }).success).toBe(true);
+    expect(schema.safeParse({ ...valid, blurb: "x".repeat(21) }).success).toBe(false);
     expect(schema.safeParse({ ...valid, count: 1.5 }).success).toBe(false);
     expect(schema.safeParse({ ...valid, count: 101 }).success).toBe(false);
     expect(schema.safeParse({ ...valid, ratio: 4.25 }).success).toBe(true);

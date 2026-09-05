@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.test.json",
     "test": "vitest run",
     "cms:snapshot": "tsx scripts/snapshot-legacy-templates.ts",
     "cms:audit": "tsx scripts/audit-docs.ts"

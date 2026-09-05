@@ -31,14 +31,16 @@ function hasConflictingContent(path: string, generated: unknown): boolean {
 
 /** Writes one pretty-printed JSON file per template key into `outDir`.
     Idempotent for untouched files: re-running overwrites a file with the
-    same generated content. A file whose existing content already differs
-    from what `templates` would generate now — e.g.
-    tests/cms/legacy/opinion-leaders.json, hand-edited to carry the
-    `initials` field MODULE_TEMPLATES no longer has — is a deliberate
-    hand-edit, not staleness to fix; overwriting it would silently destroy
-    it with no test able to catch the loss. Such a file is left alone and
-    reported in `skipped` (with a printed warning) instead. Delete a file
-    to force it to regenerate from the current template. */
+    same generated content.
+
+    A committed file whose content already differs from what `templates`
+    would generate now is the record of a shape a production board could
+    have saved — e.g. tests/cms/legacy/opinion-leaders.json, hand-edited to
+    carry the `initials` field MODULE_TEMPLATES no longer has. Overwriting
+    it would destroy that record and quietly empty the compatibility test
+    that reads it. Such a file is kept as it stands and reported in
+    `skipped`; as fixtures are reshaped, most files will end up skipped, and
+    that is the writer working, not a backlog to clear. */
 export function snapshotLegacyTemplates(outDir: string, templates: Record<string, unknown>): SnapshotResult {
   mkdirSync(outDir, { recursive: true });
   const written: string[] = [];
@@ -50,7 +52,7 @@ export function snapshotLegacyTemplates(outDir: string, templates: Record<string
     if (hasConflictingContent(path, generated)) {
       skipped.push(key);
       console.warn(
-        `skipped ${key}.json — existing file differs from the generated fixture (looks hand-edited); delete it and re-run to regenerate from MODULE_TEMPLATES`
+        `kept ${key}.json — the committed file records a saved shape the current template no longer produces, so it is left untouched`
       );
       continue;
     }

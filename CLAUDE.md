@@ -39,9 +39,12 @@ the repo root was retired and removed (see git history if ever needed).
 - Figma keyframes/utilities gotcha: Tailwind v4 translate utilities compile to
   the native `translate` property; keyframes must animate `translate`/`scale`
   (not `transform`) or they stack and displace elements.
-- Board data flows: server components read Supabase → `BoardDataProvider` →
-  modules read via `useModuleData(key)`, falling back to fixtures in
-  `v2/src/data/` when no CMS doc exists.
+- Board data flows: server components read Supabase through
+  `v2/src/lib/server/docs.ts` → `BoardDataProvider` → modules read
+  `useModuleDoc(key)` from the typed board context. Documents are validated
+  server-side against the module registry, and the built-in fixture in
+  `v2/src/data/` is substituted whenever a board's document is missing or no
+  longer fits its module's shape.
 
 ## Plugins
 Use `/frontend-design` when building or reshaping UI; `/feature-dev` for

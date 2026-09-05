@@ -15,7 +15,12 @@ export interface BoardDocs {
 }
 
 /** Every registry key gets a doc: the saved one when it validates, the
-    fixture otherwise. `onInvalid` hears about saved docs that failed. */
+    fixture otherwise. `onInvalid` hears about saved docs that failed.
+
+    Fixtures are module-scope arrays imported from `@/data`, so handing one
+    straight out would give every board in the process the same objects.
+    Cloning here — rather than trusting each `fixture()` to do it — means no
+    caller can reach shared state, whatever a future registry entry returns. */
 export function docsFromRows(
   rows: readonly ModuleRow[],
   onInvalid?: (key: ModuleKey, error: string) => void
@@ -25,7 +30,7 @@ export function docsFromRows(
   const status: Record<string, ModuleStatus> = {};
   for (const def of MODULES) {
     if (!saved.has(def.key)) {
-      docs[def.key] = def.fixture();
+      docs[def.key] = structuredClone(def.fixture());
       status[def.key] = "default";
       continue;
     }
@@ -34,7 +39,7 @@ export function docsFromRows(
       docs[def.key] = res.doc;
       status[def.key] = "custom";
     } else {
-      docs[def.key] = def.fixture();
+      docs[def.key] = structuredClone(def.fixture());
       status[def.key] = "invalid";
       onInvalid?.(def.key, res.error);
     }

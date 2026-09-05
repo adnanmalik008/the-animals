@@ -27,11 +27,15 @@ const article = f.object({
     headline: f.text({ label: "Headline", help: "One line when collapsed; opens to the rest.", maxLength: 200 }),
     author: f.text({ label: "Byline", help: "Printed uppercase as typed, e.g. @ELENI COUREA", maxLength: 60 }),
     timeAgo: f.text({ label: "Time label", help: "Free text, printed as typed: 2m ago, just now", maxLength: 24 }),
-    summary: f.textarea({ label: "Summary", help: "Shown when the row is opened.", rows: 3 }),
+    /* Caps sized off the built-in wire: its longest summary is 185
+       characters and its longest body 1,068, so a standfirst gets roughly
+       double and an article seven times what the design already carries. */
+    summary: f.textarea({ label: "Summary", help: "Shown when the row is opened.", rows: 3, maxLength: 400 }),
     body: f.textarea({
       label: "Full article",
       help: "Shown in the reader. A blank line starts a new paragraph. No quote marks needed.",
       rows: 10,
+      maxLength: 8000,
       optional: true,
     }),
     link: f.url({ label: "Link", help: "Adds an 'Open at <publisher>' button in the reader.", optional: true }),

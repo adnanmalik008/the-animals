@@ -1,0 +1,12 @@
+{
+  /* Type coverage for the code `next build` must not compile. Tests, the CMS
+     scripts and the vitest config all import devDependencies, so leaving them
+     on the Next config's include list makes any install without dev
+     dependencies fail on `Cannot find module 'vitest'`. Everything they
+     import from src/ is still checked, transitively.
+
+     `npm run typecheck` runs this config and the Next one. */
+  "extends": "./tsconfig.json",
+  "include": ["next-env.d.ts", "tests/**/*.ts", "scripts/**/*.ts", "vitest.config.ts"],
+  "exclude": ["node_modules"]
+}

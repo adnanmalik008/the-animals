@@ -64,6 +64,16 @@ describe("legacy module_data shapes", () => {
   });
 
   it("opinion-leaders: the legacy doc's dead initials field is stripped, not rejected", () => {
+    /* Pin the input first. This assertion is the only thing standing between
+       the one deliberately hand-edited snapshot and a silently vacuous test:
+       if opinion-leaders.json ever loses `initials`, "no leader carries it
+       afterwards" passes for the wrong reason. */
+    const input = opinionLeadersLegacy as { leaders: Record<string, unknown>[] };
+    expect(input.leaders.length).toBeGreaterThan(0);
+    for (const leader of input.leaders) {
+      expect(typeof leader.initials, `legacy/opinion-leaders.json lost its hand-edited initials field`).toBe("string");
+    }
+
     const def = byKey("opinion-leaders");
     const res = parseDoc(def, opinionLeadersLegacy);
     expect(res.ok, res.ok ? "" : JSON.stringify(res.fieldErrors)).toBe(true);

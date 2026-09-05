@@ -17,4 +17,6 @@ import { snapshotLegacyTemplates } from "./lib/legacy-snapshot";
 const outDir = join(dirname(fileURLToPath(import.meta.url)), "../tests/cms/legacy");
 const { written, skipped } = snapshotLegacyTemplates(outDir, MODULE_TEMPLATES);
 
-console.log(`\n${written.length} legacy snapshots written, ${skipped.length} skipped (hand-edited) — ${outDir}`);
+console.log(
+  `\n${written.length} legacy snapshots written, ${skipped.length} kept as committed records of older saved shapes — ${outDir}`
+);
