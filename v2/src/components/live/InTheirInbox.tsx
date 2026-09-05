@@ -27,7 +27,7 @@ function InboxItem({ item }: { item: NewsletterItem }) {
     <article
       {...targetProps}
       className={`inbox-row relative isolate rounded-md py-4 transition-shadow duration-300 first:pt-1 last:pb-1 motion-reduce:transition-none ${
-        tagged !== undefined ? "outline-2 outline-orange/60 outline-offset-4" : isOver ? "outline-2 outline-orange outline-offset-4" : ""
+        isOver ? "outline-2 outline-orange outline-offset-4" : ""
       }`}
     >
       {/* paper fades in behind the send on hover. It bleeds past the list's

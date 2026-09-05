@@ -362,6 +362,9 @@ export function StickerTray() {
 export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: string) {
   const { armedSticker, applySticker, tagOf } = useContext(StickerCtx);
   const [isOver, setIsOver] = useState(false);
+  /* pointer presence, so an armed sticker highlights the one target under
+     the cursor rather than every target on the board */
+  const [hovered, setHovered] = useState(false);
   const payloadRef = useRef(getPayload);
   useEffect(() => {
     payloadRef.current = getPayload;
@@ -449,13 +452,16 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
       onDrop,
       onClick,
       onKeyDown,
+      onMouseEnter: () => setHovered(true),
+      onMouseLeave: () => setHovered(false),
       /* focusable + announced only while a sticker is armed */
       tabIndex: armed ? 0 : undefined,
       role: armed ? ("button" as const) : undefined,
       "aria-label": armed ? "Stick here — send to Anomalies" : undefined,
     },
-    /* highlight every target while a sticker is armed so the next click is obvious */
-    isOver: isOver || armed,
+    /* only the target under the pointer lights up — while dragging via
+       dragover, while armed via hover. Never the whole board at once. */
+    isOver: isOver || (armed && hovered),
     /** placement of the sticker stuck here, or undefined */
     tagged,
     resolvedKey,
@@ -482,7 +488,7 @@ export function StickerDropZone({
     <div
       {...targetProps}
       className={`relative rounded-xl transition-shadow duration-300 motion-reduce:transition-none ${
-        tagged !== undefined ? "outline-2 outline-orange/60 outline-offset-4" : isOver ? "outline-2 outline-orange outline-offset-4" : ""
+        isOver ? "outline-2 outline-orange outline-offset-4" : ""
       } ${className}`}
     >
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}

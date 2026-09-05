@@ -49,11 +49,7 @@ export function OnStage({ id }: { id: string }) {
                 <article
                   {...(ev.id === current.id ? targetProps : {})}
                   className={`relative rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
-                    ev.id === current.id && tagged !== undefined
-                      ? "outline-2 outline-orange/60 outline-offset-4"
-                      : ev.id === current.id && isOver
-                        ? "outline-2 outline-orange outline-offset-4"
-                        : ""
+                    ev.id === current.id && isOver ? "outline-2 outline-orange outline-offset-4" : ""
                   }`}
                 >
                   {ev.id === current.id && tagged !== undefined && (

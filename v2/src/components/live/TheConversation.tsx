@@ -61,7 +61,7 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
     <article
       {...targetProps}
       className={`quote-row group/quote relative isolate overflow-hidden rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
-        tagged !== undefined ? "outline-2 outline-orange/60 outline-offset-4" : isOver ? "outline-2 outline-orange outline-offset-4" : ""
+        isOver ? "outline-2 outline-orange outline-offset-4" : ""
       }`}
     >
       {/* paper fades in behind the quote on hover */}
