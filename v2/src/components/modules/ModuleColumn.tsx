@@ -231,7 +231,7 @@ export function Module({
             collapsed, the negative margin would have nothing to cancel it. */}
         <div
           className={`min-h-0 overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8 ${
-            open ? "-my-3 py-3" : ""
+            open ? "-my-6 py-6" : ""
           }`}
         >
           {children}

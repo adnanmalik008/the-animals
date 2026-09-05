@@ -6,10 +6,11 @@
    effect reads the same everywhere and nothing cover-crops into dark
    corners.
 
-   The sheet is translucent, as it is in the design — the column's own
-   crumple shows through it. Its strength is --sheet-strength, so every
-   module's sheet reads alike. The host row must carry
-   `torn-host group/row relative isolate`. */
+   The design frames the strip as a 775x169 box on a 123px row — about 24px
+   of paper above and below the content, the sides clipped by the column —
+   with its image fill at 50%, so the column's own crumple shows through.
+   -inset-y-6 and --sheet-strength carry that; every module's sheet reads
+   alike. The host row must carry `torn-host group/row relative isolate`. */
 export function TornSheet({
   tint,
   bleed = "column",
@@ -37,7 +38,7 @@ export function TornSheet({
     <div
       aria-hidden
       style={tint ? { ["--paper-tint" as string]: tint } : undefined}
-      className={`torn-sheet pointer-events-none absolute -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
+      className={`torn-sheet pointer-events-none absolute -inset-y-6 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
     />
   );
 }

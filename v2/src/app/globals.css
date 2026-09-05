@@ -62,10 +62,11 @@
 :root {
   /* one strength for every paper surface — veil and card alike */
   --paper-strength: 0.55;
-  /* torn sheets are translucent in the design: its strip asset averages 214
-     and renders at 224 over the 249 page, so the layer sits at ~0.72 and the
-     column's own crumple shows through it */
-  --sheet-strength: 0.72;
+  /* the design's strip is an image fill at 50%. The strip PNG is itself about
+     72% opaque in its body and the mask carries that, so the sheet lands at an
+     effective ~0.36 — measured, and what the prototype renders. The tints in
+     Newswire are solved against that composite, not against this number. */
+  --sheet-strength: 0.5;
 }
 
 body {

@@ -39,7 +39,7 @@ export function OnStage({ id }: { id: string }) {
       >
         {/* the clip opens out to the panel edge so the sheet can bleed to it;
             with nothing left to hide them, neighbouring slides fade instead */}
-        <div className="overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8 -my-3 py-3">
+        <div className="overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8 -my-6 py-6">
           <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${index * 100}%)` }}
