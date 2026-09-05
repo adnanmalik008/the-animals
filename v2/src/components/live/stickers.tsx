@@ -13,7 +13,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { addInsight, removeInsight, useBoardStore, type InsightItem } from "@/lib/insights";
+import { addInsight, removeInsight, removeInsightsBySource, useBoardStore, type InsightItem } from "@/lib/insights";
 
 /* ============================================================
    Stickers — the Live → Anomalies routing gesture.
@@ -113,7 +113,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   const applySticker = useCallback(
     (key: string, payload: InsightPayload, position = { x: 6, y: 10 }) => {
       const shade = used % 3;
-      const insight = addInsight(payload);
+      const insight = addInsight({ ...payload, sourceKey: key });
 
       commitTags({
         ...tagsRef.current,
@@ -143,7 +143,10 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   const removeSticker = useCallback((key: string) => {
     const tag = tagsRef.current[key];
     if (!tag) return;
+    /* tags saved by an earlier build carry no insight id, so fall back to
+       the source key the insight itself remembers */
     if (tag.insightId) removeInsight(tag.insightId);
+    removeInsightsBySource(key);
     const next = { ...tagsRef.current };
     delete next[key];
     commitTags(next);
