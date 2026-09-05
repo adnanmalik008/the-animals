@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { XIcon } from "./CircleIcon";
 import { focusRing } from "./palette";
 
-/* "Your insight" quick-capture card (Figma frame 12).
+/* "Your insight" quick-capture card (Figma frame 12). Also the editor for a
+   card already on the board: pass initialText and the Save button rewrites
+   the card instead of adding one.
    Desktop: floats under a circle's Add Insight pill (absolute, via className).
    Mobile: rendered inline inside a topic panel (closeOnOutside=false).
    Outside clicks are detected with a document listener rather than a fixed
@@ -15,15 +17,21 @@ export function AddInsightPopover({
   onClose,
   className = "",
   closeOnOutside = true,
+  initialText = "",
+  heading = "Your insight",
 }: {
   onSave: (text: string) => void;
   onClose: () => void;
   className?: string;
   closeOnOutside?: boolean;
+  initialText?: string;
+  heading?: string;
 }) {
-  const [text, setText] = useState("");
+  const [text, setText] = useState(initialText);
   const ref = useRef<HTMLDivElement>(null);
   const trimmed = text.trim();
+  const editing = initialText !== "";
+  const unchanged = editing && trimmed === initialText.trim();
 
   useEffect(() => {
     if (!closeOnOutside) return;
@@ -42,11 +50,11 @@ export function AddInsightPopover({
     <div
       ref={ref}
       role="dialog"
-      aria-label="Add insight"
+      aria-label={editing ? "Edit insight" : "Add insight"}
       className={`rounded-2xl border border-line bg-card p-4 text-left shadow-xl print:hidden ${className}`}
     >
       <div className="flex items-center justify-between">
-        <h3 className="text-base font-semibold text-ink">Your insight</h3>
+        <h3 className="text-base font-semibold text-ink">{heading}</h3>
         <button
           type="button"
           onClick={onClose}
@@ -68,8 +76,8 @@ export function AddInsightPopover({
       <div className="mt-3 flex items-center gap-2">
         <button
           type="button"
-          disabled={!trimmed}
-          onClick={() => trimmed && onSave(trimmed)}
+          disabled={!trimmed || unchanged}
+          onClick={() => trimmed && !unchanged && onSave(trimmed)}
           className={`rounded-full bg-orange px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-hover disabled:cursor-not-allowed disabled:opacity-40 ${focusRing}`}
         >
           Save

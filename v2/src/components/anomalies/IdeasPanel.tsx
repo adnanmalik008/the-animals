@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { downloadIdeasDocx } from "@/lib/ideas-export";
 import { deleteIdea, tagIdea, useBoardStore, type FusedIdea } from "@/lib/insights";
 import { LightbulbIcon, XIcon } from "./CircleIcon";
 import { circleText, colorSolid, focusRing } from "./palette";
@@ -16,10 +18,12 @@ const TAGS: NonNullable<FusedIdea["colorTag"]>[] = [
 
 /* Right slide-in Ideas panel (Figma frames 9 + 10). */
 export function IdeasPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const { circles, ideas } = useBoardStore();
+  const { circles, ideas, insights } = useBoardStore();
+  const meta = useBoardMeta();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [paletteFor, setPaletteFor] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const circleById = useMemo(() => new Map(circles.map((c) => [c.id, c])), [circles]);
 
@@ -30,6 +34,27 @@ export function IdeasPanel({ open, onClose }: { open: boolean; onClose: () => vo
     const matchC = filter === "all" || idea.circleIds.includes(filter);
     return matchQ && matchC;
   });
+
+  /* Export what the panel is showing: a search or circle filter narrows the
+     document the same way it narrows the list, and the doc says so. */
+  const exportIdeas = async () => {
+    if (exporting || visible.length === 0) return;
+    setExporting(true);
+    try {
+      const parts: string[] = [];
+      if (filter !== "all") parts.push(circleById.get(filter)?.name ?? "");
+      if (q) parts.push(`search "${query.trim()}"`);
+      await downloadIdeasDocx({
+        meta,
+        ideas: visible,
+        circles,
+        insights,
+        filterLabel: parts.filter(Boolean).join(" · ") || undefined,
+      });
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <aside
@@ -48,9 +73,34 @@ export function IdeasPanel({ open, onClose }: { open: boolean; onClose: () => vo
         </span>
         <button
           type="button"
+          onClick={exportIdeas}
+          disabled={exporting || visible.length === 0}
+          aria-label="Export ideas to Word"
+          title="Export to Word (.docx)"
+          className={`ml-auto flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-xs font-semibold text-ink transition-colors hover:border-orange hover:text-orange disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-line disabled:hover:text-ink ${focusRing}`}
+        >
+          <svg
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+          >
+            <path d="M12 3v12" />
+            <path d="m7 10 5 5 5-5" />
+            <path d="M5 21h14" />
+          </svg>
+          {exporting ? "Exporting…" : "Export"}
+        </button>
+        <button
+          type="button"
           onClick={onClose}
           aria-label="Close ideas panel"
-          className={`ml-auto rounded-full p-1.5 text-graphite transition-colors hover:bg-bg2 hover:text-ink ${focusRing}`}
+          className={`rounded-full p-1.5 text-graphite transition-colors hover:bg-bg2 hover:text-ink ${focusRing}`}
         >
           <XIcon />
         </button>

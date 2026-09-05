@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type DragEvent } from "react";
 import { createPortal } from "react-dom";
-import type { InsightItem } from "@/lib/insights";
+import { isUserInsight, type InsightItem } from "@/lib/insights";
 import { XIcon } from "./CircleIcon";
 import { circleText, focusRing, type CircleColor } from "./palette";
 
@@ -111,11 +111,54 @@ function useHoverDetail() {
   };
 }
 
+/* Pencil + bin that surface on hover over a card the user typed themselves.
+   Siblings of the card button (never nested buttons), so they sit in a
+   wrapper that also carries the card's offset transform. */
+function OwnCardControls({
+  id,
+  onEdit,
+  onDelete,
+}: {
+  id: string;
+  onEdit: (id: string) => void;
+  onDelete: (id: string) => void;
+}) {
+  const btn = `flex h-6 w-6 items-center justify-center rounded-full border border-line bg-card text-graphite shadow-sm transition-colors ${focusRing}`;
+  return (
+    <span className="absolute -right-2 -top-2.5 z-10 flex items-center gap-1 opacity-0 transition-opacity group-hover/own:opacity-100 group-focus-within/own:opacity-100">
+      <button
+        type="button"
+        data-add-insight-trigger
+        onClick={() => onEdit(id)}
+        aria-label="Edit insight"
+        title="Edit"
+        className={`${btn} hover:text-orange`}
+      >
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        onClick={() => onDelete(id)}
+        aria-label="Delete insight"
+        title="Delete"
+        className={`${btn} hover:text-red`}
+      >
+        <XIcon size={10} />
+      </button>
+    </span>
+  );
+}
+
 export function InsightCard({
   insight,
   color,
   onPick,
   onRemove,
+  onEdit,
+  onDelete,
   selected = false,
   draggable = false,
   className = "",
@@ -127,6 +170,10 @@ export function InsightCard({
   onPick?: (id: string) => void;
   /** Renders a small X badge that removes the card from the fuse slots. */
   onRemove?: (id: string) => void;
+  /** Own cards only (typed on the board): open the editor for this card. */
+  onEdit?: (id: string) => void;
+  /** Own cards only: take the card off the board for good. */
+  onDelete?: (id: string) => void;
   selected?: boolean;
   draggable?: boolean;
   className?: string;
@@ -165,11 +212,11 @@ export function InsightCard({
 
   const base = `group/card relative w-full rounded-lg border border-line/60 bg-card px-3.5 py-2.5 text-left shadow-[0_1px_4px_rgba(0,0,0,0.09)] ${
     selected ? "ring-2 ring-orange/60" : ""
-  } ${className}`;
+  }`;
 
   if (!onPick) {
     return (
-      <div className={base} style={style} {...hoverProps}>
+      <div className={`${base} ${className}`} style={style} {...hoverProps}>
         {panel}
         {body}
         {onRemove && (
@@ -192,21 +239,32 @@ export function InsightCard({
     e.dataTransfer.effectAllowed = "copy";
   };
 
-  return (
+  const own = isUserInsight(insight) && onEdit && onDelete;
+
+  const card = (
     <button
       type="button"
       draggable={draggable}
       onDragStart={draggable ? handleDragStart : undefined}
       onClick={() => onPick(insight.id)}
       title={draggable ? "Drag into the fuse circle, or click to select" : "Tap to select for the fuse"}
-      className={`${base} block transition-shadow hover:shadow-md ${
+      className={`${base} ${own ? "" : className} block transition-shadow hover:shadow-md ${
         draggable ? "cursor-grab active:cursor-grabbing" : ""
       } ${focusRing}`}
-      style={style}
+      style={own ? undefined : style}
       {...hoverProps}
     >
       {panel}
       {body}
     </button>
+  );
+
+  if (!own) return card;
+
+  return (
+    <div className={`group/own relative w-full ${className}`} style={style}>
+      {card}
+      <OwnCardControls id={insight.id} onEdit={onEdit} onDelete={onDelete} />
+    </div>
   );
 }

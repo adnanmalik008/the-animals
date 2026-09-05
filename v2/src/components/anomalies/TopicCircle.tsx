@@ -37,6 +37,11 @@ interface SharedProps {
   onAddSave: (circleId: string, text: string) => void;
   /** refile a card dragged in from another circle */
   onMoveInsight: (insightId: string, circleId: string) => void;
+  /** the user-typed card currently open in the editor, if any */
+  editingId: string | null;
+  onEditToggle: (insightId: string | null) => void;
+  onEditSave: (insightId: string, text: string) => void;
+  onDeleteInsight: (insightId: string) => void;
 }
 
 /* A circle accepts cards dragged from any other circle: the drop refiles
@@ -121,6 +126,10 @@ export function TopicCircleView({
   onAddToggle,
   onAddSave,
   onMoveInsight,
+  editingId,
+  onEditToggle,
+  onEditSave,
+  onDeleteInsight,
   lavaClass,
   layout,
   boardRef,
@@ -140,6 +149,7 @@ export function TopicCircleView({
   const [pageChoice, setPageChoice] = useState<number | null>(null);
   const page = pageChoice === null ? pageCount - 1 : Math.min(pageChoice, pageCount - 1);
   const visible = insights.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
+  const editing = editingId ? insights.find((i) => i.id === editingId) : undefined;
   const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
   const [manipulating, setManipulating] = useState(false);
 
@@ -206,12 +216,14 @@ export function TopicCircleView({
     // z-20 lifts an open popover above the fuse circle (z-10) — the lava
     // transform creates a stacking context that would otherwise trap it
     <div
-      className={`absolute touch-none ${addOpen || isOver || manipulating ? "z-20" : ""}`}
+      className={`absolute touch-none ${addOpen || editing || isOver || manipulating ? "z-20" : ""}`}
       style={{ left: `${layout.x}%`, top: `${layout.y}%` }}
     >
       <div className={manipulating ? "" : lavaClass}>
         <div
           {...dropProps}
+          role="group"
+          aria-label={circle.name}
           onPointerDown={beginMove}
           className={`group/circle relative flex cursor-move flex-col items-center rounded-full transition-shadow duration-200 motion-reduce:transition-none ${circleTint[circle.color]} ${
             isOver ? "ring-2 ring-orange ring-offset-4 ring-offset-bg" : ""
@@ -239,6 +251,8 @@ export function TopicCircleView({
                 color={circle.color}
                 draggable
                 onPick={onPick}
+                onEdit={onEditToggle}
+                onDelete={onDeleteInsight}
                 selected={selectedIds.includes(ins.id)}
                 className="max-w-[300px]"
                 style={{ transform: `translateX(${OFFSETS[i % OFFSETS.length]}px)` }}
@@ -329,6 +343,18 @@ export function TopicCircleView({
               }`}
             />
           )}
+          {editing && (
+            <AddInsightPopover
+              key={editing.id}
+              heading="Edit insight"
+              initialText={editing.headline}
+              onClose={() => onEditToggle(null)}
+              onSave={(text) => onEditSave(editing.id, text)}
+              className={`absolute left-1/2 z-30 w-80 -translate-x-1/2 ${
+                layout.y > 50 ? "bottom-[92%]" : "top-[86%]"
+              }`}
+            />
+          )}
         </div>
       </div>
     </div>
@@ -346,7 +372,12 @@ export function TopicPanel({
   onAddToggle,
   onAddSave,
   onMoveInsight,
+  editingId,
+  onEditToggle,
+  onEditSave,
+  onDeleteInsight,
 }: SharedProps) {
+  const editing = editingId ? insights.find((i) => i.id === editingId) : undefined;
   const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
 
   return (
@@ -370,10 +401,24 @@ export function TopicPanel({
             color={circle.color}
             draggable
             onPick={onPick}
+            onEdit={onEditToggle}
+            onDelete={onDeleteInsight}
             selected={selectedIds.includes(ins.id)}
           />
         ))}
       </div>
+
+      {editing && (
+        <AddInsightPopover
+          key={editing.id}
+          heading="Edit insight"
+          initialText={editing.headline}
+          onClose={() => onEditToggle(null)}
+          onSave={(text) => onEditSave(editing.id, text)}
+          closeOnOutside={false}
+          className="mt-3 w-full"
+        />
+      )}
 
       {addOpen ? (
         <AddInsightPopover

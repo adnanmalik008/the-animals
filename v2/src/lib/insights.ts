@@ -392,6 +392,28 @@ export function removeInsight(id: string) {
   update((prev) => ({ ...prev, insights: prev.insights.filter((i) => i.id !== id) }));
 }
 
+/** Rewrite a card's headline. Returns false when nothing changed. */
+export function updateInsight(id: string, headline: string): boolean {
+  const text = headline.trim();
+  let changed = false;
+  update((prev) => {
+    const item = prev.insights.find((i) => i.id === id);
+    if (!item || !text || item.headline === text) return prev;
+    changed = true;
+    return {
+      ...prev,
+      insights: prev.insights.map((i) => (i.id === id ? { ...i, headline: text } : i)),
+    };
+  });
+  return changed;
+}
+
+/** Cards typed on the Anomalies board carry an author; stickers and seeds
+    do not. Only these can be edited or removed from the board. */
+export function isUserInsight(item: InsightItem): boolean {
+  return Boolean(item.author) && !item.sourceKey;
+}
+
 /** Drop every insight a given Live-tab sticker target filed. */
 export function removeInsightsBySource(sourceKey: string) {
   update((prev) => ({ ...prev, insights: prev.insights.filter((i) => i.sourceKey !== sourceKey) }));

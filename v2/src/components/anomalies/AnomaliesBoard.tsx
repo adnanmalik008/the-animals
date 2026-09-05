@@ -12,7 +12,9 @@ import {
   addInsight,
   moveInsight,
   removeCircle,
+  removeInsight,
   saveIdea,
+  updateInsight,
   useBoardStore,
   type InsightItem,
   type TopicCircle,
@@ -60,6 +62,7 @@ export function AnomaliesBoard() {
 
   /* fuse state — raw ids; stale ids (removed from the store) are filtered at render */
   const [rawSlots, setSlots] = useState<string[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [ideaText, setIdeaText] = useState("");
   const [shake, setShake] = useState(false);
   const [rejectHint, setRejectHint] = useState(false);
@@ -207,6 +210,36 @@ export function AnomaliesBoard() {
     [showToast]
   );
 
+  /* a card the user typed can be rewritten or taken off the board; the add
+     popover and the editor never show at once */
+  const openAdd = useCallback((circleId: string | null) => {
+    setAddFor(circleId);
+    if (circleId) setEditingId(null);
+  }, []);
+
+  const handleEditToggle = useCallback((id: string | null) => {
+    setEditingId(id);
+    if (id) setAddFor(null);
+  }, []);
+
+  const handleEditSave = useCallback(
+    (id: string, text: string) => {
+      if (updateInsight(id, text)) showToast("Insight updated");
+      setEditingId(null);
+    },
+    [showToast]
+  );
+
+  const handleDeleteInsight = useCallback(
+    (id: string) => {
+      removeInsight(id);
+      setSlots((prev) => prev.filter((s) => s !== id));
+      setEditingId((prev) => (prev === id ? null : prev));
+      showToast("Insight removed");
+    },
+    [showToast]
+  );
+
   /* dragging a card onto another circle refiles it there */
   const handleMoveInsight = useCallback(
     (insightId: string, circleId: string) => {
@@ -277,11 +310,12 @@ export function AnomaliesBoard() {
       // the modal (z-50) overlays everything, so it must close first
       if (modalOpen) setModalOpen(false);
       else if (addFor) setAddFor(null);
+      else if (editingId) setEditingId(null);
       else if (ideasOpen) setIdeasOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [addFor, modalOpen, ideasOpen]);
+  }, [addFor, editingId, modalOpen, ideasOpen]);
 
   const circleFor = useCallback(
     (circleId: string) => circleById.get(circleId),
@@ -333,9 +367,13 @@ export function AnomaliesBoard() {
                   selectedIds={slots}
                   onPick={pickInsight}
                   addOpen={addFor === c.id}
-                  onAddToggle={setAddFor}
+                  onAddToggle={openAdd}
                   onAddSave={handleAddInsight}
                   onMoveInsight={handleMoveInsight}
+                  editingId={editingId}
+                  onEditToggle={handleEditToggle}
+                  onEditSave={handleEditSave}
+                  onDeleteInsight={handleDeleteInsight}
                 />
               );
             })}
@@ -366,9 +404,13 @@ export function AnomaliesBoard() {
             selectedIds={slots}
             onPick={pickInsight}
             addOpen={addFor === c.id}
-            onAddToggle={setAddFor}
+            onAddToggle={openAdd}
             onAddSave={handleAddInsight}
             onMoveInsight={handleMoveInsight}
+            editingId={editingId}
+            onEditToggle={handleEditToggle}
+            onEditSave={handleEditSave}
+            onDeleteInsight={handleDeleteInsight}
           />
         ))}
       </div>
