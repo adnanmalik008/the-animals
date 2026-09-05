@@ -18,8 +18,6 @@ import {
 
 interface ColumnCtx {
   isOpen: (id: string) => boolean;
-  /** 1-based position in the column, for the eyebrow's file number */
-  positionOf: (id: string) => number;
   toggle: (id: string) => void;
   dragId: string | null;
   overId: string | null;
@@ -76,7 +74,6 @@ export function ModuleColumn({
   const ctx = useMemo<ColumnCtx>(
     () => ({
       isOpen: (id) => !closed.has(id),
-      positionOf: (id) => order.indexOf(id) + 1,
       toggle,
       dragId,
       overId,
@@ -84,7 +81,7 @@ export function ModuleColumn({
       onDragOverItem: setOverId,
       onDrop,
     }),
-    [closed, order, toggle, dragId, overId, onDrop]
+    [closed, toggle, dragId, overId, onDrop]
   );
 
   return (
@@ -182,9 +179,7 @@ export function Module({
       {eyebrow && (
         <p className="mb-1 flex items-center gap-3 font-serif text-sm text-graphite">
           <span className="inline-block h-px w-8 bg-graphite/50" aria-hidden />
-          {/* the design numbers the column in order, so dragging a section
-              renumbers the run rather than carrying a fixed id with it */}
-          {eyebrow} № {String(ctx.positionOf(id)).padStart(2, "0")}
+          {eyebrow}
         </p>
       )}
 
