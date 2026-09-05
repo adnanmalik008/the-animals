@@ -315,7 +315,7 @@ export const aiProfiles: AiProfile[] = [
 ];
 
 export const aiObservations =
-  "Arc'teryx punches above its weight — smaller mention volume but the highest citation rate, meaning models trust it. Patagonia has the loudest voice but the weakest conversion to citation. The North Face sits in the middle, coasting on brand recognition rather than earning it in the answer layer.";
+  "Arc'teryx punches above its weight — smaller mention volume but the highest citation rate, meaning models trust it. Patagonia has the loudest voice but the weakest conversion to citation. North Face sits in the middle, coasting on brand recognition rather than earning it in the answer layer.";
 
 /* ---------------- Their Search Landscape ---------------- */
 
@@ -502,14 +502,15 @@ export const horizon: HorizonColumn[] = [
         headline: "Filed: solvent-free DWR coating process",
         detail: "USPTO application 2026/0421 — replaces C6 chemistry entirely.",
         source: "USPTO",
+        implies: "PFAS-free rain shells become a real spec claim, not marketing.",
       },
       {
         kind: "Hiring",
-        date: "Jun 2026",
+        date: "May 2026",
         status: "hot",
-        headline: "Head of Resale Operations — Reno, NV",
-        detail: "Fourth resale role posted in six weeks, all logistics-side.",
-        source: "LinkedIn postings",
+        headline: "3 senior roles in Repair Network Ops",
+        detail: "New hub roles in Reno, Amsterdam, Osaka.",
+        source: "LinkedIn",
         implies: "Worn Wear moving from campaign to P&L line.",
       },
     ],
@@ -536,6 +537,8 @@ export const horizon: HorizonColumn[] = [
         detail: "Doubling headcount on 3D-knit and seamless construction.",
         source: "Amer Sports Q1 call",
       },
+      /* the file's third card here repeats Patagonia's lines, so this event
+         stays as written */
       {
         kind: "Hiring",
         date: "Jun 2026",
@@ -565,18 +568,19 @@ export const horizon: HorizonColumn[] = [
         kind: "R&D",
         date: "May 2026",
         status: "watch",
-        headline: "Filed: modular liner zip-system patent",
-        detail: "One shell, seasonal liners — reduces returns and inventory.",
-        source: "USPTO",
+        headline: "Filed: modular puffer with swappable insulation cassette",
+        detail: "One shell, seasonal fills — reduces returns and inventory risk.",
+        source: "EPO",
+        implies: "Aiming to own the 'one jacket, four seasons' story before Uniqlo.",
       },
       {
         kind: "Hiring",
-        date: "Jun 2026",
-        status: "warm",
-        headline: "Colour + trend lead hired from streetwear",
-        detail: "Third culture-side hire this quarter, all NYC-based.",
+        date: "May 2026",
+        status: "hot",
+        headline: "VP of Cultural Marketing, based Seoul",
+        detail: "Former Nike SB and Adidas Originals background.",
         source: "LinkedIn",
-        implies: "The urban line is getting its own design centre of gravity.",
+        implies: "APAC streetwear push, less alpine — brand drifts urban.",
       },
     ],
   },

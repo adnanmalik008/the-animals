@@ -36,6 +36,7 @@ export function CompetitionBoard() {
           ids={["attention", "show-up", "find-them", "horizon"]}
           render={renderModule}
           className="px-4 py-6 sm:px-8"
+          controls="panel"
         />
       </div>
     </main>

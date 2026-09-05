@@ -92,23 +92,6 @@ function ChannelRing({ mix }: { mix: CompetitorMix }) {
   );
 }
 
-function Globe() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      aria-hidden
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3c2.5 2.6 3.8 5.7 3.8 9S14.5 18.4 12 21c-2.5-2.6-3.8-5.7-3.8-9S9.5 5.6 12 3z" />
-    </svg>
-  );
-}
-
 function ReachSlider({ pct, label }: { pct: number; label: string }) {
   return (
     <div className="-mx-5 mt-5 border-t border-white/5 px-5 pt-5">
@@ -146,7 +129,8 @@ function CompetitorCard({ mix }: { mix: CompetitorMix }) {
         <BrandMark id={mix.id} size={48} rounded="rounded-xl" plate />
         <h4 className="font-display text-xl font-medium text-white">{mix.name}</h4>
         <span className="ml-auto flex items-center gap-2 font-display text-base text-white/70">
-          <Globe />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/competition/globe.svg" alt="" aria-hidden className="size-4 shrink-0" />
           {mix.domain}
         </span>
       </div>

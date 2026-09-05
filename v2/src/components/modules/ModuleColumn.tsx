@@ -32,10 +32,15 @@ export function ModuleColumn({
   ids,
   render,
   className = "",
+  controls = "plain",
 }: {
   ids: string[];
   render: (id: string) => ReactNode;
   className?: string;
+  /** "panel" sets the collapse-all control inside the first slab, top-left,
+      as the Competition design draws it: a pill with the file's double
+      chevron and tracked 14px text */
+  controls?: "plain" | "panel";
 }) {
   const [order, setOrder] = useState(ids);
   const [closed, setClosed] = useState<Set<string>>(new Set());
@@ -86,21 +91,40 @@ export function ModuleColumn({
 
   return (
     <Ctx.Provider value={ctx}>
-      <div className={className}>
-        <button
-          type="button"
-          onClick={toggleAll}
-          className="mb-1 flex items-center gap-1.5 text-xs text-graphite hover:text-ink transition-colors"
-        >
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
-            {allClosed ? (
-              <path d="M7 14l5 5 5-5M7 5l5 5 5-5" />
-            ) : (
-              <path d="M7 10l5-5 5 5M7 19l5-5 5 5" />
-            )}
-          </svg>
-          {allClosed ? "Expand all" : "Collapse all"}
-        </button>
+      <div className={`${controls === "panel" ? "relative" : ""} ${className}`}>
+        {controls === "panel" ? (
+          /* 16px inside the first slab's corner; the chevrons point up while
+             there is something to collapse */
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="absolute left-8 top-10 z-10 flex items-center gap-1.5 rounded-lg p-1.5 font-display text-sm font-medium tracking-[1px] text-white/70 transition-colors hover:bg-white/5 hover:text-white sm:left-12"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/assets/competition/chevron-down-double.svg"
+              alt=""
+              aria-hidden
+              className={`size-5 transition-transform ${allClosed ? "" : "rotate-180"}`}
+            />
+            {allClosed ? "Expand all" : "Collapse all"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={toggleAll}
+            className="mb-1 flex items-center gap-1.5 text-xs text-graphite hover:text-ink transition-colors"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+              {allClosed ? (
+                <path d="M7 14l5 5 5-5M7 5l5 5 5-5" />
+              ) : (
+                <path d="M7 10l5-5 5 5M7 19l5-5 5 5" />
+              )}
+            </svg>
+            {allClosed ? "Expand all" : "Collapse all"}
+          </button>
+        )}
         {order.map(render)}
       </div>
     </Ctx.Provider>
@@ -146,7 +170,7 @@ export function Module({
         /* Competition sets each section on its own rounded slab, the way the
            design separates them; every other board keeps the ruled divider. */
         variant === "panel"
-          ? "mb-10 rounded-[32px] bg-ink px-4 pb-8 pt-10 text-white last:mb-0 sm:pb-12 sm:pt-[72px]"
+          ? "mb-10 rounded-[32px] bg-ink px-4 pb-8 pt-14 text-white last:mb-0 sm:pb-12 sm:pt-[72px]"
           : "border-b border-line/70 py-4"
       } ${ctx.dragId === id ? "opacity-60" : ""} ${
         isDragTarget ? "shadow-[inset_0_3px_0_0_var(--orange)]" : ""
@@ -183,30 +207,39 @@ export function Module({
         </p>
       )}
 
-      <div
-        className={`flex items-center gap-2 pr-8 ${
-          /* the design sets a slab's title 64px in, its content 16px */
-          variant === "panel" ? "sm:pl-6" : ""
-        }`}
-      >
+      <div className="flex items-center gap-2 pr-8">
         <button
           type="button"
           onClick={() => ctx.toggle(id)}
           aria-expanded={open}
-          className="flex min-w-0 items-center gap-2.5 text-left"
+          className={`flex min-w-0 items-center text-left ${variant === "panel" ? "gap-4" : "gap-2.5"}`}
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            aria-hidden
-            className={`shrink-0 text-graphite transition-transform ${open ? "rotate-180" : ""}`}
-          >
-            <path d="M6 9l6 6 6-6" />
-          </svg>
+          {variant === "panel" ? (
+            /* the file's chevron: a 32px box holding an 18x10 white glyph,
+               which with the 16px gap lands the title 64px in */
+            <span
+              aria-hidden
+              className={`flex size-8 shrink-0 items-center justify-center transition-transform ${
+                open ? "" : "-rotate-90"
+              }`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/assets/competition/chevron-down.svg" alt="" className="h-[10px] w-[18px]" />
+            </span>
+          ) : (
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              aria-hidden
+              className={`shrink-0 text-graphite transition-transform ${open ? "rotate-180" : ""}`}
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          )}
           <span
             className={
               titleClassName ||
