@@ -26,6 +26,8 @@ export function OnStage({ id }: { id: string }) {
       source: current.speaker,
       category: "Event",
       categoryColor: "green",
+      detail: `${current.event} · ${current.hashtag}\n\n${current.session}`,
+      meta: current.speakerTitle,
     }),
     `stage:${current.id}`
   );

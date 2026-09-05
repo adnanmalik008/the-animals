@@ -75,6 +75,7 @@ function PodcastRow({ item }: { item: PodcastItem }) {
         source: item.show,
         category: "Podcast",
         categoryColor: "green",
+        meta: `${item.network} · ${item.timestamp}`,
       })}
     >
       {/* cover takes a little under half the row, the note the rest, and the

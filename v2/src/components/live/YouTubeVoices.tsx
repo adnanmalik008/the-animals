@@ -103,6 +103,8 @@ function VideoCard({ video, onOpen }: { video: CreatorVideo; onOpen: (v: Creator
         source: `${video.markA} ${video.markB}`,
         category: "YouTube",
         categoryColor: "blue",
+        detail: video.description,
+        meta: `${video.growthFrom} → ${video.growthTo}`,
       })}
     >
       <article className="flex h-full flex-col">

@@ -21,6 +21,7 @@ function SightingCard({ item }: { item: SightingItem }) {
         source: item.city,
         category: "OOH",
         categoryColor: "green",
+        meta: `${item.city} · ${item.time}`,
       })}
     >
       <figure className="paper-card flex h-full flex-col border border-line/70 p-2.5 shadow-sm">

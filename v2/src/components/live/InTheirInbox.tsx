@@ -35,6 +35,8 @@ function InboxItem({
       source: item.name,
       category: "Newsletter",
       categoryColor: "purple",
+      detail: `${item.quote}\n\n${item.tag}`,
+      meta: `${item.authors} · ${item.subs} · ${item.openRate} · ${item.timeAgo}`,
     }),
     `inbox:${item.id}`
   );

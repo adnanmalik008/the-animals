@@ -51,6 +51,8 @@ function NewswireCard({
       source: item.source,
       category: item.category,
       categoryColor: item.categoryColor,
+      detail: item.body ? `${item.summary}\n\n${item.body}` : item.summary,
+      meta: `${item.author} · ${item.timeAgo}`,
     }),
     `news:${item.id}`
   );

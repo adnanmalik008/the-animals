@@ -84,6 +84,7 @@ function PostCard({ post }: { post: SocialPost }) {
         source: label,
         category: label,
         categoryColor: "blue",
+        meta: `${post.author} · ${post.likes} likes · ${post.comments} comments · ${post.timeAgo}`,
       })}
     >
       <article className="flex h-full flex-col gap-3 rounded-2xl border border-line/70 bg-card p-4 shadow-sm">

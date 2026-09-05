@@ -54,6 +54,8 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
       source: conversationPlatformLabel[quote.platform],
       category: "Conversation",
       categoryColor: "green",
+      detail: quote.replyTo ? `${quote.context}\n\nReplying to: ${quote.replyTo}` : quote.context,
+      meta: `${quote.author} ${quote.handle} · ${quote.upvotes} upvotes · ${quote.timeAgo}`,
     }),
     `conversation:${quote.id}`
   );

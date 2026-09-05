@@ -1,12 +1,115 @@
 "use client";
 
-import type { CSSProperties, DragEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type DragEvent } from "react";
+import { createPortal } from "react-dom";
 import type { InsightItem } from "@/lib/insights";
 import { XIcon } from "./CircleIcon";
 import { circleText, focusRing, type CircleColor } from "./palette";
 
 /* Custom MIME type carrying the insight id during HTML5 drag. */
 export const INSIGHT_DRAG_TYPE = "animals/insight";
+
+/* ---------------- hover detail ----------------
+   The card shows two lines of headline; resting on it opens the whole
+   thing — source, byline, full headline and the post or article copy
+   behind it. Rendered through a portal so the circles' lava transforms
+   (each a stacking context) cannot trap it under a neighbour. */
+
+const PANEL_W = 340;
+const GAP = 12;
+const EDGE = 12;
+
+function DetailPanel({
+  insight,
+  color,
+  anchor,
+}: {
+  insight: InsightItem;
+  color: CircleColor;
+  anchor: DOMRect;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+
+  useLayoutEffect(() => {
+    const panel = ref.current;
+    if (!panel) return;
+    const h = panel.offsetHeight;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    /* beside the card, on whichever side has room; then clamp to the viewport */
+    const right = anchor.right + GAP;
+    const left = right + PANEL_W <= vw - EDGE ? right : Math.max(EDGE, anchor.left - GAP - PANEL_W);
+    const top = Math.max(EDGE, Math.min(vh - EDGE - h, anchor.top + anchor.height / 2 - h / 2));
+    setPos({ left, top });
+  }, [anchor]);
+
+  const paragraphs = insight.detail?.split(/\n\s*\n/).filter(Boolean) ?? [];
+
+  return createPortal(
+    <div
+      ref={ref}
+      role="tooltip"
+      className="pointer-events-none fixed z-[60] rounded-xl border border-line/70 bg-card p-4 text-left shadow-[0_12px_40px_-12px_rgba(0,0,0,0.35)]"
+      style={{
+        width: PANEL_W,
+        maxHeight: "70vh",
+        overflow: "hidden",
+        left: pos?.left ?? -9999,
+        top: pos?.top ?? -9999,
+        opacity: pos ? 1 : 0,
+      }}
+    >
+      {(insight.source || insight.category) && (
+        <p className="flex items-baseline justify-between gap-3 text-xs">
+          <span className="min-w-0 truncate font-semibold text-ink">{insight.source}</span>
+          {insight.category && (
+            <span className={`shrink-0 font-medium ${circleText[color]}`}>{insight.category}</span>
+          )}
+        </p>
+      )}
+      {(insight.author || insight.meta) && (
+        <p className="mt-1 text-xs text-graphite">{insight.author ?? insight.meta}</p>
+      )}
+      <p className="mt-2 font-serif text-base leading-snug text-ink">{insight.headline}</p>
+      {paragraphs.map((para, i) => (
+        <p key={i} className="mt-2 text-[13px] leading-relaxed text-graphite">
+          {para}
+        </p>
+      ))}
+    </div>,
+    document.body
+  );
+}
+
+/* Opens after a short rest so sweeping the pointer across a circle does not
+   flash a panel per card; closes on leave, blur, or the start of a drag. */
+function useHoverDetail() {
+  const [anchor, setAnchor] = useState<DOMRect | null>(null);
+  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => () => clearTimeout(timer.current), []);
+
+  const open = (el: HTMLElement) => {
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => setAnchor(el.getBoundingClientRect()), 180);
+  };
+  const close = () => {
+    clearTimeout(timer.current);
+    setAnchor(null);
+  };
+
+  return {
+    anchor,
+    close,
+    hoverProps: {
+      onMouseEnter: (e: { currentTarget: HTMLElement }) => open(e.currentTarget),
+      onMouseLeave: close,
+      onFocus: (e: { currentTarget: HTMLElement }) => open(e.currentTarget),
+      onBlur: close,
+    },
+  };
+}
 
 export function InsightCard({
   insight,
@@ -51,11 +154,14 @@ export function InsightCard({
           )}
         </span>
       )}
-      <span className="mt-1.5 line-clamp-2 font-serif text-sm leading-snug text-ink group-hover/card:line-clamp-none group-focus-visible/card:line-clamp-none">
+      <span className="mt-1.5 line-clamp-2 font-serif text-sm leading-snug text-ink">
         {insight.headline}
       </span>
     </>
   );
+
+  const { anchor, close, hoverProps } = useHoverDetail();
+  const panel = anchor && <DetailPanel insight={insight} color={color} anchor={anchor} />;
 
   const base = `group/card relative w-full rounded-lg border border-line/60 bg-card px-3.5 py-2.5 text-left shadow-[0_1px_4px_rgba(0,0,0,0.09)] ${
     selected ? "ring-2 ring-orange/60" : ""
@@ -63,7 +169,8 @@ export function InsightCard({
 
   if (!onPick) {
     return (
-      <div className={base} style={style}>
+      <div className={base} style={style} {...hoverProps}>
+        {panel}
         {body}
         {onRemove && (
           <button
@@ -80,6 +187,7 @@ export function InsightCard({
   }
 
   const handleDragStart = (e: DragEvent<HTMLButtonElement>) => {
+    close();
     e.dataTransfer.setData(INSIGHT_DRAG_TYPE, insight.id);
     e.dataTransfer.effectAllowed = "copy";
   };
@@ -95,7 +203,9 @@ export function InsightCard({
         draggable ? "cursor-grab active:cursor-grabbing" : ""
       } ${focusRing}`}
       style={style}
+      {...hoverProps}
     >
+      {panel}
       {body}
     </button>
   );
