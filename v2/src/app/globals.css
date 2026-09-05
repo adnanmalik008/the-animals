@@ -137,6 +137,41 @@ body {
   }
 }
 
+/* In Their Inbox sits its open send on the design's own sheet for that module
+   (In their inbox.png — a cooler, opaque grey paper), sliced the same way as
+   .torn-sheet so it fits any row height without stretching. It bleeds past the
+   inbox list's own padding as well as the column's, hence the wider --bleed.
+   Opaque in the design, so it overrides --sheet-strength for itself. */
+.inbox-sheet {
+  --sheet-strength: 1;
+  --bleed: 2.25rem;
+  --torn-w: calc(100cqw + var(--bleed) * 2);
+  --torn-top: calc(var(--torn-w) * 0.02339);
+  --torn-bottom: calc(var(--torn-w) * 0.0269);
+  background-image: url("/assets/textures/inbox-paper.jpg");
+  background-size: cover;
+  background-position: center;
+  -webkit-mask-image: url("/assets/textures/inbox-torn-top.png"),
+    url("/assets/textures/inbox-torn-mid.png"), url("/assets/textures/inbox-torn-bottom.png");
+  -webkit-mask-size: 100% var(--torn-top),
+    100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
+  -webkit-mask-position: top center, center, bottom center;
+  -webkit-mask-repeat: no-repeat;
+  mask-image: url("/assets/textures/inbox-torn-top.png"),
+    url("/assets/textures/inbox-torn-mid.png"), url("/assets/textures/inbox-torn-bottom.png");
+  mask-size: 100% var(--torn-top),
+    100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
+  mask-position: top center, center, bottom center;
+  mask-repeat: no-repeat;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
+}
+
+@media (min-width: 40rem) {
+  .inbox-sheet {
+    --bleed: 3.5rem;
+  }
+}
+
 /* Full-bleed paper inside editorial cards, matching the Figma components. */
 /* Photo cards (Sightings, On the Airwaves) frame their image on the same paper
    texture, held at --paper-strength so they sit below the torn sheets. */

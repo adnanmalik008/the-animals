@@ -12,6 +12,10 @@ export interface NewsletterItem {
   openRate: string; // "58% open"
   subject: string;
   timeAgo: string;
+  /** the line worth reading, shown when the send is open */
+  quote: string;
+  /** the framing it belongs to — the orange tag under the quote */
+  tag: string;
 }
 
 export const newsletterItems: NewsletterItem[] = [
@@ -23,6 +27,9 @@ export const newsletterItems: NewsletterItem[] = [
     openRate: "58% open",
     subject: "The Newsletter-as-Brand Edition",
     timeAgo: "4d ago",
+    quote:
+      "The newsletters that still convert aren't selling a product. They're selling a point of view you can't get from the brand's own feed.",
+    tag: "Brand as media",
   },
   {
     id: "nl-2",
@@ -32,6 +39,9 @@ export const newsletterItems: NewsletterItem[] = [
     openRate: "61% open",
     subject: "The Super-Shoe Arms Race Is Cooling Off",
     timeAgo: "2d ago",
+    quote:
+      "Every brand has a carbon plate now. The runners I coach stopped asking which shoe is fastest and started asking which one they'll still want to wear in March.",
+    tag: "Post-hype",
   },
   {
     id: "nl-3",
@@ -41,6 +51,9 @@ export const newsletterItems: NewsletterItem[] = [
     openRate: "47% open",
     subject: "Gen Z Won't Buy Your Performance Story",
     timeAgo: "3d ago",
+    quote:
+      "Gen Z isn't anti-performance. They're anti being told a jacket will make them a better person.",
+    tag: "Tone shift",
   },
   {
     id: "nl-4",
@@ -50,6 +63,9 @@ export const newsletterItems: NewsletterItem[] = [
     openRate: "52% open",
     subject: "Terrace Shoes Ate the Office Dress Code",
     timeAgo: "5d ago",
+    quote:
+      "The Samba didn't win the office by being a running shoe. It won by being the one shoe nobody had to explain.",
+    tag: "Terrace crossover",
   },
 ];
 

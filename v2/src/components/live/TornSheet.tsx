@@ -15,6 +15,7 @@ export function TornSheet({
   tint,
   bleed = "column",
   shown = "hover",
+  variant = "sheet",
   className = "",
 }: {
   /** per-publisher paper shade; omit for the board's default sheet */
@@ -25,6 +26,8 @@ export function TornSheet({
   /** true keeps the sheet on; "hover" fades it in while the host row is
       hovered; false hides it */
   shown?: boolean | "hover";
+  /** "inbox" renders In Their Inbox's own paper (see .inbox-sheet) */
+  variant?: "sheet" | "inbox";
   className?: string;
 }) {
   const inset = bleed === "list" ? "-inset-x-9 sm:-inset-x-14" : "-inset-x-4 sm:-inset-x-8";
@@ -38,7 +41,7 @@ export function TornSheet({
     <div
       aria-hidden
       style={tint ? { ["--paper-tint" as string]: tint } : undefined}
-      className={`torn-sheet pointer-events-none absolute -inset-y-6 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
+      className={`${variant === "inbox" ? "inbox-sheet" : "torn-sheet"} pointer-events-none absolute -inset-y-6 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
     />
   );
 }
