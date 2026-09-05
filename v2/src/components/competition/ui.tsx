@@ -11,11 +11,14 @@ export const bigTitle =
 export const panelTitle = "text-lg font-semibold tracking-tight text-white";
 
 /** Uppercase kicker above a content group — SF Pro Display Regular 18 at
-    70%, 110% line height, no rule beneath, as the design sets "Machine
-    Vision" and its peers. */
+    70%, 110% line height — with the design's rule running on from the label
+    to the edge: 1px white at 16%, 16px after the text (node 276:8980). */
 export function Kicker({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <p className={`font-display text-lg uppercase leading-[1.1] text-white/70 ${className}`}>{children}</p>
+    <p className={`flex items-center gap-4 font-display text-lg uppercase leading-[1.1] text-white/70 ${className}`}>
+      <span className="shrink-0">{children}</span>
+      <span aria-hidden className="h-px min-w-0 flex-1 bg-white/16" />
+    </p>
   );
 }
 
