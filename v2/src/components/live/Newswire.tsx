@@ -21,13 +21,13 @@ const chipClass = "text-orange bg-orange/10";
    column, so each tint is whatever lands that composite on the design's
    pixels. One torn asset takes the tint; there is no per-source image */
 const PAPER_TINT: Record<NewsSource, string> = {
-  Bloomberg: "#e6d1c9",
+  Bloomberg: "#e6d0c9",
   "The New York Times": "#edd0ad",
-  CNN: "#edbfa7",
-  MSN: "#ded7ab",
-  "Fox News": "#d2d9ac",
-  "New York Post": "#cadbce",
-  CNBC: "#edbdac",
+  CNN: "#edbea6",
+  MSN: "#ddd6ab",
+  "Fox News": "#d2d8ac",
+  "New York Post": "#cbdbce",
+  CNBC: "#edbcab",
 };
 
 function NewswireCard({

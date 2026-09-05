@@ -112,18 +112,18 @@ body {
   --torn-top: calc(var(--torn-w) * 0.00894);
   --torn-bottom: calc(var(--torn-w) * 0.01195);
   background-color: var(--paper-tint, #eae4e1);
-  background-image: url("/assets/textures/paper-master.jpg");
+  background-image: url("/assets/textures/sheet-paper.jpg");
   background-size: cover;
   background-position: center;
   background-blend-mode: multiply;
-  -webkit-mask-image: url("/assets/textures/torn-top.png"),
-    url("/assets/textures/torn-mid.png"), url("/assets/textures/torn-bottom.png");
+  -webkit-mask-image: url("/assets/textures/sheet-torn-top.png"),
+    url("/assets/textures/sheet-torn-mid.png"), url("/assets/textures/sheet-torn-bottom.png");
   -webkit-mask-size: 100% var(--torn-top),
     100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
   -webkit-mask-position: top center, center, bottom center;
   -webkit-mask-repeat: no-repeat;
-  mask-image: url("/assets/textures/torn-top.png"),
-    url("/assets/textures/torn-mid.png"), url("/assets/textures/torn-bottom.png");
+  mask-image: url("/assets/textures/sheet-torn-top.png"),
+    url("/assets/textures/sheet-torn-mid.png"), url("/assets/textures/sheet-torn-bottom.png");
   mask-size: 100% var(--torn-top),
     100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
   mask-position: top center, center, bottom center;
@@ -152,7 +152,7 @@ body {
   z-index: -1;
   border-radius: inherit;
   background-color: var(--paper);
-  background-image: url("/assets/textures/paper-master.jpg");
+  background-image: url("/assets/textures/card-paper.jpg");
   background-position: center;
   background-size: cover;
   background-blend-mode: multiply;
