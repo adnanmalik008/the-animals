@@ -7,7 +7,7 @@ import {
   createBoardAction,
   deleteBoardAction,
   removeUserAction,
-  saveModuleAction,
+  saveModuleDocAction,
   updateBoardAction,
   type ActionState,
 } from "./actions";
@@ -301,7 +301,7 @@ export function ModuleEditor({
   existing: Record<string, unknown>;
   templates: Record<string, unknown>;
 }) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveModuleAction, {});
+  const [state, action, pending] = useActionState<ActionState, FormData>(saveModuleDocAction, {});
   const [key, setKey] = useState(moduleKeys[0] ?? "newswire");
   const [text, setText] = useState(() =>
     JSON.stringify(existing[key] ?? templates[key] ?? {}, null, 2)
@@ -320,6 +320,7 @@ export function ModuleEditor({
   }, [text]);
 
   const isCustom = existing[key] !== undefined;
+  const fieldErrors = Object.entries(state.fieldErrors ?? {});
 
   return (
     <form action={action} className={`${card} flex flex-col gap-4`}>
@@ -383,7 +384,7 @@ export function ModuleEditor({
       <label className={label}>
         <span className="sr-only">Content (JSON)</span>
         <textarea
-          name="json"
+          name="doc"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={18}
@@ -398,6 +399,17 @@ export function ModuleEditor({
       <p className={`text-xs ${parse.error ? "text-red" : "text-graphite"}`} aria-live="polite">
         {parse.error ? `Invalid JSON — ${parse.error}` : `Valid JSON · ${describeJson(parse.value)}`}
       </p>
+
+      {/* the syntax is fine but the shape is not: name the fields, in order */}
+      {fieldErrors.length > 0 && (
+        <ul className="flex flex-col gap-1 rounded-lg bg-red/10 px-3 py-2 text-xs text-red">
+          {fieldErrors.map(([path, message]) => (
+            <li key={path}>
+              <span className="font-mono">{path}</span> — {message}
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="flex items-center gap-4">
         <button type="submit" disabled={pending || !!parse.error} className={primaryBtn}>

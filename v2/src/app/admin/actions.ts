@@ -8,14 +8,20 @@ import {
   deleteBoard,
   getBoardBySlug,
   removeBoardUser,
-  setModuleData,
   updateBoard,
 } from "@/lib/server/boards";
+import { saveModuleDoc } from "@/lib/server/docs";
+import { revalidateBoard } from "@/lib/server/revalidate";
 import { requireAdmin } from "@/lib/server/guard";
 
 export interface ActionState {
   error?: string;
   ok?: boolean;
+  /** dotted field path → message, when a doc failed its module definition */
+  fieldErrors?: Record<string, string>;
+  savedAt?: number;
+  /** the normalised doc that was stored */
+  doc?: unknown;
 }
 
 function fail(e: unknown): ActionState {
@@ -56,8 +62,7 @@ export async function updateBoardAction(_prev: ActionState, formData: FormData):
   } catch (e) {
     return fail(e);
   }
-  revalidatePath(`/admin/${slug}`);
-  revalidatePath("/");
+  revalidateBoard(slug);
   return { ok: true };
 }
 
@@ -70,13 +75,11 @@ export async function deleteBoardAction(formData: FormData) {
   redirect("/admin");
 }
 
-export async function saveModuleAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+export async function saveModuleDocAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
   await requireAdmin();
   const slug = String(formData.get("slug") ?? "");
   const moduleKey = String(formData.get("moduleKey") ?? "").trim();
-  const raw = String(formData.get("json") ?? "");
-  const board = await getBoardBySlug(slug);
-  if (!board || board.id === "fixture") return { error: "Board not found (is the CMS configured?)." };
+  const raw = String(formData.get("doc") ?? "");
   if (!moduleKey) return { error: "Module key is required." };
   let parsed: unknown;
   try {
@@ -84,15 +87,17 @@ export async function saveModuleAction(_prev: ActionState, formData: FormData): 
   } catch {
     return { error: "Invalid JSON — fix the syntax and save again." };
   }
+  const board = await getBoardBySlug(slug);
+  if (!board || board.id === "fixture") return { error: "Board not found (is the CMS configured?)." };
+  let result;
   try {
-    await setModuleData(board.id, moduleKey, parsed);
+    result = await saveModuleDoc(board.id, moduleKey, parsed);
   } catch (e) {
     return fail(e);
   }
-  revalidatePath(`/admin/${slug}`);
-  revalidatePath("/");
-  revalidatePath("/in-the-wild");
-  return { ok: true };
+  if (!result.ok) return { error: result.error, fieldErrors: result.fieldErrors };
+  revalidateBoard(slug, moduleKey);
+  return { ok: true, savedAt: Date.now(), doc: result.doc };
 }
 
 export async function addUserAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
