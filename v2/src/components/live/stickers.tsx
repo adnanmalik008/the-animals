@@ -263,15 +263,15 @@ export function StickerBadge({
 export function StickerTray() {
   const { used, armedSticker, toggleArm, removeSticker } = useContext(StickerCtx);
   const liveStickerRef = useRef<HTMLImageElement | null>(null);
-  const [inHand, setInHand] = useState(false);
   const [removeOver, setRemoveOver] = useState(false);
 
   /* The live sticker is keyed on `used`, so a successful drop swaps it for a
      fresh one mid-drag — the dragged element unmounts and its dragend never
-     fires. Clear the hand here too, or the centre slot stays empty. */
-  useEffect(() => {
-    setInHand(false);
-  }, [used]);
+     fires. So the hand is remembered against the count it was raised under:
+     once `used` moves on, that hand is stale and the centre slot refills. */
+  const [hand, setHand] = useState({ used, inHand: false });
+  const inHand = hand.used === used && hand.inHand;
+  const setInHand = (inHand: boolean) => setHand({ used, inHand });
 
   return (
     <div

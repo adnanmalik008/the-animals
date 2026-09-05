@@ -50,47 +50,51 @@ function TrendLine({ points, up, inView }: { points: number[]; up: boolean; inVi
   );
 }
 
+/* Every term is its own drop target, so the section carries as many stickers
+   as it has rows. */
 export function SearchVelocity({ id }: { id: string }) {
   const { ref, inView } = useInView<HTMLDivElement>();
-  const lead = searchTerms[0];
 
   return (
     <Module id={id} title="Search Velocity">
-      <StickerDropZone
-        className="rounded-xl"
-        insight={() => ({
-          circleId: "breakout-themes",
-          headline: `Search Velocity — “${lead.term}” ${lead.delta > 0 ? "+" : ""}${lead.delta}% branded search`,
-          source: "Live board",
-          category: "Signal",
-          categoryColor: "orange",
-        })}
-      >
-        <div ref={ref} className="pt-4">
-          <p className="mb-4 text-sm text-graphite">Branded search, trailing 12 weeks</p>
-          <ul className="flex flex-col gap-5">
-            {searchTerms.map((t) => {
-              const up = t.delta >= 0;
-              return (
-                <li key={t.id} className="flex items-center gap-4">
-                  <span className="w-32 shrink-0 truncate text-sm font-semibold sm:w-36">{t.term}</span>
-                  <div className="min-w-0 flex-1">
-                    <TrendLine points={t.points} up={up} inView={inView} />
+      <div ref={ref} className="pt-4">
+        <p className="mb-4 text-sm text-graphite">Branded search, trailing 12 weeks</p>
+        <ul className="flex flex-col gap-5">
+          {searchTerms.map((t) => {
+            const up = t.delta >= 0;
+            return (
+              <li key={t.id}>
+                <StickerDropZone
+                  tagKey={`search:${t.id}`}
+                  className="rounded-lg"
+                  insight={() => ({
+                    circleId: "breakout-themes",
+                    headline: `Search Velocity — “${t.term}” ${up ? "+" : ""}${t.delta}% branded search`,
+                    source: "Live board",
+                    category: "Signal",
+                    categoryColor: "orange",
+                  })}
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="w-32 shrink-0 truncate text-sm font-semibold sm:w-36">{t.term}</span>
+                    <div className="min-w-0 flex-1">
+                      <TrendLine points={t.points} up={up} inView={inView} />
+                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums ${
+                        up ? "bg-green/10 text-green" : "bg-red/10 text-red"
+                      }`}
+                    >
+                      {up ? "+" : ""}
+                      {t.delta}%
+                    </span>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold tabular-nums ${
-                      up ? "bg-green/10 text-green" : "bg-red/10 text-red"
-                    }`}
-                  >
-                    {up ? "+" : ""}
-                    {t.delta}%
-                  </span>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      </StickerDropZone>
+                </StickerDropZone>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
     </Module>
   );
 }

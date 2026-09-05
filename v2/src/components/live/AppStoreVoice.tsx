@@ -35,11 +35,14 @@ function Stars({ rating, platform }: { rating: number; platform: AppPlatform }) 
   );
 }
 
+/* The rating, each movement chip and the review are separate drop targets,
+   so a platform carries more than one sticker. */
 export function AppStoreVoice({ id }: { id: string }) {
   const [platform, setPlatform] = useState<AppPlatform>("ios");
   const { ref, inView } = useInView<HTMLDivElement>();
   const data = appStoreVoice[platform];
   const rating = useCountUp(data.rating, inView, 900, 1);
+  const platformName = platform === "ios" ? "iOS" : "Android";
 
   return (
     <Module
@@ -70,20 +73,21 @@ export function AppStoreVoice({ id }: { id: string }) {
         </div>
       }
     >
-      <StickerDropZone
-        className="rounded-xl"
-        insight={() => ({
-          circleId: "customer-opinion",
-          headline: `App Store Voice — ${platform === "ios" ? "iOS" : "Android"} rating ${data.rating}, ${data.stats[2].value} ${data.stats[2].label.toLowerCase()} chatter`,
-          source: "Live board",
-          category: "Signal",
-          categoryColor: "orange",
-        })}
-      >
-        <div ref={ref} className="pt-4">
-          <p className="text-sm text-graphite">Unfiltered consumer reviews</p>
+      <div ref={ref} className="pt-4">
+        <p className="text-sm text-graphite">Unfiltered consumer reviews</p>
 
-          <div className="mt-3 flex items-end gap-4">
+        <StickerDropZone
+          tagKey={`app:${platform}:rating`}
+          className="mt-3 rounded-lg"
+          insight={() => ({
+            circleId: "customer-opinion",
+            headline: `App Store Voice — ${platformName} rating ${data.rating} across ${data.totalLabel}`,
+            source: "Live board",
+            category: "Signal",
+            categoryColor: "orange",
+          })}
+        >
+          <div className="flex items-end gap-4">
             <span className="text-5xl font-bold tabular-nums leading-none">
               {rating.toFixed(1)}
             </span>
@@ -92,18 +96,44 @@ export function AppStoreVoice({ id }: { id: string }) {
               <span className="text-sm text-graphite">{data.totalLabel}</span>
             </span>
           </div>
+        </StickerDropZone>
 
-          {/* review-theme movement chips */}
-          <div className="mt-5 grid grid-cols-2 divide-line rounded-2xl border border-line sm:grid-cols-4 sm:divide-x">
-            {data.stats.map((stat) => (
-              <div key={stat.label} className="px-4 py-3.5 text-center">
+        {/* review-theme movement chips */}
+        <div className="mt-5 grid grid-cols-2 divide-line rounded-2xl border border-line sm:grid-cols-4 sm:divide-x">
+          {data.stats.map((stat) => (
+            <StickerDropZone
+              key={stat.label}
+              tagKey={`app:${platform}:stat:${stat.label}`}
+              className="rounded-lg"
+              insight={() => ({
+                circleId: "customer-opinion",
+                headline: `App Store Voice — ${stat.label} mentions ${stat.value} on ${platformName}`,
+                source: "Live board",
+                category: "Signal",
+                categoryColor: "orange",
+              })}
+            >
+              <div className="px-4 py-3.5 text-center">
                 <span className="block text-xl font-bold tabular-nums sm:text-2xl">{stat.value}</span>
                 <span className="mt-0.5 block text-xs text-graphite">{stat.label}</span>
               </div>
-            ))}
-          </div>
+            </StickerDropZone>
+          ))}
+        </div>
 
-          <figure className="mt-5 border-l-2 border-orange pl-4">
+        <StickerDropZone
+          tagKey={`app:${platform}:review`}
+          className="mt-5 rounded-lg"
+          insight={() => ({
+            circleId: "customer-opinion",
+            headline: `“${data.review.text}”`,
+            source: `${platformName} review`,
+            category: "Review",
+            categoryColor: "orange",
+            meta: data.review.author,
+          })}
+        >
+          <figure className="border-l-2 border-orange pl-4">
             <Stars rating={5} platform={platform} />
             <blockquote className="mt-2 font-serif text-lg leading-snug">
               &ldquo;{data.review.text}&rdquo;
@@ -112,8 +142,8 @@ export function AppStoreVoice({ id }: { id: string }) {
               — {data.review.author}
             </figcaption>
           </figure>
-        </div>
-      </StickerDropZone>
+        </StickerDropZone>
+      </div>
     </Module>
   );
 }

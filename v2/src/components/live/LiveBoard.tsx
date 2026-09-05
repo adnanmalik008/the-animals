@@ -1,7 +1,6 @@
 "use client";
 
 import { Module, ModuleColumn } from "@/components/modules/ModuleColumn";
-import { aiVisibility, shareOfVoice } from "@/data/board";
 import { AISearchVisibility } from "./AISearchVisibility";
 import { AppStoreVoice } from "./AppStoreVoice";
 import { HiringVelocity } from "./HiringVelocity";
@@ -17,7 +16,7 @@ import { SearchVelocity } from "./SearchVelocity";
 import { ShareOfVoice } from "./ShareOfVoice";
 import { Sightings } from "./Sightings";
 import { SocialPulse } from "./SocialPulse";
-import { StickerDropZone, StickerProvider, StickerTray } from "./stickers";
+import { StickerProvider, StickerTray } from "./stickers";
 import { TheConversation } from "./TheConversation";
 import { TopSites } from "./TopSites";
 import { TrafficSources } from "./TrafficSources";
@@ -59,35 +58,13 @@ function renderData(id: string) {
     case "ai-visibility":
       return (
         <Module key={id} id={id} title="AI Search Visibility">
-          <StickerDropZone
-            className="rounded-xl"
-            insight={() => ({
-              circleId: "media-hotspots",
-              headline: `AI Search Visibility — score ${aiVisibility.score}, ${aiVisibility.mentionsLabel} mentions`,
-              source: "Live board",
-              category: "Signal",
-              categoryColor: "orange",
-            })}
-          >
-            <AISearchVisibility />
-          </StickerDropZone>
+          <AISearchVisibility />
         </Module>
       );
     case "share-of-voice":
       return (
         <Module key={id} id={id} title="Share of Voice">
-          <StickerDropZone
-            className="rounded-xl"
-            insight={() => ({
-              circleId: "media-hotspots",
-              headline: `Share of Voice — ${shareOfVoice[0].label} ${shareOfVoice[0].pct}% of conversation`,
-              source: "Live board",
-              category: "Signal",
-              categoryColor: "orange",
-            })}
-          >
-            <ShareOfVoice />
-          </StickerDropZone>
+          <ShareOfVoice />
         </Module>
       );
     case "search-velocity":

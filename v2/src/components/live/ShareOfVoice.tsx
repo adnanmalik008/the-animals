@@ -2,6 +2,7 @@
 
 import { shareOfVoice } from "@/data/board";
 import { useInView } from "@/lib/hooks";
+import { StickerDropZone } from "./stickers";
 
 const barColor: Record<string, string> = {
   orange: "bg-orange",
@@ -11,6 +12,8 @@ const barColor: Record<string, string> = {
   yellow: "bg-yellow",
 };
 
+/* Every brand is its own drop target, so the section carries as many
+   stickers as it has rows. */
 export function ShareOfVoice() {
   const { ref, inView } = useInView<HTMLDivElement>();
 
@@ -24,16 +27,28 @@ export function ShareOfVoice() {
       <ul className="flex flex-col gap-5">
         {shareOfVoice.map((row) => (
           <li key={row.id}>
-            <div className="mb-1.5 flex items-center justify-between text-sm">
-              <span className="font-semibold">{row.label}</span>
-              <span className="tabular-nums text-graphite">{row.pct}%</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-bg2">
-              <div
-                className={`bar-fill h-full rounded-full ${barColor[row.color]}`}
-                style={{ width: inView ? `${row.pct}%` : "0%" }}
-              />
-            </div>
+            <StickerDropZone
+              tagKey={`sov:${row.id}`}
+              className="rounded-lg"
+              insight={() => ({
+                circleId: "media-hotspots",
+                headline: `Share of Voice — ${row.label} ${row.pct}% of conversation`,
+                source: "Live board",
+                category: "Signal",
+                categoryColor: "orange",
+              })}
+            >
+              <div className="mb-1.5 flex items-center justify-between text-sm">
+                <span className="font-semibold">{row.label}</span>
+                <span className="tabular-nums text-graphite">{row.pct}%</span>
+              </div>
+              <div className="h-2 overflow-hidden rounded-full bg-bg2">
+                <div
+                  className={`bar-fill h-full rounded-full ${barColor[row.color]}`}
+                  style={{ width: inView ? `${row.pct}%` : "0%" }}
+                />
+              </div>
+            </StickerDropZone>
           </li>
         ))}
       </ul>
