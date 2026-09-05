@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { NewsItem } from "@/data/board";
+import type { NewswireArticle } from "./Newswire";
 import { SourceMark } from "./SourceMark";
 
 /* Full-article reader. Opens from a Newswire row's "Read full article". */
-export function ArticleModal({ item, onClose }: { item: NewsItem; onClose: () => void }) {
+export function ArticleModal({ item, onClose }: { item: NewswireArticle; onClose: () => void }) {
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeRef = useRef<HTMLButtonElement | null>(null);
 
