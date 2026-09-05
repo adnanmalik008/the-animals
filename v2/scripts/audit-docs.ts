@@ -42,7 +42,6 @@ interface ModuleRow {
   board_id: string;
   module_key: string;
   data: unknown;
-  updated_at: string;
 }
 
 async function main() {
@@ -60,7 +59,7 @@ async function main() {
 
   const [boardsRes, rowsRes] = await Promise.all([
     db.from("boards").select("id, slug"),
-    db.from("module_data").select("board_id, module_key, data, updated_at"),
+    db.from("module_data").select("board_id, module_key, data"),
   ]);
 
   if (boardsRes.error) {
