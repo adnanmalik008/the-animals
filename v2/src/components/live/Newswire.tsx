@@ -11,6 +11,7 @@ import { useModuleData } from "@/components/board/BoardDataContext";
 import { ArticleModal } from "./ArticleModal";
 import { SourceMark } from "./SourceMark";
 import { StickerBadge, useStickerTarget } from "./stickers";
+import { TornSheet } from "./TornSheet";
 
 /* the design chips every category the same peach pill */
 const chipClass = "text-orange bg-orange/10";
@@ -58,12 +59,9 @@ function NewswireCard({
       className={`torn-host group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
     >
       {/* the torn sheet slides in behind the row on hover and stays open */}
-      <div
-        aria-hidden
-        style={{ ["--paper-tint" as string]: PAPER_TINT[item.source] }}
-        className={`torn-sheet pointer-events-none absolute -inset-x-4 sm:-inset-x-8 -inset-y-1 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${
-          expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"
-        }`}
+      <TornSheet
+        tint={PAPER_TINT[item.source]}
+        className={expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"}
       />
 
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}

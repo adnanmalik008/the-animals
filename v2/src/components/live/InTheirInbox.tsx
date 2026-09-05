@@ -3,6 +3,7 @@
 import { Module } from "@/components/modules/ModuleColumn";
 import { newsletterItems, type NewsletterItem } from "@/data/live-extra";
 import { StickerBadge, useStickerTarget } from "./stickers";
+import { TornSheet } from "./TornSheet";
 
 /* ============================================================
    In Their Inbox — newsletter watch. The week's must-open sends
@@ -26,18 +27,13 @@ function InboxItem({ item }: { item: NewsletterItem }) {
   return (
     <article
       {...targetProps}
-      className={`inbox-row relative isolate rounded-md py-4 transition-shadow duration-300 first:pt-1 last:pb-1 motion-reduce:transition-none ${
+      className={`torn-host group/row relative isolate rounded-md py-4 transition-shadow duration-300 first:pt-1 last:pb-1 motion-reduce:transition-none ${
         isOver ? "outline-2 outline-orange outline-offset-4" : ""
       }`}
     >
-      {/* paper fades in behind the send on hover. It bleeds past the list's
-          own padding out to the column edge, the way Newswire's sheet does,
-          so the strip reads as a sheet slid under the row rather than a
-          floating panel. */}
-      <div
-        aria-hidden
-        className="paper-veil pointer-events-none absolute inset-y-0 -inset-x-9 -z-10 sm:-inset-x-14"
-      />
+      {/* Newswire's torn sheet fades in behind the send on hover; "list"
+          clears the list's own padding so it still meets the panel edge */}
+      <TornSheet bleed="list" className="opacity-0 group-hover/row:opacity-100" />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-serif text-lg font-bold leading-snug sm:text-xl">{item.name}</h3>

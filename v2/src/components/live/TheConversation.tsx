@@ -9,6 +9,7 @@ import {
   type ConversationQuote,
 } from "@/data/live";
 import { StickerBadge, useStickerTarget } from "./stickers";
+import { TornSheet } from "./TornSheet";
 
 const filters: { id: ConversationPlatform | "all"; label: string }[] = [
   { id: "all", label: "All" },
@@ -60,15 +61,12 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
   return (
     <article
       {...targetProps}
-      className={`quote-row group/quote relative isolate overflow-hidden rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
+      className={`torn-host group/row relative isolate rounded-lg transition-shadow duration-300 motion-reduce:transition-none ${
         isOver ? "outline-2 outline-orange outline-offset-4" : ""
       }`}
     >
-      {/* paper fades in behind the quote on hover */}
-      <div
-        aria-hidden
-        className="paper-veil pointer-events-none absolute inset-0 -z-10"
-      />
+      {/* the same torn sheet Newswire uses fades in behind the quote on hover */}
+      <TornSheet className="opacity-0 group-hover/row:opacity-100" />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className={`px-5 py-4 ${stock}`}>
         <div className="flex items-center justify-between gap-3 text-xs text-graphite">

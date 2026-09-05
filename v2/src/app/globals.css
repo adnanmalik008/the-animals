@@ -133,44 +133,13 @@ body {
 }
 
 /* Full-bleed paper inside editorial cards, matching the Figma components. */
-/* The Conversation and In Their Inbox show their paper on hover only, and
-   softer than a card — the module's own paper already sits underneath. */
-/* the hover fade lives here so it shares --paper-strength with the cards */
-.quote-row .paper-veil,
-.inbox-row .paper-veil {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-.quote-row:hover .paper-veil,
-.inbox-row:hover .paper-veil {
-  opacity: var(--paper-strength);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .quote-row .paper-veil,
-  .inbox-row .paper-veil {
-    transition: none;
-  }
-}
-
-.paper-veil {
-  background-color: var(--paper);
-  background-image: url("/assets/textures/paper-master.jpg");
-  background-position: center;
-  background-size: cover;
-  background-blend-mode: multiply;
-}
-
-/* Paper cards draw the same veil at the same strength, so every section's
-   paper reads alike — the card just shows it permanently rather than on hover. */
-.torn-card,
+/* Photo cards (Sightings, On the Airwaves) frame their image on the same paper
+   texture, held at --paper-strength so they sit below the torn sheets. */
 .paper-card {
   position: relative;
   isolation: isolate;
 }
 
-.torn-card::before,
 .paper-card::before {
   content: "";
   position: absolute;
