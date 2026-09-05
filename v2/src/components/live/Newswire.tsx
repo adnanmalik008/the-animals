@@ -16,16 +16,18 @@ import { TornSheet } from "./TornSheet";
 /* the design chips every category the same peach pill */
 const chipClass = "text-orange bg-orange/10";
 
-/* each publisher tears its own shade of paper, sampled from the design;
-   one torn asset takes the tint, so there is no per-source image */
+/* each publisher tears its own shade of paper. These are solved from the
+   prototype's hovered rows: the sheet renders at --sheet-strength over the
+   column, so each tint is whatever lands that composite on the design's
+   pixels. One torn asset takes the tint; there is no per-source image */
 const PAPER_TINT: Record<NewsSource, string> = {
-  Bloomberg: "#eae4e1",
-  "The New York Times": "#e9e1d4",
-  CNN: "#e4d8d0",
-  MSN: "#dddbcd",
-  "Fox News": "#d5d8ca",
-  "New York Post": "#dde3df",
-  CNBC: "#eadcd5",
+  Bloomberg: "#e9dfe1",
+  "The New York Times": "#ecded3",
+  CNN: "#ecd6d1",
+  MSN: "#e5e2d3",
+  "Fox News": "#dfe2d3",
+  "New York Post": "#dce3e3",
+  CNBC: "#ecd5d3",
 };
 
 function NewswireCard({
@@ -59,10 +61,7 @@ function NewswireCard({
       className={`torn-host group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
     >
       {/* the torn sheet slides in behind the row on hover and stays open */}
-      <TornSheet
-        tint={PAPER_TINT[item.source]}
-        className={expanded ? "opacity-100" : "opacity-0 group-hover/row:opacity-100"}
-      />
+      <TornSheet tint={PAPER_TINT[item.source]} shown={expanded ? true : "hover"} />
 
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
 

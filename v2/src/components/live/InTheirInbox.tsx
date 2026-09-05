@@ -33,7 +33,7 @@ function InboxItem({ item }: { item: NewsletterItem }) {
     >
       {/* Newswire's torn sheet fades in behind the send on hover; "list"
           clears the list's own padding so it still meets the panel edge */}
-      <TornSheet bleed="list" className="opacity-0 group-hover/row:opacity-100" />
+      <TornSheet bleed="list" shown="hover" />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className="flex items-baseline justify-between gap-3">
         <h3 className="font-serif text-lg font-bold leading-snug sm:text-xl">{item.name}</h3>

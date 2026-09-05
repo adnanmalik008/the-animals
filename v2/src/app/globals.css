@@ -62,6 +62,10 @@
 :root {
   /* one strength for every paper surface — veil and card alike */
   --paper-strength: 0.55;
+  /* torn sheets are translucent in the design: its strip asset averages 214
+     and renders at 224 over the 249 page, so the layer sits at ~0.72 and the
+     column's own crumple shows through it */
+  --sheet-strength: 0.72;
 }
 
 body {
