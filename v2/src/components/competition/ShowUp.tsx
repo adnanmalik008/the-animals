@@ -140,7 +140,7 @@ export function ShowUp({ id }: { id: string }) {
           </div>
         </div>
       </DarkPanel>
-      <AnimalView section={id} className="mt-5" />
+      <AnimalView section={id} className="mt-4" />
     </Module>
   );
 }

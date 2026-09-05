@@ -176,7 +176,7 @@ export function Attention({ id }: { id: string }) {
       </DarkPanel>
 
       {/* the design pairs the overlap matrix with this section's read */}
-      <div className="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
         <MediaOverlap />
         <AnimalView section={id} />
       </div>

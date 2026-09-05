@@ -7,9 +7,13 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
+/* the board sets its serif in true italics (column heads, pull quotes,
+   the Animal View), so the italic face is loaded alongside the roman;
+   without it the browser slants the roman instead */
 const sourceSerif = Source_Serif_4({
   variable: "--font-source-serif",
   subsets: ["latin"],
+  style: ["normal", "italic"],
 });
 
 export const metadata: Metadata = {

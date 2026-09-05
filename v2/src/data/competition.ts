@@ -80,20 +80,26 @@ export const channelMix: CompetitorMix[] = [
 /** Column order for the overlap table. */
 export const overlapBrands: string[] = ["Patagonia", "Arc'teryx", "The North Face"];
 
+/** How the brand reaches people through the channel — the design marks
+    earned reach with a gold tick, paid with a red one, owned (Mail) with none,
+    and tints a paid channel shared by all in olive rather than gold. */
+export type ChannelKind = "earned" | "paid" | "owned";
+
 export interface OverlapRow {
   channel: string;
   /** Presence per brand, same order as overlapBrands. */
   presence: [boolean, boolean, boolean];
+  kind: ChannelKind;
 }
 
 export const mediaOverlap: OverlapRow[] = [
-  { channel: "Direct", presence: [true, true, true] },
-  { channel: "Referral", presence: [false, true, false] },
-  { channel: "Social", presence: [true, true, true] },
-  { channel: "Organic Search", presence: [true, true, true] },
-  { channel: "Paid Search", presence: [true, true, true] },
-  { channel: "Display Ads", presence: [true, true, true] },
-  { channel: "Mail", presence: [true, false, false] },
+  { channel: "Direct", presence: [true, true, true], kind: "earned" },
+  { channel: "Referral", presence: [false, true, false], kind: "earned" },
+  { channel: "Social", presence: [true, true, true], kind: "earned" },
+  { channel: "Organic Search", presence: [true, true, true], kind: "earned" },
+  { channel: "Paid Search", presence: [true, true, true], kind: "paid" },
+  { channel: "Display Ads", presence: [true, true, true], kind: "paid" },
+  { channel: "Mail", presence: [true, false, false], kind: "owned" },
 ];
 
 export const isSharedByAll = (row: OverlapRow) => row.presence.every(Boolean);

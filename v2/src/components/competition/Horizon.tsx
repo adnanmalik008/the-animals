@@ -109,7 +109,7 @@ export function Horizon({ id }: { id: string }) {
           ))}
         </div>
       </DarkPanel>
-      <AnimalView section={id} className="mt-5" />
+      <AnimalView section={id} className="mt-4" />
     </Module>
   );
 }
