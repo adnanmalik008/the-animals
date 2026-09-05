@@ -24,6 +24,7 @@ export interface CircleLayout {
 }
 
 /* Slight horizontal offsets so stacked cards read like a loose pile (Figma frame 3). */
+const PAGE_SIZE = 3;
 const OFFSETS = [-12, 14, 2];
 
 interface SharedProps {
@@ -133,7 +134,12 @@ export function TopicCircleView({
   onDelete: (circleId: string) => void;
 }) {
   const d = layout.diameter || DIAMETER[circle.size];
-  const visible = insights.slice(-3);
+  /* three cards fit a disc; the rest page. Newest page shows until the
+     reader steps back, and the page clamps as cards come and go */
+  const pageCount = Math.max(1, Math.ceil(insights.length / PAGE_SIZE));
+  const [pageChoice, setPageChoice] = useState<number | null>(null);
+  const page = pageChoice === null ? pageCount - 1 : Math.min(pageChoice, pageCount - 1);
+  const visible = insights.slice(page * PAGE_SIZE, page * PAGE_SIZE + PAGE_SIZE);
   const { isOver, dropProps } = useCircleDropTarget(circle.id, onMoveInsight);
   const [manipulating, setManipulating] = useState(false);
 
@@ -238,6 +244,38 @@ export function TopicCircleView({
                 style={{ transform: `translateX(${OFFSETS[i % OFFSETS.length]}px)` }}
               />
             ))}
+            {pageCount > 1 && (
+              <div
+                className={`flex items-center gap-1 text-xs tabular-nums ${circleText[circle.color]}`}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setPageChoice(Math.max(0, page - 1))}
+                  disabled={page === 0}
+                  aria-label="Earlier insights"
+                  className={`rounded-full p-1 transition-colors hover:bg-card/70 disabled:opacity-30 ${focusRing}`}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M15 6l-6 6 6 6" />
+                  </svg>
+                </button>
+                <span aria-live="polite">
+                  {page + 1} / {pageCount}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPageChoice(Math.min(pageCount - 1, page + 1))}
+                  disabled={page === pageCount - 1}
+                  aria-label="Later insights"
+                  className={`rounded-full p-1 transition-colors hover:bg-card/70 disabled:opacity-30 ${focusRing}`}
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           <AddInsightPill

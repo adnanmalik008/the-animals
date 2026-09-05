@@ -308,7 +308,7 @@ export function AnomaliesBoard() {
       </div>
 
       {/* desktop board */}
-      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(1040px,calc(100vh-8.5rem))] print:block print:min-h-[1040px]">
+      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(1400px,calc(100vh-8.5rem))] print:block print:min-h-[1400px]">
         <div
           ref={boardRef}
           className="absolute inset-0 print:!transform-none"
