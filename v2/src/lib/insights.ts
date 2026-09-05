@@ -1,6 +1,22 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import { newsItems, shareOfVoice } from "@/data/board";
+import {
+  appStoreVoice,
+  conversationPlatformLabel,
+  conversationQuotes,
+  insightStateLabel,
+  opinionLeaders,
+  redditInsights,
+  searchTerms,
+  socialPlatformLabel,
+  socialPosts,
+  stageEvents,
+  subreddits,
+  wikiPulse,
+} from "@/data/live";
+import { podcastItems, sightingItems } from "@/data/live-extra";
 
 /* ============================================================
    Shared insight store — the bridge between tabs.
@@ -53,6 +69,8 @@ interface StoreState {
   circles: TopicCircle[];
   insights: InsightItem[];
   ideas: FusedIdea[];
+  /** which generation of demo seeds this board was built on — see SEED_VERSION */
+  seedVersion?: number;
 }
 
 const STORAGE_KEY = "animals-board-v1";
@@ -67,24 +85,195 @@ const BUILTIN_CIRCLES: TopicCircle[] = [
   { id: "breakout-themes", name: "Breakout Themes", color: "blue", icon: "stack", size: "sm", builtIn: true },
 ];
 
+/* Demo insights — one or two per circle, each the very item a sticker on the
+   matching Live module would file (same headline, source and framing), so the
+   board reads true to the routing from first load:
+     Newswire → News
+     Social Pulse, The Conversation → Social
+     On Stage, In Their Inbox, Opinion Leaders, Reddit influencers → Key Influencers
+     Sightings, On the Airwaves, YouTube Voices → Culture
+     Reddit insights, App Store Voice → Customer Opinion
+     Top Sites, AI Search Visibility, Share of Voice, subreddits, Sources of Traffic → Media Hotspots
+     Wikipedia Pulse, Hiring Velocity, Search Velocity → Breakout Themes
+   Bump SEED_VERSION whenever this set changes: stored boards then swap their
+   seeds for these once, keeping everything a person stuck or wrote. */
+const SEED_VERSION = 2;
+
+const [socialPost, redditPost] = socialPosts;
+const conversation = conversationQuotes[0];
+const leader = opinionLeaders[0];
+const stage = stageEvents[0];
+const sighting = sightingItems[0];
+const podcast = podcastItems[0];
+const review = appStoreVoice.ios.review;
+const voiceShare = shareOfVoice[0];
+const subreddit = subreddits[0];
+const pulse = wikiPulse[0];
+const searchTerm = searchTerms[0];
+
+const SEED_INSIGHTS: InsightItem[] = [
+  /* News ← Newswire */
+  ...newsItems.slice(0, 3).map((item, i) => ({
+    id: `seed-n${i + 1}`,
+    circleId: "news",
+    headline: item.headline,
+    source: item.source,
+    category: item.category,
+    categoryColor: item.categoryColor,
+    detail: item.body ? `${item.summary}\n\n${item.body}` : item.summary,
+    meta: `${item.author} · ${item.timeAgo}`,
+    createdAt: i + 1,
+  })),
+
+  /* Social ← Social Pulse, The Conversation */
+  {
+    id: "seed-s1",
+    circleId: "social",
+    headline: socialPost.text,
+    source: socialPlatformLabel[socialPost.platform],
+    category: socialPlatformLabel[socialPost.platform],
+    categoryColor: "blue",
+    meta: `${socialPost.author} · ${socialPost.likes} likes · ${socialPost.comments} comments · ${socialPost.timeAgo}`,
+    createdAt: 4,
+  },
+  {
+    id: "seed-s2",
+    circleId: "social",
+    headline: redditPost.text,
+    source: socialPlatformLabel[redditPost.platform],
+    category: socialPlatformLabel[redditPost.platform],
+    categoryColor: "blue",
+    meta: `${redditPost.author} · ${redditPost.likes} likes · ${redditPost.comments} comments · ${redditPost.timeAgo}`,
+    createdAt: 5,
+  },
+  {
+    id: "seed-s3",
+    circleId: "social",
+    headline: conversation.text,
+    source: conversationPlatformLabel[conversation.platform],
+    category: "Conversation",
+    categoryColor: "green",
+    detail: conversation.replyTo
+      ? `${conversation.context}\n\nReplying to: ${conversation.replyTo}`
+      : conversation.context,
+    meta: `${conversation.author} ${conversation.handle} · ${conversation.upvotes} upvotes · ${conversation.timeAgo}`,
+    createdAt: 6,
+  },
+
+  /* Key Influencers ← Opinion Leaders, On Stage */
+  {
+    id: "seed-x1",
+    circleId: "key-influencers",
+    headline: `${leader.name} — ${leader.role}, ENG ${leader.eng}, ${leader.followers} followers`,
+    source: "LinkedIn",
+    category: "Voice",
+    categoryColor: "purple",
+    detail:
+      "Kofi posts weekly run-crew breakdowns across TikTok and Substack. Engagement 92, 2.1M followers, and the most-cited voice in the Opinion Leaders ranking this month.",
+    createdAt: 7,
+  },
+  {
+    id: "seed-k2",
+    circleId: "key-influencers",
+    headline: stage.quote,
+    source: stage.speaker,
+    category: "Event",
+    categoryColor: "green",
+    detail: `${stage.event} · ${stage.hashtag}\n\n${stage.session}`,
+    meta: stage.speakerTitle,
+    createdAt: 8,
+  },
+
+  /* Culture ← Sightings, On the Airwaves */
+  {
+    id: "seed-cu1",
+    circleId: "culture",
+    headline: sighting.caption,
+    source: sighting.city,
+    category: "OOH",
+    categoryColor: "green",
+    meta: `${sighting.city} · ${sighting.time}`,
+    createdAt: 9,
+  },
+  {
+    id: "seed-cu2",
+    circleId: "culture",
+    headline: podcast.note,
+    source: podcast.show,
+    category: "Podcast",
+    categoryColor: "green",
+    meta: `${podcast.network} · ${podcast.timestamp}`,
+    createdAt: 10,
+  },
+
+  /* Customer Opinion ← Reddit insights, App Store Voice */
+  {
+    id: "seed-o1",
+    circleId: "customer-opinion",
+    headline: redditInsights[0],
+    source: "Reddit",
+    category: insightStateLabel.drivers,
+    categoryColor: "orange",
+    createdAt: 11,
+  },
+  {
+    id: "seed-o2",
+    circleId: "customer-opinion",
+    headline: `“${review.text}”`,
+    source: "iOS review",
+    category: "Review",
+    categoryColor: "orange",
+    meta: review.author,
+    createdAt: 12,
+  },
+
+  /* Media Hotspots ← Share of Voice, Reddit subreddits */
+  {
+    id: "seed-m1",
+    circleId: "media-hotspots",
+    headline: `Share of Voice — ${voiceShare.label} ${voiceShare.pct}% of conversation`,
+    source: "Live board",
+    category: "Signal",
+    categoryColor: "orange",
+    createdAt: 13,
+  },
+  {
+    id: "seed-m2",
+    circleId: "media-hotspots",
+    headline: `Reddit — ${subreddit.name} ${subreddit.members} members, activity ${subreddit.activity}`,
+    source: "Reddit",
+    category: "Signal",
+    categoryColor: "orange",
+    createdAt: 14,
+  },
+
+  /* Breakout Themes ← Wikipedia Pulse, Search Velocity */
+  {
+    id: "seed-b1",
+    circleId: "breakout-themes",
+    headline: `Wikipedia Pulse — ${pulse.entity} ${pulse.count} edits / ${pulse.window}${pulse.spike ? ", spiking" : ""}`,
+    source: "Live board",
+    category: "Signal",
+    categoryColor: "orange",
+    meta: `${pulse.meta} · ${pulse.baseline}`,
+    createdAt: 15,
+  },
+  {
+    id: "seed-b2",
+    circleId: "breakout-themes",
+    headline: `Search Velocity — “${searchTerm.term}” ${searchTerm.delta >= 0 ? "+" : ""}${searchTerm.delta}% branded search`,
+    source: "Live board",
+    category: "Signal",
+    categoryColor: "orange",
+    createdAt: 16,
+  },
+];
+
 const DEFAULT_STATE: StoreState = {
   circles: BUILTIN_CIRCLES,
-  insights: [
-    { id: "seed-n1", circleId: "news", headline: "LinkedIn deepens video ad push, taps more publishers", source: "CNN", category: "Artificial Intelligence", categoryColor: "orange", detail: "The platform is courting short-form video budgets with new publisher partnerships, positioning itself against TikTok for B2B attention.", meta: "@ELENI COUREA · 2m ago", createdAt: 1 },
-    { id: "seed-n2", circleId: "news", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", detail: "The security service issued fresh guidance after a wave of fabricated recruiter profiles targeted civil servants, raising questions about professional networks as intelligence surfaces.", meta: "@ELENI COUREA · 2m ago", createdAt: 2 },
-    { id: "seed-n3", circleId: "news", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", detail: "Run clubs have quietly become the fastest-growing social layer in major cities, and brands are treating weekly 5Ks as owned media channels rather than sponsorship opportunities.", meta: "@ELENI COUREA · 2m ago", createdAt: 3 },
-    { id: "seed-c1", circleId: "media-hotspots", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", detail: "The security service issued fresh guidance after a wave of fabricated recruiter profiles targeted civil servants, raising questions about professional networks as intelligence surfaces.", meta: "@ELENI COUREA · 2m ago", createdAt: 4 },
-    { id: "seed-s1", circleId: "social", headline: "LinkedIn under fire after pro-ICE post removed", source: "CNBC", category: "Politics", categoryColor: "red", detail: "Critics accuse the network of inconsistent enforcement; the company says the post violated existing community policies.", meta: "@ELENI COUREA · 2m ago", createdAt: 5 },
-    { id: "seed-s2", circleId: "social", headline: "LinkedIn deepens video ad push, taps more creators", source: "CNN", category: "Artificial Intelligence", categoryColor: "orange", detail: "The platform is courting short-form video budgets with new publisher partnerships, positioning itself against TikTok for B2B attention.", meta: "@ELENI COUREA · 2m ago", createdAt: 6 },
-    { id: "seed-s3", circleId: "social", headline: "MI5 warns of Chinese operatives using LinkedIn", source: "The New York Times", category: "Business", categoryColor: "blue", detail: "The security service issued fresh guidance after a wave of fabricated recruiter profiles targeted civil servants, raising questions about professional networks as intelligence surfaces.", meta: "@ELENI COUREA · 2m ago", createdAt: 7 },
-    { id: "seed-s4", circleId: "social", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", detail: "Run clubs have quietly become the fastest-growing social layer in major cities, and brands are treating weekly 5Ks as owned media channels rather than sponsorship opportunities.", meta: "@ELENI COUREA · 2m ago", createdAt: 8 },
-    { id: "seed-cu1", circleId: "culture", headline: "LinkedIn under fire after pro-ICE post removed", source: "CNBC", category: "Politics", categoryColor: "red", detail: "Moderation decisions on political speech keep pulling professional platforms into culture-war coverage, with advertisers watching closely.", meta: "@ELENI COUREA · 2m ago", createdAt: 9 },
-    { id: "seed-cu2", circleId: "culture", headline: "The loneliness economy finds its feet in run culture", source: "Bloomberg", category: "Technology", categoryColor: "orange", detail: "Run clubs have quietly become the fastest-growing social layer in major cities, and brands are treating weekly 5Ks as owned media channels rather than sponsorship opportunities.", meta: "@ELENI COUREA · 2m ago", createdAt: 10 },
-    { id: "seed-x1", circleId: "key-influencers", headline: "Kofi Mensah — run culture analyst, 2.1M followers", source: "Live board", category: "Voice", categoryColor: "purple", detail: "Kofi posts weekly run-crew breakdowns across TikTok and Substack. Engagement 92, 2.1M followers, and the most-cited voice in the Opinion Leaders ranking this month.", meta: "Opinion Leaders · TikTok", createdAt: 11 },
-    { id: "seed-x2", circleId: "breakout-themes", headline: "MI5 warns of Chinese operatives using LinkedIn to recruit", source: "The New York Times", category: "Business", categoryColor: "blue", detail: "The security service issued fresh guidance after a wave of fabricated recruiter profiles targeted civil servants, raising questions about professional networks as intelligence surfaces.", meta: "@ELENI COUREA · 2m ago", createdAt: 12 },
-    { id: "seed-o1", circleId: "customer-opinion", headline: "Fit inconsistency is now the most repeated customer complaint", source: "Live board", category: "Customer signal", categoryColor: "red", detail: "App Store and Reddit threads converge on the same complaint: the same size fits differently across models. It now outranks price and durability in unprompted review mentions.", meta: "App Store Voice · iOS 4.6★", createdAt: 13 },
-  ],
+  insights: SEED_INSIGHTS,
   ideas: [],
+  seedVersion: SEED_VERSION,
 };
 
 let state: StoreState = DEFAULT_STATE;
@@ -116,22 +305,28 @@ function migrateState(parsed: Partial<StoreState>): StoreState {
     .map((circle) => ({ ...circle, id: migrateCircleId(circle.id) }))
     .filter((circle) => !BUILTIN_CIRCLES.some((builtIn) => builtIn.id === circle.id));
 
+  /* A board built on an older seed set swaps its seeds for the current ones
+     once (the earlier set filed Newswire items into Breakout Themes, Media
+     Hotspots, Social and Culture). Everything a person stuck or wrote is
+     kept; a board already on this generation keeps its seeds as they are,
+     moves and removals included. */
+  const stored = parsed.insights ?? SEED_INSIGHTS;
+  const reseeded =
+    (parsed.seedVersion ?? 1) < SEED_VERSION
+      ? [...SEED_INSIGHTS, ...stored.filter((insight) => !insight.id.startsWith("seed-"))]
+      : stored;
+
   return {
     circles: [...BUILTIN_CIRCLES, ...customCircles],
-    insights: (parsed.insights ?? DEFAULT_STATE.insights).map((insight) => {
-      /* seeds saved by an earlier build have no detail copy — backfill it */
-      const seed = DEFAULT_STATE.insights.find((s) => s.id === insight.id);
-      return {
-        ...insight,
-        detail: insight.detail ?? seed?.detail,
-        meta: insight.meta ?? seed?.meta,
-        circleId: migrateCircleId(insight.circleId),
-      };
-    }),
+    insights: reseeded.map((insight) => ({
+      ...insight,
+      circleId: migrateCircleId(insight.circleId),
+    })),
     ideas: (parsed.ideas ?? DEFAULT_STATE.ideas).map((idea) => ({
       ...idea,
       circleIds: idea.circleIds.map(migrateCircleId) as [CircleId, CircleId],
     })),
+    seedVersion: SEED_VERSION,
   };
 }
 
@@ -143,6 +338,9 @@ function hydrate() {
     if (raw) {
       const parsed = JSON.parse(raw) as Partial<StoreState>;
       state = migrateState(parsed);
+      /* a reseeded board is written straight back, so the swap happens once
+         rather than on every load */
+      if ((parsed.seedVersion ?? 1) < SEED_VERSION) persist();
       queueMicrotask(emit);
     }
   } catch {
