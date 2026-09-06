@@ -10,5 +10,10 @@ export type ModuleKey = Def["key"];
 
 export type ModuleDocs = { [K in ModuleKey]: DocOf<Extract<Def, { key: K }>> };
 
-/** custom = a valid saved doc; default = no doc, fixture shown; invalid = saved doc failed validation, fixture shown */
-export type ModuleStatus = "custom" | "default" | "invalid";
+/** What a board is actually showing for one module, in read-chain order:
+    custom  = this board's own saved doc, valid;
+    shared  = no doc of its own, so the agency-wide default;
+    default = neither, so the built-in fixture;
+    invalid = this board's saved doc failed validation, so whatever came next
+              is on screen and the saved doc needs an editor. */
+export type ModuleStatus = "custom" | "shared" | "default" | "invalid";

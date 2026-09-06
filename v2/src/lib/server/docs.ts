@@ -1,9 +1,9 @@
 import "server-only";
 import { cache } from "react";
-import { docsFromRows, type BoardDocs, type ModuleRow } from "@/lib/cms/docs";
+import { docsFromRows, type BoardDocs, type DocScope, type ModuleRow } from "@/lib/cms/docs";
 import { parseDoc, type FieldErrors } from "@/lib/cms/parse";
 import { byKey } from "@/lib/cms/registry";
-import { setModuleData } from "./boards";
+import { setDefaultData, setModuleData } from "./boards";
 import { supabaseAdmin } from "./supabase";
 
 /* ============================================================
@@ -34,17 +34,21 @@ export interface ModuleRowInfo {
 }
 
 /** The outcome of a `module_data` read. `ok: false` says the query failed —
-    which is never the same thing as a board with nothing saved. */
-export type ReadResult<T> = { ok: true; rows: T[] } | { ok: false; error: string };
+    which is never the same thing as a board with nothing saved. `code` is
+    Postgres's SQLSTATE or PostgREST's own code when the answer carried one. */
+export type ReadResult<T> = { ok: true; rows: T[] } | { ok: false; error: string; code?: string };
+
+/** What Supabase hands back from a `select`. */
+interface QueryAnswer {
+  data: unknown[] | null;
+  error: { message: string; code?: string } | null;
+}
 
 /** Supabase's `{ data, error }` → rows, or the reason there are none. Pure and
     exported so the failure path is reachable in a unit test without a live
     client: it is the branch that used to collapse into "nothing saved". */
-export function readResult<T>(res: {
-  data: unknown[] | null;
-  error: { message: string } | null;
-}): ReadResult<T> {
-  if (res.error) return { ok: false, error: res.error.message };
+export function readResult<T>(res: QueryAnswer): ReadResult<T> {
+  if (res.error) return { ok: false, error: res.error.message, code: res.error.code };
   if (!res.data) return { ok: false, error: "the query returned neither rows nor an error" };
   return { ok: true, rows: res.data as T[] };
 }
@@ -59,24 +63,92 @@ export type SaveDocResult =
   | { ok: true; doc: unknown }
   | { ok: false; error: string; fieldErrors: FieldErrors };
 
+/* ---------------- shared defaults ---------------- */
+
+/** A `module_defaults` read. `available: false` means the table is not there
+    at all — the migration is unapplied, or Supabase is unconfigured — which is
+    "no shared defaults", the expected state, and not a failure. `ok: false` is
+    a real one. */
+export type DefaultsRead =
+  | { ok: true; rows: ModuleRow[]; available: boolean }
+  | { ok: false; error: string };
+
+/* Two codes mean the same thing: PostgREST answers from its schema cache and
+   never reaches Postgres (`PGRST205`, HTTP 404); a direct connection, or a
+   query PostgREST does pass through, raises SQLSTATE `42P01`
+   (`undefined_table`). Matching on the code and never on the wording is the
+   point — "could not find the table" also appears in failures that have
+   nothing to do with an unapplied migration, and reading one as the other is
+   how a database problem turns into silent content loss. */
+const MISSING_TABLE_CODES: ReadonlySet<string> = new Set(["PGRST205", "42P01"]);
+
+/** Supabase's `{ data, error }` from `module_defaults` → the shared rows to
+    use. Pure and exported so the pre-migration path is testable without a live
+    client, which matters because that path is the normal one until Adnan runs
+    `0002_cms.sql`. */
+export function defaultsRead(res: QueryAnswer): DefaultsRead {
+  const read = readResult<ModuleRow>(res);
+  if (read.ok) return { ok: true, rows: read.rows, available: true };
+  if (read.code && MISSING_TABLE_CODES.has(read.code)) return { ok: true, rows: [], available: false };
+  return { ok: false, error: read.error };
+}
+
+/** The agency-wide defaults every board falls back to before the fixtures.
+    Cached per request like `getBoardDocs`: one board render reads them once. */
+export const getDefaultRows = cache(async (): Promise<DefaultsRead> => {
+  const db = supabaseAdmin();
+  if (!db) return { ok: true, rows: [], available: false };
+
+  const read = defaultsRead(await db.from("module_defaults").select("module_key,data"));
+  if (!read.ok) console.warn(`[cms] shared defaults: ${read.error} — showing built-in content`);
+  return read;
+});
+
+/** Stores a *normalised* shared default. Unlike `saveModuleDoc`, a key with no
+    definition is refused rather than stored raw: this document lands on every
+    board that has none of its own, so nothing unvalidatable may become one. */
+export async function saveDefaultDoc(moduleKey: string, raw: unknown): Promise<SaveDocResult> {
+  const def = byKey(moduleKey);
+  if (!def) {
+    return {
+      ok: false,
+      error: `"${moduleKey}" has no module definition, so it can have no shared default.`,
+      fieldErrors: {},
+    };
+  }
+  const res = parseDoc(def, raw);
+  if (!res.ok) return res;
+  await setDefaultData(moduleKey, res.doc);
+  return { ok: true, doc: res.doc };
+}
+
+/* ---------------- board content ---------------- */
+
 /** Every registry key, with its validated doc or its fixture. Cached per
     request: the layout and the page below it read the same board. */
 export const getBoardDocs = cache(async (boardId: string): Promise<BoardContent> => {
-  const onInvalid = (key: string, error: string) => {
-    console.warn(`[cms] board ${boardId} / ${key}: ${error} — showing built-in content`);
+  const onInvalid = (key: string, error: string, scope: DocScope) => {
+    const whose = scope === "shared" ? "shared default" : `board ${boardId}`;
+    console.warn(`[cms] ${whose} / ${key}: ${error} — showing built-in content`);
   };
 
   const db = supabaseAdmin();
-  if (!db || boardId === "fixture") return { ...docsFromRows([], onInvalid), unavailable: false };
+  if (!db || boardId === "fixture") return { ...docsFromRows([], [], onInvalid), unavailable: false };
 
-  const read = readResult<ModuleRow>(
-    await db.from("module_data").select("module_key,data").eq("board_id", boardId)
-  );
-  if (!read.ok) {
-    console.warn(`[cms] board ${boardId}: ${read.error} — showing built-in content`);
-    return { ...docsFromRows([], onInvalid), unavailable: true };
-  }
-  return { ...docsFromRows(read.rows, onInvalid), unavailable: false };
+  const [answer, defaults] = await Promise.all([
+    db.from("module_data").select("module_key,data").eq("board_id", boardId),
+    getDefaultRows(),
+  ]);
+  const read = readResult<ModuleRow>(answer);
+  if (!read.ok) console.warn(`[cms] board ${boardId}: ${read.error} — showing built-in content`);
+
+  /* Either read failing means a fixture on screen may be standing in for a
+     document that exists — this board's, or the agency's — so the admin must
+     not be shown "nothing saved" and offered a Save over the top of it. */
+  return {
+    ...docsFromRows(read.ok ? read.rows : [], defaults.ok ? defaults.rows : [], onInvalid),
+    unavailable: !read.ok || !defaults.ok,
+  };
 });
 
 interface SavedModuleRow {

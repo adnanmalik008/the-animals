@@ -131,6 +131,19 @@ export async function setModuleData(boardId: string, moduleKey: string, data: un
   if (error) throw new Error(error.message);
 }
 
+/** The agency-wide copy of one module, shared by every board that has none of
+    its own. Throws on a missing table exactly as it throws on any other write
+    error: a read may shrug the unapplied migration off and serve fixtures, but
+    a save that quietly went nowhere would be a lie. */
+export async function setDefaultData(moduleKey: string, data: unknown) {
+  const db = supabaseAdmin();
+  if (!db) throw new Error("CMS is not configured (missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
+  const { error } = await db
+    .from("module_defaults")
+    .upsert({ module_key: moduleKey, data }, { onConflict: "module_key" });
+  if (error) throw new Error(error.message);
+}
+
 /* ---------------- boards admin ---------------- */
 
 export async function listBoards(): Promise<BoardRecord[]> {
