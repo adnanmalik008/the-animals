@@ -149,10 +149,10 @@ describe("saveContentDoc", () => {
      the contract it has always had: the raw JSON goes to the table as typed.
      It gets that far — the failure below is the missing write, not a refusal. */
   it("sends an unmanaged key's raw JSON to the table rather than refusing it", async () => {
-    /* `horizon` is chosen because it is still definition-less; the key here
-       has to be swapped each time a module is wired, and the assertion below
-       proves the one in use still is. */
-    expect(byKey("horizon")).toBeUndefined();
-    await expect(saveContentDoc("horizon", { anything: true })).rejects.toThrow(/not configured/);
+    /* Every module key now has a definition, so the example is a key that
+       is not a module at all — which is the case the raw path really has to
+       keep working for: a template added ahead of its definition. */
+    expect(byKey("not-a-module-yet")).toBeUndefined();
+    await expect(saveContentDoc("not-a-module-yet", { anything: true })).rejects.toThrow(/not configured/);
   });
 });

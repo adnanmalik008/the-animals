@@ -58,14 +58,23 @@ describe("moduleGroups", () => {
      which `moduleGroups` calls itself: measuring a function with its own
      output moves whenever it does. The count is pinned, so a template that
      silently stopped being listed fails instead of passing quietly. */
-  it("adds the JSON-only keys last", () => {
+  it("adds the JSON-only keys last, and shows no such group once there are none", () => {
     const groups = moduleGroups();
+    if (JSON_ONLY.length === 0) {
+      /* An empty group is dropped rather than shown as a heading with
+         nothing under it, so the section disappears entirely. */
+      expect(groups.some((g) => g.title === "Still JSON")).toBe(false);
+      return;
+    }
     expect(groups.at(-1)?.title).toBe("Still JSON");
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
-  it("counts as JSON-only exactly the seven templates with no definition", () => {
-    expect(JSON_ONLY).toHaveLength(7);
+  /* Every template now has a definition, so this reads zero. It is still
+     derived from the two sources rather than hard-coded at zero: a template
+     added later with no definition has to be noticed, not silently listed. */
+  it("counts as JSON-only exactly the templates with no definition", () => {
+    expect(JSON_ONLY).toHaveLength(0);
     expect(legacyKeys().slice().sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
@@ -140,6 +149,14 @@ const HEADING_SOURCE: Record<string, string | null> = {
   "opinion-leaders": "src/components/live/OpinionLeaders.tsx",
   "traffic-sources": "src/components/live/TrafficSources.tsx",
   "wild-cams": "src/app/(board)/in-the-wild/page.tsx",
+  "channel-mix": "src/components/competition/Attention.tsx",
+  "media-overlap": "src/components/competition/MediaOverlap.tsx",
+  "show-up": "src/components/competition/ShowUp.tsx",
+  "ai-profile": "src/components/competition/FindThem.tsx",
+  "search-landscape": "src/components/competition/FindThem.tsx",
+  "paid-search": "src/components/competition/FindThem.tsx",
+  "animal-view": "src/components/competition/AnimalView.tsx",
+  horizon: "src/components/competition/Horizon.tsx",
   /* the Anomalies board prints no heading of its own; the word the client
      reads is the tab in the top nav */
   anomalies: "src/components/shell/TopNav.tsx",

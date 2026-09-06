@@ -1,37 +1,37 @@
+"use client";
+
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  homepageCards,
-  marketCards,
-  socialCards,
-  type BrandId,
-  type ShowUpCard,
-  type SocialCard,
-} from "@/data/competition";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { AnimalView } from "./AnimalView";
+import { useCompetitor } from "./BrandMark";
 import { GroupHeading, Kicker, ObservationsInline, bigTitle } from "./ui";
 
 /* "How They Show Up" — three layers of the same brand, captured from the
    design: the homepage, the first twelve squares of the social grid, and
    the display ad. Real screenshots, not mock-ups; the point of the module
-   is that the three brands look interchangeable. */
+   is that the three brands look interchangeable.
 
-const homepage: Record<BrandId, string> = {
-  patagonia: "/assets/competition/home-patagonia.jpg",
-  arcteryx: "/assets/competition/home-arcteryx.jpg",
-  northface: "/assets/competition/home-northface.jpg",
-};
+   The captures used to be three maps in this file keyed by a three-value
+   brand union, which is why the section could only ever show the demo's
+   three outdoor brands. Every capture rides on its own row now, and the
+   brand's name is read from the competitive set rather than repeated here.
 
-const socialGrid: Record<BrandId, string> = {
-  patagonia: "/assets/competition/grid-patagonia.jpg",
-  arcteryx: "/assets/competition/grid-arcteryx.jpg",
-  northface: "/assets/competition/grid-northface.jpg",
-};
+   The title, the kickers and the group headings are the design's own
+   structure and stay in code. */
 
-const displayAd: Record<BrandId, string> = {
-  patagonia: "/assets/competition/ad-patagonia.jpg",
-  arcteryx: "/assets/competition/ad-arcteryx.jpg",
-  northface: "/assets/competition/ad-northface.jpg",
-};
+type ShowUpDoc = ModuleDocs["show-up"];
+type HomepageRow = ShowUpDoc["homepage"][number];
+type SocialRow = ShowUpDoc["social"][number];
+type MarketRow = ShowUpDoc["market"][number];
+
+/** The brand's name, from the competitive set — never stored twice.
+    Blank when a row points at a competitor that has since been deleted:
+    the capture and the read are still worth showing, so the card keeps its
+    frame rather than vanishing. */
+function useBrandName(competitorId: string): string {
+  return useCompetitor(competitorId)?.name ?? "";
+}
 
 /* every card in the section is the design's frame: the brand's name in a
    short header, the capture edge to edge on a white/10 well, the homepage's
@@ -39,14 +39,15 @@ const displayAd: Record<BrandId, string> = {
 function CaptureCard({
   name,
   src,
-  alt,
+  layer,
   aspect,
   caption,
   observation,
 }: {
   name: string;
   src: string;
-  alt: string;
+  /** what the capture is of, e.g. "homepage" — the alt text is the two */
+  layer: string;
   aspect: string;
   caption?: string;
   observation: string;
@@ -56,11 +57,18 @@ function CaptureCard({
       <p className="px-5 py-3 font-display text-base text-white/70">{name}</p>
       <div className={`overflow-hidden bg-white/10 ${aspect}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} loading="lazy" className="h-full w-full object-cover object-top" />
+        <img
+          src={src}
+          alt={[name, layer].filter(Boolean).join(" ")}
+          loading="lazy"
+          className="h-full w-full object-cover object-top"
+        />
       </div>
       {caption && (
         <p className="border-y border-white/5 px-5 py-3.5 font-serif text-sm font-light italic leading-[1.4] text-white">
-          {caption}
+          {/* the design sets the line in quotes, so the card prints them
+              and the stored line carries none */}
+          “{caption}”
         </p>
       )}
       <ObservationsInline text={observation} />
@@ -68,12 +76,13 @@ function CaptureCard({
   );
 }
 
-function HomepageCard({ card }: { card: ShowUpCard }) {
+function HomepageCard({ card }: { card: HomepageRow }) {
+  const name = useBrandName(card.competitor);
   return (
     <CaptureCard
-      name={card.name}
-      src={homepage[card.id]}
-      alt={`${card.name} homepage`}
+      name={name}
+      src={card.screenshot}
+      layer="homepage"
       aspect="aspect-[446/300]"
       caption={card.caption}
       observation={card.observation}
@@ -81,24 +90,26 @@ function HomepageCard({ card }: { card: ShowUpCard }) {
   );
 }
 
-function SocialGridCard({ card }: { card: SocialCard }) {
+function SocialGridCard({ card }: { card: SocialRow }) {
+  const name = useBrandName(card.competitor);
   return (
     <CaptureCard
-      name={card.name}
-      src={socialGrid[card.id]}
-      alt={`${card.name} social feed`}
+      name={name}
+      src={card.screenshot}
+      layer="social feed"
       aspect="aspect-[446/300]"
       observation={card.observation}
     />
   );
 }
 
-function MarketCard({ card }: { card: SocialCard }) {
+function MarketCard({ card }: { card: MarketRow }) {
+  const name = useBrandName(card.competitor);
   return (
     <CaptureCard
-      name={card.name}
-      src={displayAd[card.id]}
-      alt={`${card.name} display ad`}
+      name={name}
+      src={card.screenshot}
+      layer="display ad"
       aspect="aspect-[446/481]"
       observation={card.observation}
     />
@@ -106,12 +117,14 @@ function MarketCard({ card }: { card: SocialCard }) {
 }
 
 export function ShowUp({ id }: { id: string }) {
+  const { homepage, social, market } = useModuleDoc("show-up");
+
   return (
     <Module id={id} variant="panel" title="How They Show Up" titleClassName={bigTitle}>
       <Kicker className="mt-12">Homepage</Kicker>
       <GroupHeading>Their First Word</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {homepageCards.map((card) => (
+        {homepage.map((card) => (
           <HomepageCard key={card.id} card={card} />
         ))}
       </div>
@@ -119,7 +132,7 @@ export function ShowUp({ id }: { id: string }) {
       <Kicker className="mt-12">Social Feed</Kicker>
       <GroupHeading>Twelve Squares of Identity</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {socialCards.map((card) => (
+        {social.map((card) => (
           <SocialGridCard key={card.id} card={card} />
         ))}
       </div>
@@ -127,7 +140,7 @@ export function ShowUp({ id }: { id: string }) {
       <Kicker className="mt-12">In Market</Kicker>
       <GroupHeading>Their Window Display</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {marketCards.map((card) => (
+        {market.map((card) => (
           <MarketCard key={card.id} card={card} />
         ))}
       </div>

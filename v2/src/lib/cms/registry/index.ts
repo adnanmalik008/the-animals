@@ -6,22 +6,30 @@
    bundle. */
 
 import type { ModuleTab } from "../spec";
+import { aiProfile } from "./ai-profile";
 import { aiVisibilityModule } from "./ai-visibility";
 import { airwaves } from "./airwaves";
+import { animalView } from "./animal-view";
 import { anomalies } from "./anomalies";
 import { appStore } from "./app-store";
 import { boardHeader } from "./board-header";
+import { channelMix } from "./channel-mix";
 import { competitors } from "./competitors";
 import { conversation } from "./conversation";
 import { inTheirInbox } from "./in-their-inbox";
 import { hiring } from "./hiring";
+import { horizonModule } from "./horizon";
+import { mediaOverlapModule } from "./media-overlap";
 import { newswire } from "./newswire";
 import { onStage } from "./on-stage";
 import { opinionLeaders } from "./opinion-leaders";
+import { paidSearchModule } from "./paid-search";
 import { pulse } from "./pulse";
 import { reddit } from "./reddit";
+import { searchLandscapeModule } from "./search-landscape";
 import { searchVelocity } from "./search-velocity";
 import { shareOfVoiceModule } from "./share-of-voice";
+import { showUp } from "./show-up";
 import { sightings } from "./sightings";
 import { socialPulse } from "./social-pulse";
 import { topSitesModule } from "./top-sites";
@@ -50,6 +58,14 @@ export const MODULES = [
   pulse,
   hiring,
   competitors,
+  channelMix,
+  mediaOverlapModule,
+  showUp,
+  aiProfile,
+  searchLandscapeModule,
+  animalView,
+  paidSearchModule,
+  horizonModule,
   wildCams,
   anomalies,
 ] as const;

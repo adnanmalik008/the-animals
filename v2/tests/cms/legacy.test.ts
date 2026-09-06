@@ -3,12 +3,14 @@
    scripts/snapshot-legacy-templates.ts) must still parse once a module gets
    a registry definition — including quirks a saved doc can carry that the
    fixture no longer does (e.g. opinion-leaders' dead `initials` field). */
+import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { byKey } from "@/lib/cms/registry";
 import { parseDoc } from "@/lib/cms/parse";
 
 import aiVisibilityLegacy from "./legacy/ai-visibility.json";
 import appStoreLegacy from "./legacy/app-store.json";
+import channelMixLegacy from "./legacy/channel-mix.json";
 import conversationLegacy from "./legacy/conversation.json";
 import hiringLegacy from "./legacy/hiring.json";
 import newswireLegacy from "./legacy/newswire.json";
@@ -37,6 +39,9 @@ const LEGACY_DOCS: Record<string, unknown> = {
   "opinion-leaders": opinionLeadersLegacy,
   "traffic-sources": trafficSourcesLegacy,
   "wild-cams": wildCamsLegacy,
+  /* parses only because channel-mix carries a `migrate`: the fields it
+     drops are the ones the competitive set now owns. */
+  "channel-mix": channelMixLegacy,
 };
 
 describe("legacy saved shapes", () => {
@@ -162,5 +167,61 @@ describe("app-store's legacy template predates the chip ids", () => {
     const fixture = byKey("app-store").fixture();
     const ids = [...fixture.ios.stats, ...fixture.android.stats].map((s) => s.id);
     expect(new Set(ids).size).toBe(ids.length);
+  });
+});
+
+/* ============================================================
+   Every snapshot is accounted for, one way or the other.
+
+   A snapshot either parses — and is in LEGACY_DOCS above, where it is
+   checked — or its module's shape deliberately moved on and it is listed
+   here with the reason. Nothing may fall between the two: the last test
+   reads the directory and fails on a snapshot that is in neither list, so
+   a module wired tomorrow cannot quietly drop its own compatibility.
+
+   Abandoning a shape costs nothing today: production holds zero saved
+   documents, and these are the shapes the *old raw-JSON editor* would have
+   written, not documents anyone has. Every entry below is a shape the
+   board never actually read, or one that gained the identity it needed.
+   ============================================================ */
+const ABANDONED: Record<string, string> = {
+  reddit: "stored insights as one flat list; the board renders three states behind pills",
+  "app-store": "movement chips had no ids, so a sticker keyed on the chip's own label",
+  "media-overlap": "rows had no identity at all, so nothing could be filed against one",
+  "animal-view": "paragraphs were bare strings; each is a row with an id now",
+  "show-up": "screenshots lived in a hardcoded map keyed by the brand union, not on the row",
+  horizon: "columns named a brand instead of referencing the competitive set, and events had no ids",
+  "ai-profile": "the template predates the module: it stored one blob, not a profile per competitor",
+  "search-landscape": "same — the per-competitor shape did not exist when the template was written",
+};
+
+describe("every legacy snapshot is either kept or abandoned on the record", () => {
+  const snapshots = readdirSync(new URL("./legacy/", import.meta.url)).map((f) => f.replace(/\.json$/, ""));
+
+  it("has a snapshot for every key it claims to cover", () => {
+    expect(snapshots.length).toBeGreaterThan(0);
+    for (const key of [...Object.keys(LEGACY_DOCS), ...Object.keys(ABANDONED)]) {
+      expect(snapshots, `${key} is listed but has no snapshot`).toContain(key);
+    }
+  });
+
+  it("accounts for every snapshot exactly once", () => {
+    for (const key of snapshots) {
+      const kept = key in LEGACY_DOCS;
+      const abandoned = key in ABANDONED;
+      expect(kept || abandoned, `${key} is in neither LEGACY_DOCS nor ABANDONED`).toBe(true);
+      expect(kept && abandoned, `${key} is in both lists`).toBe(false);
+    }
+  });
+
+  /* The reason has to stay true: a shape recorded as abandoned that quietly
+     starts parsing means the note above is now a lie about the code. */
+  it("an abandoned shape really does not parse", () => {
+    for (const [key, reason] of Object.entries(ABANDONED)) {
+      const def = byKey(key);
+      expect(def, `${key} has no definition`).toBeDefined();
+      const raw = JSON.parse(readFileSync(new URL(`./legacy/${key}.json`, import.meta.url), "utf8"));
+      expect(parseDoc(def!, raw).ok, `${key} parses now — remove it from ABANDONED (${reason})`).toBe(false);
+    }
   });
 });
