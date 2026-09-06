@@ -1,6 +1,7 @@
 import "server-only";
 import Link from "next/link";
 import { ModuleDirectory } from "@/components/admin/ModuleDirectory";
+import { requireAdmin } from "@/lib/server/guard";
 
 /* The content, all of it.
 
@@ -9,7 +10,11 @@ import { ModuleDirectory } from "@/components/admin/ModuleDirectory";
    reason, rather than letting a board publish fine and then be unreachable
    from the admin. */
 
-export default function ContentPage() {
+export default async function ContentPage() {
+  /* Guarded here as well as in the layout: an RSC request renders one
+     without the other, and this page is what carries client data. */
+  await requireAdmin();
+
   return (
     <div className="flex flex-col gap-6">
       <div>

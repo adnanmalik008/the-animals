@@ -4,12 +4,17 @@ import { boardHost } from "@/lib/board-url";
 import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { NewBoardForm, PublishChip } from "./ui";
 import { TeamLogins } from "./TeamLogins";
+import { requireAdmin } from "@/lib/server/guard";
 
 /* Content first, boards second — which is the order the work happens in.
    There is one set of content for the whole product; a board is a name, an
    address and a set of logins onto it. */
 
 export default async function AdminHome() {
+  /* Guarded here as well as in the layout: an RSC request renders one
+     without the other, and this page is what carries client data. */
+  await requireAdmin();
+
   const boards = await listBoards();
   /* Empty until 0002_cms.sql makes board_id nullable. A failed read is still a
      list, so the boards above keep rendering — but it carries `ok: false`,

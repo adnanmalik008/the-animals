@@ -4,6 +4,8 @@
    Both were declared and threaded long before anything produced them, so
    these tests cover the producer — and, first of all, the key it files
    under, which is where the bug was. */
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import {
   buildRefSources,
@@ -12,6 +14,7 @@ import {
   optionsFor,
   refKey,
 } from "@/lib/cms/refs";
+import { docsFromRows } from "@/lib/cms/docs";
 import { byKey } from "@/lib/cms/registry";
 import { f, type Fields } from "@/lib/cms/spec";
 
@@ -167,5 +170,53 @@ describe("the competitors module is a usable ref source", () => {
     });
     expect(options.map((o) => o.value)).toEqual(["patagonia", "arcteryx", "northface"]);
     expect(options.map((o) => o.label)).toEqual(["Patagonia", "Arc'teryx", "The North Face"]);
+  });
+});
+
+/* The admin resolves ref options from `getContentDocs()`, which returns
+   `{ docs, status }` — not a module map. Passing the whole thing spreads to
+   `{ docs: …, status: … }`, every lookup misses, and the failure is silent:
+   selects fall back to typed ids and widgets to placeholder headers, which
+   is exactly what an unfilled module looks like. That shipped once. These
+   tests use the real `docsFromRows` output rather than a hand-built map, so
+   the contract is checked end to end. */
+describe("resolving against what the server actually returns", () => {
+  const source = { doc: "competitors", list: "competitors", labelField: "name" };
+  const fields = {
+    rows: f.list({
+      label: "Rows",
+      item: f.object({
+        fields: {
+          id: f.id(),
+          competitor: f.ref({ label: "Competitor", source }),
+          presence: f.custom({ label: "Presence", widget: "presence3", columns: source }),
+        },
+      }),
+    }),
+  };
+  const doc = { rows: [{ id: "r-1", competitor: "patagonia", presence: [true, false, true] }] };
+
+  it("offers every competitor when handed the docs map", () => {
+    const { docs } = docsFromRows([]);
+    const sources = buildRefSources(fields, { ...docs }, doc);
+    expect(sources[refKey(source)]?.map((o) => o.label)).toEqual(["Patagonia", "Arc'teryx", "The North Face"]);
+
+    const columns = buildWidgetColumns(fields, { ...docs }, doc);
+    expect(columns["rows.0.presence"]).toEqual(["Patagonia", "Arc'teryx", "The North Face"]);
+  });
+
+  it("finds nothing when handed the whole ContentDocs by mistake — the shape that shipped", () => {
+    const contentDocs = docsFromRows([]);
+    expect(buildRefSources(fields, { ...contentDocs }, doc)).toEqual({});
+    expect(buildWidgetColumns(fields, { ...contentDocs }, doc)).toEqual({});
+  });
+
+  it("the page destructures `docs` rather than spreading the wrapper", () => {
+    const source_ = readFileSync(
+      fileURLToPath(new URL("../../src/app/admin/content/[key]/page.tsx", import.meta.url)),
+      "utf8"
+    );
+    expect(source_).toContain("const { docs: savedDocs } = await getContentDocs();");
+    expect(source_).not.toContain("{ ...(await getContentDocs()) }");
   });
 });

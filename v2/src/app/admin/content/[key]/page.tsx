@@ -9,6 +9,7 @@ import { ContentNav, DirtyGuard } from "@/components/admin/ContentNav";
 import { ModuleForm } from "@/components/admin/ModuleForm";
 import { CONTENT_HREF, moduleGroups } from "@/components/admin/module-groups";
 import { ReadErrorPage } from "@/components/admin/ReadError";
+import { requireAdmin } from "@/lib/server/guard";
 
 /* ============================================================
    One module of the content.
@@ -35,6 +36,10 @@ import { ReadErrorPage } from "@/components/admin/ReadError";
    ============================================================ */
 
 export default async function ContentModulePage({ params }: PageProps<"/admin/content/[key]">) {
+  /* Guarded here as well as in the layout: an RSC request renders one
+     without the other, and this page is what carries client data. */
+  await requireAdmin();
+
   const { key } = await params;
   const def = byKey(key);
   const template = MODULE_TEMPLATES[key];
@@ -62,7 +67,12 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
      say. The options are resolved here, where every document is already in
      hand, and travel to the form as plain {value,label} pairs: definitions
      do not cross the RSC boundary, and neither does the registry. */
-  const otherDocs = def ? { ...(await getContentDocs()) } : {};
+  const { docs: savedDocs } = await getContentDocs();
+  /* Spread to widen ModuleDocs to a plain record — the builders take any
+     document map. It is spread AFTER destructuring, never instead of it:
+     spreading the whole ContentDocs would file every module under `docs`
+     and `status`, and every lookup would quietly find nothing. */
+  const otherDocs: Record<string, unknown> = { ...savedDocs };
   const refSources = def ? buildRefSources(def.fields, otherDocs, startingDoc) : undefined;
   const widgetColumns = def ? buildWidgetColumns(def.fields, otherDocs, startingDoc) : undefined;
 

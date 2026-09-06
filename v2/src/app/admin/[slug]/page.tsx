@@ -3,8 +3,13 @@ import { notFound } from "next/navigation";
 import { getBoardBySlug, listBoardUsers } from "@/lib/server/boards";
 import { boardHost } from "@/lib/board-url";
 import { BoardMetaForm, DeleteBoardButton, PublishChip, UsersManager } from "../ui";
+import { requireAdmin } from "@/lib/server/guard";
 
 export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug]">) {
+  /* Guarded here as well as in the layout: an RSC request renders one
+     without the other, and this page is what carries client data. */
+  await requireAdmin();
+
   const { slug } = await params;
   const board = await getBoardBySlug(slug);
   if (!board) notFound();
