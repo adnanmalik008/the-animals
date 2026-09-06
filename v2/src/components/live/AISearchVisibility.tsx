@@ -1,8 +1,8 @@
 "use client";
 
-import { aiVisibility } from "@/data/board";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { useCountUp, useInView } from "@/lib/hooks";
-import { AiPlatformMark, type AiPlatformId } from "./AiPlatformMark";
+import { AI_PLATFORM_NAME, AiPlatformMark } from "./AiPlatformMark";
 import { StickerDropZone } from "./stickers";
 
 function Headline({
@@ -32,41 +32,42 @@ function Headline({
   );
 }
 
-/* the three headline figures, each with the line it files as */
-const headlines = [
-  {
-    key: "score",
-    value: aiVisibility.score,
-    label: "AI Visibility",
-    suffix: "",
-    colorClass: "text-orange",
-    decimals: 0,
-    headline: `AI Search Visibility — score ${aiVisibility.score}`,
-  },
-  {
-    key: "mentions",
-    value: aiVisibility.mentions,
-    label: "Mentions",
-    suffix: "M",
-    colorClass: "text-purple",
-    decimals: 1,
-    headline: `AI Search Visibility — ${aiVisibility.mentionsLabel} mentions across AI platforms`,
-  },
-  {
-    key: "cited",
-    value: aiVisibility.cited,
-    label: "Cited Pages",
-    suffix: "M",
-    colorClass: "text-olive",
-    decimals: 1,
-    headline: `AI Search Visibility — ${aiVisibility.citedLabel} pages cited by AI platforms`,
-  },
-];
-
 /* Every headline figure and every platform row is its own drop target, so
    the section carries as many stickers as it has items. */
 export function AISearchVisibility() {
+  const doc = useModuleDoc("ai-visibility");
   const { ref, inView } = useInView<HTMLDivElement>();
+
+  /* the three headline figures, each with the line it files as */
+  const headlines = [
+    {
+      key: "score",
+      value: doc.score,
+      label: "AI Visibility",
+      suffix: "",
+      colorClass: "text-orange",
+      decimals: 0,
+      headline: `AI Search Visibility — score ${doc.score}`,
+    },
+    {
+      key: "mentions",
+      value: doc.mentions,
+      label: "Mentions",
+      suffix: "M",
+      colorClass: "text-purple",
+      decimals: 1,
+      headline: `AI Search Visibility — ${doc.mentionsLabel} mentions across AI platforms`,
+    },
+    {
+      key: "cited",
+      value: doc.cited,
+      label: "Cited Pages",
+      suffix: "M",
+      colorClass: "text-olive",
+      decimals: 1,
+      headline: `AI Search Visibility — ${doc.citedLabel} pages cited by AI platforms`,
+    },
+  ];
 
   return (
     <div ref={ref} className="pt-4">
@@ -102,23 +103,23 @@ export function AISearchVisibility() {
       </div>
 
       <ul className="mt-4 divide-y divide-line">
-        {aiVisibility.platforms.map((p) => (
+        {doc.platforms.map((p) => (
           <li key={p.id}>
             <StickerDropZone
               tagKey={`ai-vis:${p.id}`}
               className="rounded-lg"
               insight={() => ({
                 circleId: "media-hotspots",
-                headline: `AI Search Visibility — ${p.name} ${p.mentionsLabel} mentions, ${p.citedLabel} cited`,
-                source: p.name,
+                headline: `AI Search Visibility — ${AI_PLATFORM_NAME[p.id]} ${p.mentionsLabel} mentions, ${p.citedLabel} cited`,
+                source: AI_PLATFORM_NAME[p.id],
                 category: "Signal",
                 categoryColor: "orange",
               })}
             >
               <div className="flex items-center justify-between gap-4 py-3.5">
                 <span className="flex items-center gap-2.5 font-semibold">
-                  <AiPlatformMark id={p.id as AiPlatformId} />
-                  {p.name}
+                  <AiPlatformMark id={p.id} />
+                  {AI_PLATFORM_NAME[p.id]}
                 </span>
                 <span className="flex items-center gap-6 text-sm tabular-nums sm:gap-10">
                   <span className="flex items-center gap-1.5">

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { sightingItems, type SightingItem } from "@/data/live-extra";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { CarouselArrow } from "./SocialPulse";
 import { StickerDropZone } from "./stickers";
 
@@ -10,6 +11,9 @@ import { StickerDropZone } from "./stickers";
    Sightings — out-of-home spots phoned in from the field.
    White-framed photo cards ride a carousel, three up on desktop.
    ============================================================ */
+
+/** One sighting, as the CMS stores it. */
+type SightingItem = ModuleDocs["sightings"]["items"][number];
 
 function SightingCard({ item }: { item: SightingItem }) {
   return (
@@ -46,10 +50,11 @@ function SightingCard({ item }: { item: SightingItem }) {
 }
 
 export function Sightings({ id }: { id: string }) {
+  const { items } = useModuleDoc("sightings");
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(3);
 
-  const maxIndex = Math.max(0, sightingItems.length - perView);
+  const maxIndex = Math.max(0, items.length - perView);
   /* clamp at render time so a viewport change can never strand the track */
   const current = Math.min(index, maxIndex);
 
@@ -72,7 +77,7 @@ export function Sightings({ id }: { id: string }) {
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${current * (100 / perView)}%)` }}
           >
-            {sightingItems.map((item) => (
+            {items.map((item) => (
               <div key={item.id} className="w-full shrink-0 px-1.5 md:w-1/3">
                 <SightingCard item={item} />
               </div>

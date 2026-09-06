@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { AI_PLATFORM_NAME } from "@/components/live/AiPlatformMark";
 import { MODULES, byKey } from "@/lib/cms/registry";
 import { parseDoc } from "@/lib/cms/parse";
 import { docsFromRows } from "@/lib/cms/docs";
@@ -270,5 +271,92 @@ describe("live editorial modules", () => {
     });
     expect(parseDoc(def, withPlatform("threads")).ok).toBe(false);
     expect(parseDoc(def, withPlatform("tiktok")).ok).toBe(true);
+  });
+});
+
+/* Batch two: the rest of the Live editorial column, and the first module in
+   the data column. Their fixtures round-trip above; these are the rules that
+   came with them. */
+describe("the rest of the Live column", () => {
+  it("airwaves: cover art is a picture, not one of three built-in keys", () => {
+    const def = byKey("airwaves");
+    const fixture = def.fixture();
+
+    /* the three shows that shipped keep exactly the art they had */
+    expect(fixture.items.map((i) => i.cover)).toEqual([
+      "/assets/podcasts/pivot.jpg",
+      "/assets/podcasts/startup.jpg",
+      "/assets/podcasts/odd-lots.jpg",
+    ]);
+
+    /* and a fourth show can now carry its own, which the old union forbade */
+    const withOwnCover = {
+      items: [{ ...fixture.items[0], id: "pc-9", show: "A client's own show", cover: "https://example.com/art.jpg" }],
+    };
+    const res = parseDoc(def, withOwnCover);
+    expect(res.ok, res.ok ? "" : JSON.stringify(res.fieldErrors)).toBe(true);
+    if (res.ok) expect(res.doc.items[0].cover).toBe("https://example.com/art.jpg");
+  });
+
+  it("airwaves: a timestamp has to look like one", () => {
+    const def = byKey("airwaves");
+    const fixture = def.fixture();
+    const at = (timestamp: string) => ({ items: [{ ...fixture.items[0], timestamp }] });
+    expect(parseDoc(def, at("00:38:20")).ok).toBe(true);
+    expect(parseDoc(def, at("38:20")).ok).toBe(true);
+    expect(parseDoc(def, at("halfway through")).ok).toBe(false);
+  });
+
+  it("youtube-voices: the video id is optional but must be a real one when given", () => {
+    const def = byKey("youtube-voices");
+    const fixture = def.fixture();
+    const withId = (videoId?: string) => ({
+      videos: [{ ...fixture.videos[0], ...(videoId === undefined ? {} : { videoId }) }],
+    });
+
+    const none = parseDoc(def, withId());
+    expect(none.ok, none.ok ? "" : JSON.stringify(none.fieldErrors)).toBe(true);
+    expect(parseDoc(def, withId("dQw4w9WgXcQ")).ok).toBe(true);
+    expect(parseDoc(def, withId("https://youtu.be/dQw4w9WgXcQ")).ok).toBe(false);
+  });
+
+  it("sightings: an empty list is refused — the carousel has nothing to ride", () => {
+    expect(parseDoc(byKey("sightings"), { items: [] }).ok).toBe(false);
+  });
+});
+
+describe("ai-visibility", () => {
+  const def = byKey("ai-visibility");
+
+  it("names every platform the board can print a mark for", () => {
+    const options = def.fields.platforms.item.fields.id.options.map((o) => o.value);
+    expect(options.slice().sort()).toEqual(Object.keys(AI_PLATFORM_NAME).sort());
+  });
+
+  it("takes the platform's name from code, so a document cannot rename a brand", () => {
+    const fixture = def.fixture();
+    const res = parseDoc(def, {
+      ...fixture,
+      platforms: [{ id: "claude", name: "Something Else", mentionsLabel: "1K", citedLabel: "2K" }],
+    });
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.doc.platforms[0]).toEqual({ id: "claude", mentionsLabel: "1K", citedLabel: "2K" });
+  });
+
+  it("refuses a platform with no mark", () => {
+    const fixture = def.fixture();
+    expect(parseDoc(def, { ...fixture, platforms: [{ id: "perplexity", mentionsLabel: "1K", citedLabel: "2K" }] }).ok).toBe(
+      false
+    );
+  });
+
+  it("keeps a number and a label per figure, because the unit is not derivable", () => {
+    const fixture = def.fixture();
+    /* 1.3 prints as 1.3M; a platform's 717 prints as 717 — no rule turns one
+       into the other, which is why both are authored. */
+    expect(fixture.mentions).toBe(1.3);
+    expect(fixture.mentionsLabel).toBe("1.3M");
+    expect(fixture.platforms.map((p) => p.citedLabel)).toContain("717");
+    expect(parseDoc(def, { ...fixture, score: 101 }).ok).toBe(false);
   });
 });

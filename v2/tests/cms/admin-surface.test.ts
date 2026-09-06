@@ -64,8 +64,8 @@ describe("moduleGroups", () => {
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
-  it("counts as JSON-only exactly the fifteen templates with no definition", () => {
-    expect(JSON_ONLY).toHaveLength(15);
+  it("counts as JSON-only exactly the fourteen templates with no definition", () => {
+    expect(JSON_ONLY).toHaveLength(14);
     expect(legacyKeys().slice().sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
@@ -122,6 +122,11 @@ const HEADING_SOURCE: Record<string, string | null> = {
   conversation: "src/components/live/TheConversation.tsx",
   "on-stage": "src/components/live/OnStage.tsx",
   "in-their-inbox": "src/components/live/InTheirInbox.tsx",
+  sightings: "src/components/live/Sightings.tsx",
+  airwaves: "src/components/live/OnTheAirwaves.tsx",
+  "youtube-voices": "src/components/live/YouTubeVoices.tsx",
+  /* printed by the column that frames the module, not by the module */
+  "ai-visibility": "src/components/live/LiveBoard.tsx",
   "opinion-leaders": "src/components/live/OpinionLeaders.tsx",
   "traffic-sources": "src/components/live/TrafficSources.tsx",
   "wild-cams": "src/app/(board)/in-the-wild/page.tsx",

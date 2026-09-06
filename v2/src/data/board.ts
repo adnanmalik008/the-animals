@@ -138,7 +138,9 @@ export const incomingNewsItem: NewsItem = {
 };
 
 export interface AiPlatformRow {
-  id: string;
+  /* the platform itself, not a generated key: it is what the logo map is
+     keyed by and what the module's `platforms` list stores */
+  id: "chatgpt" | "grok" | "claude" | "gemini";
   name: "ChatGPT" | "Grok" | "Claude" | "Gemini";
   mentions: number; // thousands
   mentionsLabel: string;
