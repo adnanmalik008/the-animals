@@ -34,6 +34,10 @@ const BADGE_TONE: Record<Badge, string> = {
   "Form coming": "bg-yellow/15 text-olive",
 };
 
+/* What each badge means, said in words rather than only in colour. It is a
+   `title` for a mouse and an sr-only suffix for everyone else: a one-word
+   badge is exactly the case where the meaning is carried entirely by context
+   a screen reader never reaches. */
 const BADGE_TITLE: Record<Badge, string> = {
   Custom: "This board's own content",
   Shared: "Showing the agency-wide shared content",
@@ -123,6 +127,7 @@ function Row({
         className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${BADGE_TONE[badge]}`}
       >
         {badge}
+        <span className="sr-only"> — {BADGE_TITLE[badge]}</span>
       </span>
       <span className="shrink-0 text-xs font-medium text-ink">Edit →</span>
     </li>

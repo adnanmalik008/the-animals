@@ -71,13 +71,14 @@ export default async function ModulePage({ params }: PageProps<"/admin/[slug]/mo
      as stored so it can be repaired, not replaced */
   const initialDoc = def ? (invalid ? row?.data : content.docs[def.key]) : (row?.data ?? template);
 
-  /* "Start again" should mean what the board would show with nothing of its
-     own, and once the agency has a shared copy that is the shared copy, not
-     the built-in content nobody chose. */
-  const reset: ResetTarget =
-    sharedDoc !== undefined
-      ? { kind: "shared", doc: sharedDoc }
-      : { kind: "template", doc: def ? def.fixture() : template };
+  /* "Start again" has two honest answers once the agency has a shared copy:
+     what this board would show with nothing of its own, and the content built
+     into the code. Offer both, most specific first, rather than letting one
+     button silently mean whichever exists. */
+  const resets: ResetTarget[] = [
+    ...(sharedDoc !== undefined ? [{ kind: "shared" as const, doc: sharedDoc }] : []),
+    { kind: "template", doc: def ? def.fixture() : template },
+  ];
 
   return (
     <DirtyGuard>
@@ -88,7 +89,7 @@ export default async function ModulePage({ params }: PageProps<"/admin/[slug]/mo
             scope={scope}
             moduleKey={key}
             initialDoc={initialDoc}
-            reset={reset}
+            resets={resets}
             invalid={invalid}
             showingShared={status === "shared"}
             canSave={board.id !== "fixture"}

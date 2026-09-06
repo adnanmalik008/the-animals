@@ -63,7 +63,7 @@ export default async function SharedModulePage({ params }: PageProps<"/admin/def
             /* nothing shared yet: start from the built-in content, which is
                what every board is showing for this module right now */
             initialDoc={row ? row.data : def.fixture()}
-            reset={{ kind: "template", doc: def.fixture() }}
+            resets={[{ kind: "template", doc: def.fixture() }]}
             invalid={invalid}
             canSave={configured}
             warning={

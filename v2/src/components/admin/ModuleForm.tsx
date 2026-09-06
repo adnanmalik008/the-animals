@@ -25,10 +25,10 @@
    • The clean baseline moves on `state.savedAt`, not on `state.ok`. Two
      saves in a row both answer `ok: true`, so `ok` alone never changes and
      the second save would leave the form looking permanently dirty.
-   • A board showing the shared copy says so, and its Reset goes back to that
-     copy rather than to the built-in content — "start again" should mean the
-     thing the board would show with nothing saved, which is what the shared
-     default is. */
+   • A board showing the shared copy says so. "Start again" then has two
+     honest answers — the agency's shared content and the content built into
+     the code — so both are offered and each says which it is, rather than one
+     button quietly meaning whichever happens to exist. */
 
 import Link from "next/link";
 import { useActionState, useCallback, useMemo, useState, type FormEvent } from "react";
@@ -51,7 +51,7 @@ import { saveDefaultDocAction, saveModuleDocAction, type ActionState } from "@/a
 import { Feedback } from "@/app/admin/ui";
 import { usePublishDirty, useLeaveGuard } from "@/components/admin/ContentNav";
 
-/** What "Reset" puts back, and which of the two it is. */
+/** One thing "Reset" can put back, and which of the two it is. */
 export interface ResetTarget {
   kind: "template" | "shared";
   doc: unknown;
@@ -64,7 +64,8 @@ export interface ModuleFormProps {
   moduleKey: string;
   /** what is stored, or what this scope is currently showing */
   initialDoc: unknown;
-  reset: ResetTarget;
+  /** what "start again" can mean here, most specific first; never empty */
+  resets: ResetTarget[];
   /** true when the stored doc no longer fits its definition */
   invalid?: boolean;
   /** board scope: this module has no doc of its own and is showing the shared one */
@@ -88,7 +89,7 @@ const RESET_LABEL: Record<ResetTarget["kind"], string> = {
 };
 
 const RESET_ASK: Record<ResetTarget["kind"], string> = {
-  template: "Replace everything with the built-in content?",
+  template: "Replace everything with the content built into the code?",
   shared: "Replace everything with the agency's shared content?",
 };
 
@@ -96,7 +97,7 @@ export function ModuleForm({
   scope,
   moduleKey,
   initialDoc,
-  reset: resetTarget,
+  resets,
   invalid = false,
   showingShared = false,
   canSave,
@@ -113,7 +114,8 @@ export function ModuleForm({
      database confirmed */
   const [saved, setSaved] = useState<{ at?: number; doc: unknown }>({ doc: initialDoc });
   const [showErrors, setShowErrors] = useState(invalid);
-  const [arming, setArming] = useState(false);
+  /* which reset is asking for confirmation, if any */
+  const [arming, setArming] = useState<ResetTarget["kind"] | null>(null);
   /* The JSON panel's own text, and the document it was typed against. Keeping
      the base is what lets the panel be live-bound without fighting the form:
      while they agree the textarea keeps its exact characters (so the caret
@@ -159,6 +161,8 @@ export function ModuleForm({
 
   const replace = useCallback((next: unknown) => set([], next), [set]);
 
+  const armed = resets.find((r) => r.kind === arming) ?? null;
+
   const showingDraft = draft !== null && draft.base === docJson;
   const jsonText = showingDraft ? draft.text : pretty;
 
@@ -174,11 +178,20 @@ export function ModuleForm({
 
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     setShowErrors(true);
-    setSent(docJson);
     if (Object.keys(localErrors).length > 0 || parseError) {
       e.preventDefault();
-      document.getElementById("cms-errors")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      /* focus, not only scroll: the summary is the list of what to fix, and a
+         keyboard user who never saw the page move would otherwise be left
+         wherever the Save button was */
+      const summary = document.getElementById("cms-errors");
+      summary?.scrollIntoView({ behavior: "smooth", block: "center" });
+      summary?.focus({ preventScroll: true });
+      return;
     }
+    /* only a submit that is actually going out may claim the server's errors
+       describe this document — setting it on a blocked submit would un-stale
+       the previous response and resurrect errors nothing asked for */
+    setSent(docJson);
   }
 
   return (
@@ -269,7 +282,7 @@ export function ModuleForm({
           {warning && <p className="rounded-xl bg-yellow/15 px-4 py-3 text-sm text-ink">{warning}</p>}
         </header>
 
-        <div id="cms-errors">
+        <div id="cms-errors" tabIndex={-1} className="outline-none">
           <ErrorSummary errors={errors} />
         </div>
 
@@ -337,28 +350,38 @@ export function ModuleForm({
             Discard changes
           </button>
 
-          {arming ? (
+          {armed ? (
             <span className="flex items-center gap-2">
-              <span className={hint}>{RESET_ASK[resetTarget.kind]}</span>
+              <span className={hint}>{RESET_ASK[armed.kind]}</span>
               <button
                 type="button"
                 onClick={() => {
-                  replace(structuredClone(resetTarget.doc));
+                  replace(structuredClone(armed.doc));
                   setDraft(null);
-                  setArming(false);
+                  setArming(null);
                 }}
                 className="rounded-full bg-red px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/60"
               >
                 Yes, reset
               </button>
-              <button type="button" onClick={() => setArming(false)} className={quietBtn}>
+              <button type="button" onClick={() => setArming(null)} className={quietBtn}>
                 Keep mine
               </button>
             </span>
           ) : (
-            <button type="button" onClick={() => setArming(true)} className={quietBtn}>
-              {RESET_LABEL[resetTarget.kind]}
-            </button>
+            /* both, when both exist: a board with its own content and a shared
+               copy behind it can go back to either, and neither is the obvious
+               meaning of a single unlabelled "start again" */
+            resets.map((target) => (
+              <button
+                key={target.kind}
+                type="button"
+                onClick={() => setArming(target.kind)}
+                className={quietBtn}
+              >
+                {RESET_LABEL[target.kind]}
+              </button>
+            ))
           )}
 
           <Link href={directoryHref(scope)} onClick={guard} className={quietBtn}>
