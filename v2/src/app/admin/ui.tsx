@@ -294,6 +294,13 @@ export function UsersManager({
   const [invite, setInvite] = useState<{ username: string; password: string } | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
 
+  /* Board logins only. A team login belongs to the agency, has no board_id and
+     is managed on the admin home — it must never appear here, because a Remove
+     button rendered for one would offer to delete it from the board screen.
+     `listBoardUsers` already filters by board_id; this is the second lock, and
+     the one that holds if a row ever arrives from somewhere else. */
+  const boardUsers = users.filter((u) => u.role === "client");
+
   /* when a login lands, keep its credentials on screen once for the
      invite — the password is hashed after this and cannot be shown again */
   const lastOk = useRef(false);
@@ -322,9 +329,9 @@ export function UsersManager({
         </p>
       </div>
 
-      {users.length > 0 ? (
+      {boardUsers.length > 0 ? (
         <ul className="divide-y divide-line rounded-xl border border-line">
-          {users.map((u) => (
+          {boardUsers.map((u) => (
             <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
               <span className="font-medium">{u.username}</span>
               <span className="ml-auto text-xs text-graphite">{u.role}</span>
@@ -402,7 +409,7 @@ export function UsersManager({
             className={input}
           />
         </label>
-        <button type="submit" disabled={pending || users.length >= 10} className={primaryBtn}>
+        <button type="submit" disabled={pending || boardUsers.length >= 10} className={primaryBtn}>
           {pending ? "Adding…" : "Add login"}
         </button>
       </form>

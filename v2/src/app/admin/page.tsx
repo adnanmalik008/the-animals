@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { listBoards } from "@/lib/server/boards";
+import { listAdminUsers, listBoards } from "@/lib/server/boards";
 import { boardHost } from "@/lib/board-url";
 import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { NewBoardForm, PublishChip } from "./ui";
+import { TeamLogins } from "./TeamLogins";
 
 /* Content first, boards second — which is the order the work happens in.
    There is one set of content for the whole product; a board is a name, an
@@ -10,6 +11,9 @@ import { NewBoardForm, PublishChip } from "./ui";
 
 export default async function AdminHome() {
   const boards = await listBoards();
+  /* Empty until 0002_cms.sql makes board_id nullable, and empty rather than
+     an error if the read fails at all — the boards below must still list. */
+  const teamUsers = await listAdminUsers();
   const root = process.env.BOARD_ROOT_DOMAIN;
 
   return (
@@ -84,6 +88,8 @@ export default async function AdminHome() {
       </ul>
 
       <NewBoardForm rootDomain={root} />
+
+      <TeamLogins users={teamUsers} />
     </div>
   );
 }

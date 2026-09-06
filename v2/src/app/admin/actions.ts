@@ -3,10 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
+  addAdminUser,
   addBoardUser,
   createBoard,
   deleteBoard,
   getBoardBySlug,
+  removeAdminUser,
   removeBoardUser,
   updateBoard,
 } from "@/lib/server/boards";
@@ -134,4 +136,35 @@ export async function removeUserAction(formData: FormData) {
   const slug = String(formData.get("slug") ?? "");
   if (Number.isFinite(id)) await removeBoardUser(id);
   revalidatePath(`/admin/${slug}`);
+}
+
+/* ---------------- team logins ----------------
+   An agency login: role='admin' with no board_id, so no board deletion can
+   take it away. Both actions go through `requireAdmin` first — nothing here
+   may be reachable to anyone who is not already an admin — and both are
+   scoped in `boards.ts` to board-less admin rows, so neither can touch a
+   client's board login whatever id is posted. */
+
+export async function addTeamLoginAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+  try {
+    await addAdminUser(username, password);
+  } catch (e) {
+    /* Until 0002_cms.sql runs, board_id is NOT NULL and this is where every
+       add lands. `addAdminUser` turns that into a sentence about the pending
+       migration; showing it is the honest answer, and far better than an add
+       that appeared to work. */
+    return fail(e);
+  }
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function removeTeamLoginAction(formData: FormData) {
+  await requireAdmin();
+  const id = Number(formData.get("userId"));
+  if (Number.isInteger(id)) await removeAdminUser(id);
+  revalidatePath("/admin");
 }
