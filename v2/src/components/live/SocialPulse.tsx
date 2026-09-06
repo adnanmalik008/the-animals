@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  socialPlatformLabel,
-  socialPosts,
-  type SocialPlatform,
-  type SocialPost,
-} from "@/data/live";
+import { socialPlatformLabel, type SocialPlatform } from "@/data/live";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { StickerDropZone } from "./stickers";
+
+/** One post, as the CMS stores it. */
+type SocialPost = ModuleDocs["social-pulse"]["posts"][number];
 
 /* ---------------- platform marks ---------------- */
 
@@ -135,14 +135,15 @@ const filters: { id: SocialPlatform | "all"; label: string }[] = [
 ];
 
 export function SocialPulse({ id }: { id: string }) {
+  const { posts: allPosts } = useModuleDoc("social-pulse");
   const [filter, setFilter] = useState<SocialPlatform | "all">("all");
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(2);
   const [paused, setPaused] = useState(false);
 
   const posts = useMemo(
-    () => (filter === "all" ? socialPosts : socialPosts.filter((p) => p.platform === filter)),
-    [filter]
+    () => (filter === "all" ? allPosts : allPosts.filter((p) => p.platform === filter)),
+    [allPosts, filter]
   );
   const maxIndex = Math.max(0, posts.length - perView);
   /* clamp at render time so a filter/viewport change can never strand the track */

@@ -1,36 +1,45 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { stageEvents } from "@/data/live";
 import { StickerBadge, useStickerTarget } from "./stickers";
 import { TornSheet } from "./TornSheet";
 import { CarouselArrow } from "./SocialPulse";
 
 /* Keynote stages — what the category is saying from the podium. */
 export function OnStage({ id }: { id: string }) {
+  const { events } = useModuleDoc("on-stage");
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
-  const current = stageEvents[index];
+  /* Clamped at render rather than reset in an effect: a saved document can
+     be shorter than the one the timer last counted against. */
+  const position = events.length ? index % events.length : 0;
+  const current = events[position];
 
   useEffect(() => {
-    if (paused) return;
-    const t = setInterval(() => setIndex((i) => (i + 1) % stageEvents.length), 7000);
+    if (paused || events.length < 2) return;
+    const t = setInterval(() => setIndex((i) => (i + 1) % events.length), 7000);
     return () => clearInterval(t);
-  }, [paused]);
+  }, [paused, events.length]);
 
   const { targetProps, isOver, tagged, resolvedKey } = useStickerTarget(
     () => ({
       circleId: "key-influencers",
-      headline: current.quote,
-      source: current.speaker,
+      headline: current?.quote ?? "",
+      source: current?.speaker ?? "",
       category: "Event",
       categoryColor: "green",
-      detail: `${current.event} · ${current.hashtag}\n\n${current.session}`,
-      meta: current.speakerTitle,
+      detail: `${current?.event ?? ""} · ${current?.hashtag ?? ""}\n\n${current?.session ?? ""}`,
+      meta: current?.speakerTitle ?? "",
     }),
-    `stage:${current.id}`
+    `stage:${current?.id ?? "none"}`
   );
+
+  /* The schema keeps at least one event, so this is the belt to that brace:
+     a document hand-edited to an empty list must not take the board down.
+     It stands after the hooks so their order never depends on the content. */
+  if (!current) return null;
 
   return (
     <Module id={id} eyebrow="Transmission" title="On Stage" variant="editorial">
@@ -44,9 +53,9 @@ export function OnStage({ id }: { id: string }) {
         <div className="overflow-hidden -mx-4 px-4 sm:-mx-8 sm:px-8 -my-6 py-6">
           <div
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
-            style={{ transform: `translateX(-${index * 100}%)` }}
+            style={{ transform: `translateX(-${position * 100}%)` }}
           >
-            {stageEvents.map((ev) => (
+            {events.map((ev) => (
               <div
                 key={ev.id}
                 className={`w-full shrink-0 transition-opacity duration-500 motion-reduce:transition-none ${
@@ -97,14 +106,14 @@ export function OnStage({ id }: { id: string }) {
           <CarouselArrow
             dir="prev"
             label="Previous event"
-            onClick={() => setIndex((i) => (i - 1 + stageEvents.length) % stageEvents.length)}
+            onClick={() => setIndex(() => (position - 1 + events.length) % events.length)}
           />
           <span className="flex items-center gap-1.5">
-            {stageEvents.map((ev, i) => (
+            {events.map((ev, i) => (
               <span
                 key={ev.id}
                 className={`h-1.5 rounded-full transition-all ${
-                  i === index ? "w-5 bg-orange" : "w-1.5 bg-silver"
+                  i === position ? "w-5 bg-orange" : "w-1.5 bg-silver"
                 }`}
                 aria-hidden
               />
@@ -113,7 +122,7 @@ export function OnStage({ id }: { id: string }) {
           <CarouselArrow
             dir="next"
             label="Next event"
-            onClick={() => setIndex((i) => (i + 1) % stageEvents.length)}
+            onClick={() => setIndex(() => (position + 1) % events.length)}
           />
         </div>
       </div>

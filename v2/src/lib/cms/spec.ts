@@ -31,6 +31,9 @@ export interface TextareaSpec {
   help?: string;
   rows?: number;
   maxLength?: number;
+  /** same contract as TextSpec: unanchored unless the regex says otherwise */
+  pattern?: RegExp;
+  patternHint?: string;
   optional?: true;
   default?: string;
 }

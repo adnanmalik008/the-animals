@@ -7,13 +7,19 @@ import { describe, expect, it } from "vitest";
 import { byKey } from "@/lib/cms/registry";
 import { parseDoc } from "@/lib/cms/parse";
 
+import conversationLegacy from "./legacy/conversation.json";
 import newswireLegacy from "./legacy/newswire.json";
+import onStageLegacy from "./legacy/on-stage.json";
 import opinionLeadersLegacy from "./legacy/opinion-leaders.json";
+import socialPulseLegacy from "./legacy/social-pulse.json";
 import trafficSourcesLegacy from "./legacy/traffic-sources.json";
 import wildCamsLegacy from "./legacy/wild-cams.json";
 
 const LEGACY_DOCS: Record<string, unknown> = {
   newswire: newswireLegacy,
+  "social-pulse": socialPulseLegacy,
+  conversation: conversationLegacy,
+  "on-stage": onStageLegacy,
   "opinion-leaders": opinionLeadersLegacy,
   "traffic-sources": trafficSourcesLegacy,
   "wild-cams": wildCamsLegacy,

@@ -64,8 +64,8 @@ describe("moduleGroups", () => {
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
-  it("counts as JSON-only exactly the eighteen templates with no definition", () => {
-    expect(JSON_ONLY).toHaveLength(18);
+  it("counts as JSON-only exactly the fifteen templates with no definition", () => {
+    expect(JSON_ONLY).toHaveLength(15);
     expect(legacyKeys().slice().sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
@@ -118,6 +118,10 @@ const HEADING_SOURCE: Record<string, string | null> = {
      for it and is printed nowhere on the board. */
   "board-header": null,
   newswire: "src/components/live/LiveBoard.tsx",
+  "social-pulse": "src/components/live/SocialPulse.tsx",
+  conversation: "src/components/live/TheConversation.tsx",
+  "on-stage": "src/components/live/OnStage.tsx",
+  "in-their-inbox": "src/components/live/InTheirInbox.tsx",
   "opinion-leaders": "src/components/live/OpinionLeaders.tsx",
   "traffic-sources": "src/components/live/TrafficSources.tsx",
   "wild-cams": "src/app/(board)/in-the-wild/page.tsx",

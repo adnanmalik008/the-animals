@@ -8,12 +8,27 @@
 import type { ModuleTab } from "../spec";
 import { anomalies } from "./anomalies";
 import { boardHeader } from "./board-header";
+import { conversation } from "./conversation";
+import { inTheirInbox } from "./in-their-inbox";
 import { newswire } from "./newswire";
+import { onStage } from "./on-stage";
 import { opinionLeaders } from "./opinion-leaders";
+import { socialPulse } from "./social-pulse";
 import { trafficSources } from "./traffic-sources";
 import { wildCams } from "./wild-cams";
 
-export const MODULES = [boardHeader, newswire, opinionLeaders, trafficSources, wildCams, anomalies] as const;
+export const MODULES = [
+  boardHeader,
+  newswire,
+  socialPulse,
+  conversation,
+  onStage,
+  inTheirInbox,
+  opinionLeaders,
+  trafficSources,
+  wildCams,
+  anomalies,
+] as const;
 
 export type AnyModule = (typeof MODULES)[number];
 

@@ -35,7 +35,8 @@ function labelOf(spec: FieldSpec): string | undefined {
 
 function helpOf(spec: FieldSpec): string | undefined {
   const help = "help" in spec ? spec.help : undefined;
-  if (spec.kind === "text" && spec.patternHint) return help ? `${help} ${spec.patternHint}.` : `${spec.patternHint}.`;
+  if ((spec.kind === "text" || spec.kind === "textarea") && spec.patternHint)
+    return help ? `${help} ${spec.patternHint}.` : `${spec.patternHint}.`;
   return help;
 }
 

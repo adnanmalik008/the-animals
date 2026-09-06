@@ -42,6 +42,7 @@ export function fieldSchema(spec: FieldSpec): z.ZodType {
     case "textarea": {
       let s = z.string().trim();
       if (spec.maxLength) s = s.max(spec.maxLength, `At most ${count(spec.maxLength, "character")}`);
+      if (spec.pattern) s = s.regex(spec.pattern, spec.patternHint ?? "Invalid format");
       return stringField(s, spec);
     }
     case "number": {

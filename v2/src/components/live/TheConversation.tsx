@@ -1,14 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  conversationQuotes,
-  conversationPlatformLabel,
-  type ConversationPlatform,
-  type ConversationQuote,
-} from "@/data/live";
+import { conversationPlatformLabel, type ConversationPlatform } from "@/data/live";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { StickerBadge, useStickerTarget } from "./stickers";
+
+/** One quote, as the CMS stores it. */
+type ConversationQuote = ModuleDocs["conversation"]["quotes"][number];
 import { TornSheet } from "./TornSheet";
 
 const filters: { id: ConversationPlatform | "all"; label: string }[] = [
@@ -107,14 +107,12 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
 }
 
 export function TheConversation({ id }: { id: string }) {
+  const { quotes: allQuotes } = useModuleDoc("conversation");
   const [filter, setFilter] = useState<ConversationPlatform | "all">("all");
 
   const quotes = useMemo(
-    () =>
-      filter === "all"
-        ? conversationQuotes
-        : conversationQuotes.filter((q) => q.platform === filter),
-    [filter]
+    () => (filter === "all" ? allQuotes : allQuotes.filter((q) => q.platform === filter)),
+    [allQuotes, filter]
   );
 
   return (

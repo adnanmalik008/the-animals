@@ -204,3 +204,71 @@ describe("docsFromRows read chain", () => {
     expect(savedDoc.items[0].headline).toBe("The agency wrote this");
   });
 });
+
+/* The four Live editorial modules wired after the form engine. Their fixtures
+   are covered by the round-trip above; what needs its own proof is the rules
+   that were added with them, because a regex that matches nothing still lets
+   every fixture through. */
+describe("live editorial modules", () => {
+  it.each([
+    ["on-stage", "events", "quote"],
+    ["in-their-inbox", "sends", "quote"],
+  ] as const)("%s: the %s' %s refuses the quote marks the card prints itself", (key, list, field) => {
+    const def = byKey(key);
+    const fixture = def.fixture() as Record<string, Record<string, unknown>[]>;
+    const rows = fixture[list];
+
+    for (const wrapped of ['"Quoted by hand"', "«Quoted by hand»", "“Quoted by hand”"]) {
+      const doc = { ...fixture, [list]: [{ ...rows[0], [field]: wrapped }, ...rows.slice(1)] };
+      const res = parseDoc(def, doc);
+      expect(res.ok, `${wrapped} was accepted`).toBe(false);
+    }
+
+    /* and an internal quote is still allowed — the rule is about the ends */
+    const inner = { ...fixture, [list]: [{ ...rows[0], [field]: 'They said "no" and left' }, ...rows.slice(1)] };
+    expect(parseDoc(def, inner).ok).toBe(true);
+  });
+
+  it("on-stage: an empty event list is refused, because the card reads events[0]", () => {
+    const def = byKey("on-stage");
+    expect(parseDoc(def, { events: [] }).ok).toBe(false);
+    expect(parseDoc(def, def.fixture()).ok).toBe(true);
+  });
+
+  it("on-stage: a hashtag without its # is refused", () => {
+    const def = byKey("on-stage");
+    const fixture = def.fixture();
+    const withTag = (hashtag: string) => ({
+      ...fixture,
+      events: [{ ...fixture.events[0], hashtag }, ...fixture.events.slice(1)],
+    });
+    expect(parseDoc(def, withTag("TRE2026")).ok).toBe(false);
+    expect(parseDoc(def, withTag("#TRE 2026")).ok).toBe(false);
+    expect(parseDoc(def, withTag("#TRE2026")).ok).toBe(true);
+  });
+
+  it("conversation: replyTo is the only optional field on a quote", () => {
+    const def = byKey("conversation");
+    const fixture = def.fixture();
+    const withoutReply: Partial<(typeof fixture.quotes)[number]> = { ...fixture.quotes[0] };
+    delete withoutReply.replyTo;
+    const res = parseDoc(def, { quotes: [withoutReply] });
+    expect(res.ok, res.ok ? "" : JSON.stringify(res.fieldErrors)).toBe(true);
+    if (res.ok) expect(res.doc.quotes[0].replyTo).toBeUndefined();
+
+    const withoutHandle: Partial<(typeof fixture.quotes)[number]> = { ...fixture.quotes[0] };
+    delete withoutHandle.handle;
+    expect(parseDoc(def, { quotes: [withoutHandle] }).ok).toBe(false);
+  });
+
+  it("social-pulse: the platform set is closed, since each value keys a brand mark", () => {
+    const def = byKey("social-pulse");
+    const fixture = def.fixture();
+    const withPlatform = (platform: string) => ({
+      ...fixture,
+      posts: [{ ...fixture.posts[0], platform }, ...fixture.posts.slice(1)],
+    });
+    expect(parseDoc(def, withPlatform("threads")).ok).toBe(false);
+    expect(parseDoc(def, withPlatform("tiktok")).ok).toBe(true);
+  });
+});
