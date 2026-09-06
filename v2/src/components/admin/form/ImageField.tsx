@@ -1,18 +1,23 @@
 "use client";
 
-/* An image, by URL.
+/* An image: uploaded, or pasted by address.
 
-   M1 is paste-only: an https:// address or a /assets/ path, which is what
-   every board image is today. The preview is the useful half — it crops to
-   the aspect the board applies, so a wrong image is obvious before saving.
+   Both halves end in the same place — `onChange` with a URL string — so
+   nothing above this component knows or cares which one an editor used.
+   The preview is the useful part either way: it crops to the aspect the
+   board applies, so a wrong image is obvious before saving.
 
-   M2 SEAM: upload goes in the marked slot below. It writes to the Supabase
-   bucket, then calls the same `onChange` with the public URL — nothing else
-   in this component, or above it, has to change. */
+   The upload posts to /api/admin/upload rather than a server action:
+   actions cap a body at 1 MB and run one at a time. Large photos are
+   downscaled here first, so a phone picture does not bounce off the 4 MB
+   limit. */
 
-import type { ImageSpec } from "@/lib/cms/spec";
-import { hint, input, invalidRing, quietBtnDisablable } from "./tokens";
+import { useId, useRef, useState } from "react";
 import type { ReactNode } from "react";
+import type { ImageSpec } from "@/lib/cms/spec";
+import { UPLOAD_ACCEPT } from "@/lib/cms/upload";
+import { downscaleImage } from "./image-resize";
+import { fieldError, hint, input, invalidRing, quietBtnDisablable } from "./tokens";
 
 export function ImageField({
   spec,
@@ -33,6 +38,36 @@ export function ImageField({
 }) {
   const src = value.trim();
   const showable = /^(https?:\/\/|\/)/.test(src);
+
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const statusId = useId();
+
+  async function upload(file: File) {
+    setBusy(true);
+    setUploadError(null);
+    try {
+      const body = new FormData();
+      body.append("file", await downscaleImage(file));
+      const response = await fetch("/api/admin/upload", { method: "POST", body });
+
+      /* A non-JSON body means something upstream answered instead of the
+         route — a proxy, or a platform-level size refusal. */
+      const result = await response.json().catch(() => null);
+      if (!response.ok || !result?.ok) {
+        setUploadError(typeof result?.error === "string" ? result.error : "Upload failed. Try again.");
+        return;
+      }
+      onChange(result.url as string);
+    } catch {
+      setUploadError("Upload failed — check your connection and try again.");
+    } finally {
+      setBusy(false);
+      /* Cleared so picking the same file twice fires `change` again. */
+      if (fileInput.current) fileInput.current.value = "";
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
@@ -63,12 +98,35 @@ export function ImageField({
           className={`${input} font-mono text-xs ${invalid ? invalidRing : ""}`}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={() => onChange("")} disabled={!value} className={quietBtnDisablable}>
+          <input
+            ref={fileInput}
+            type="file"
+            accept={UPLOAD_ACCEPT}
+            className="sr-only"
+            tabIndex={-1}
+            aria-hidden="true"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) void upload(file);
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInput.current?.click()}
+            disabled={busy}
+            aria-describedby={statusId}
+            className={quietBtnDisablable}
+          >
+            {busy ? "Uploading…" : "Upload"}
+          </button>
+          <button type="button" onClick={() => onChange("")} disabled={!value || busy} className={quietBtnDisablable}>
             Clear
           </button>
-          {/* M2 SEAM: the upload button lands here */}
           {spec.aspect && <span className={hint}>Cropped to {spec.aspect.replace("/", ":")}</span>}
         </div>
+        <p id={statusId} role="status" className={uploadError ? fieldError : "sr-only"}>
+          {uploadError ?? (busy ? "Uploading…" : "")}
+        </p>
         {altSlot}
       </div>
     </div>
