@@ -8,7 +8,7 @@
 import type { ComponentType, ReactNode } from "react";
 import type { FieldErrors } from "@/lib/cms/parse";
 import type { Path } from "@/lib/cms/paths";
-import type { RefSources } from "@/lib/cms/refs";
+import type { RefSources, WidgetColumns } from "@/lib/cms/refs";
 import type { FieldSpec } from "@/lib/cms/spec";
 
 /* Options for `ref` fields, keyed by `refKey(spec.source)` — the document
@@ -22,7 +22,7 @@ export type { RefOption, RefSources } from "@/lib/cms/refs";
 export interface FieldSources {
   refSources?: RefSources;
   /** column headers for widgets whose columns the module names, by path key */
-  widgetColumns?: Record<string, readonly string[]>;
+  widgetColumns?: WidgetColumns;
 }
 
 export interface FieldProps extends FieldSources {

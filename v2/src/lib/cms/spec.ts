@@ -126,6 +126,11 @@ export interface CustomSpec<W extends WidgetId = WidgetId> {
   label: string;
   help?: string;
   widget: W;
+  /** Where a widget's column headers come from, for widgets that have them
+      (presence3). Same shape as a `ref` source: the module's document, the
+      list inside it, and the field on each row to read. Resolved by the
+      admin, so a widget never names another module's rows itself. */
+  columns?: { doc?: string; list: string; labelField: string };
 }
 
 export type FieldSpec =

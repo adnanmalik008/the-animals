@@ -24,7 +24,8 @@ export type RefSource = RefSpec["source"];
 
     Composite on purpose: one document can hold two lists, and keying by
     the document alone would hand a field the other list's rows. */
-export function refKey(source: { doc?: string; list: string }): string {
+/* `labelField` is accepted but unused, so a whole source can be passed. */
+export function refKey(source: { doc?: string; list: string; labelField?: string }): string {
   return `${source.doc ?? "self"}:${source.list}`;
 }
 
@@ -92,4 +93,64 @@ export function buildRefSources(fields: Fields, docs: Record<string, unknown>, s
     if (options.length > 0) sources[refKey(source)] = options;
   }
   return sources;
+}
+
+/* ---------------- widget columns ----------------
+
+   A widget with columns (presence3 is the only one today) names them the
+   same way a `ref` names its options: by pointing at a list in a document.
+   The admin resolves them and passes them down by path, because the widget
+   sits at one place in the tree and its neighbours may want different
+   columns. */
+
+import { pathKey, type Path } from "./paths";
+
+export type WidgetColumns = Record<string, readonly string[]>;
+
+export function buildWidgetColumns(
+  fields: Fields,
+  docs: Record<string, unknown>,
+  selfDoc: unknown
+): WidgetColumns {
+  const columns: Record<string, readonly string[]> = {};
+
+  const walk = (spec: FieldSpec, path: Path) => {
+    switch (spec.kind) {
+      case "custom": {
+        if (!spec.columns) return;
+        const doc = spec.columns.doc === undefined ? selfDoc : docs[spec.columns.doc];
+        const labels = optionsFor(doc, spec.columns).map((option) => option.label);
+        if (labels.length > 0) columns[pathKey(path)] = labels;
+        return;
+      }
+      case "object":
+        for (const [name, field] of Object.entries(spec.fields)) walk(field, [...path, name]);
+        return;
+      case "list":
+        /* Every row renders the same widget at a different index, so the
+           columns are filed under each row's own path. A list long enough
+           to matter is still only a handful of rows. */
+        if (Array.isArray(readAt(selfDoc, path))) {
+          const rows = readAt(selfDoc, path) as unknown[];
+          rows.forEach((_row, index) => walk(spec.item, [...path, index]));
+        }
+        return;
+      default:
+        return;
+    }
+  };
+
+  for (const [name, field] of Object.entries(fields)) walk(field, [name]);
+  return columns;
+}
+
+/** The value at a path inside a document, or undefined. */
+function readAt(doc: unknown, path: Path): unknown {
+  let current: unknown = doc;
+  for (const step of path) {
+    if (Array.isArray(current) && typeof step === "number") current = current[step];
+    else if (isRow(current) && typeof step === "string") current = current[step];
+    else return undefined;
+  }
+  return current;
 }

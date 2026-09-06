@@ -29,6 +29,9 @@ function render(spec: FieldSpec, value: unknown, errors: FieldErrors = {}, sourc
 }
 
 /* one spec per kind in the union — the list is the test */
+/* named so a test can build the key the renderer will look under */
+const REF_SOURCE = { list: "circles", labelField: "name" } as const;
+
 const SPECS: Record<FieldSpec["kind"], FieldSpec> = {
   text: f.text({ label: "Headline", maxLength: 40 }),
   textarea: f.textarea({ label: "Summary", rows: 3 }),
@@ -39,7 +42,7 @@ const SPECS: Record<FieldSpec["kind"], FieldSpec> = {
   image: f.image({ label: "Logo", aspect: "16/9" }),
   color: f.color({ label: "Tint" }),
   id: f.id(),
-  ref: f.ref({ label: "Circle", source: { list: "circles", labelField: "name" } }),
+  ref: f.ref({ label: "Circle", source: REF_SOURCE }),
   object: f.object({ label: "Clock", fields: { label: f.text({ label: "Label" }) } }),
   list: f.list({ label: "Rows", item: f.text({ label: "Row" }) }),
   custom: f.custom({ label: "Points", widget: "points12" }),
@@ -159,7 +162,7 @@ describe("field wiring", () => {
   it("a ref with no source list falls back to a text input", () => {
     expect(render(SPECS.ref, "news")).toContain("<input");
     const withOptions = render(SPECS.ref, "news", {}, {
-      refSources: { [refKey(SPECS.ref.source)]: [{ value: "news", label: "News" }] },
+      refSources: { [refKey(REF_SOURCE)]: [{ value: "news", label: "News" }] },
     });
     expect(withOptions).toContain("<select");
     expect(withOptions).toContain("News");

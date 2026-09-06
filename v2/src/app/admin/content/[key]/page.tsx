@@ -1,6 +1,6 @@
 import "server-only";
 import { notFound } from "next/navigation";
-import { buildRefSources } from "@/lib/cms/refs";
+import { buildRefSources, buildWidgetColumns } from "@/lib/cms/refs";
 import { byKey } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
 import { getContentDocs, getContentRowInfos } from "@/lib/server/docs";
@@ -62,7 +62,9 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
      say. The options are resolved here, where every document is already in
      hand, and travel to the form as plain {value,label} pairs: definitions
      do not cross the RSC boundary, and neither does the registry. */
-  const refSources = def ? buildRefSources(def.fields, { ...(await getContentDocs()) }, startingDoc) : undefined;
+  const otherDocs = def ? { ...(await getContentDocs()) } : {};
+  const refSources = def ? buildRefSources(def.fields, otherDocs, startingDoc) : undefined;
+  const widgetColumns = def ? buildWidgetColumns(def.fields, otherDocs, startingDoc) : undefined;
 
   return (
     <DirtyGuard>
@@ -76,6 +78,7 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
             invalid={invalid}
             canSave={configured}
             refSources={refSources}
+            widgetColumns={widgetColumns}
             warning={
               !configured
                 ? "Supabase is not configured, so there is nowhere to save content (see v2/README.md)."

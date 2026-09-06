@@ -33,7 +33,7 @@ import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { issuesToFieldErrors, type FieldErrors } from "@/lib/cms/parse";
 import { byKey } from "@/lib/cms/registry";
 import { schemaFor } from "@/lib/cms/schema";
-import type { RefSources } from "@/lib/cms/refs";
+import type { RefSources, WidgetColumns } from "@/lib/cms/refs";
 import type { ObjectSpec } from "@/lib/cms/spec";
 import { saveContentDocAction, type ActionState } from "@/app/admin/actions";
 import { Feedback } from "@/app/admin/ui";
@@ -56,6 +56,8 @@ export interface ModuleFormProps {
       modules' documents; a source with nothing to offer is absent, and the
       field falls back to a typed id */
   refSources?: RefSources;
+  /** column headers for widgets that have them, by path */
+  widgetColumns?: WidgetColumns;
 }
 
 const LOCK = (
@@ -73,6 +75,7 @@ export function ModuleForm({
   canSave,
   warning,
   refSources,
+  widgetColumns,
 }: ModuleFormProps) {
   const def = byKey(moduleKey);
   const [state, action, pending] = useActionState<ActionState, FormData>(saveContentDocAction, {});
@@ -234,6 +237,7 @@ export function ModuleForm({
               onChange={replace}
               errors={errors}
               refSources={refSources}
+              widgetColumns={widgetColumns}
             />
           </div>
         )}
