@@ -1,10 +1,10 @@
 import { WildCamCard } from "@/components/wild/WildCamCard";
 import { requireBoardAccess } from "@/lib/server/guard";
-import { getBoardDocs } from "@/lib/server/docs";
+import { getContentDocs } from "@/lib/server/docs";
 
 export default async function InTheWildPage() {
-  const board = await requireBoardAccess("/in-the-wild");
-  const { docs } = await getBoardDocs(board.id);
+  await requireBoardAccess("/in-the-wild");
+  const { docs } = await getContentDocs();
   const { cams, volume } = docs["wild-cams"];
 
   return (

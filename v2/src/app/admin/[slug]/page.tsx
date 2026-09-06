@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { getBoardBySlug, listBoardUsers } from "@/lib/server/boards";
 import { boardHost } from "@/lib/board-url";
 import { BoardMetaForm, DeleteBoardButton, PublishChip, UsersManager } from "../ui";
-import { BoardModuleDirectory } from "@/components/admin/ModuleDirectory";
 
 export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug]">) {
   const { slug } = await params;
@@ -45,7 +44,6 @@ export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug
       )}
 
       <BoardMetaForm board={board} />
-      <BoardModuleDirectory board={board} />
       <UsersManager board={board} users={users} host={host} />
     </div>
   );

@@ -1,19 +1,16 @@
 "use client";
 
-/* One module, as a form — for either scope.
+/* One module, as a form.
 
    Nothing here knows what a newswire is. The module's FieldSpec tree — the
    same declaration that yields its zod schema and its TypeScript type —
    generates every control, so this file is only the frame around it: the
    locked heading, the state, the footer, and the escape hatch.
 
-   Nor does it much care whether it is editing a client's board or the
-   agency's shared content. Those differ in the table a save lands in, one
-   link, and one sentence; everything else — the fields, the errors, the JSON
-   panel, the dirty guard — is the same surface, so it is the same component
-   handed a different `scope`.
+   There is one copy of each module, shown by every board, so there is one
+   form and one save.
 
-   Four things are load-bearing:
+   Three things are load-bearing:
 
    • The heading is text, not an input. The client fixed each module's
      eyebrow and title in code; there is no control here to make editable by
@@ -24,11 +21,7 @@
      not trust.
    • The clean baseline moves on `state.savedAt`, not on `state.ok`. Two
      saves in a row both answer `ok: true`, so `ok` alone never changes and
-     the second save would leave the form looking permanently dirty.
-   • A board showing the shared copy says so. "Start again" then has two
-     honest answers — the agency's shared content and the content built into
-     the code — so both are offered and each says which it is, rather than one
-     button quietly meaning whichever happens to exist. */
+     the second save would leave the form looking permanently dirty. */
 
 import Link from "next/link";
 import { useActionState, useCallback, useMemo, useState, type FormEvent } from "react";
@@ -36,40 +29,24 @@ import { Field } from "@/components/admin/form/Field";
 import { ErrorSummary, FieldAnchors } from "@/components/admin/form/ErrorSummary";
 import { useDocState } from "@/components/admin/form/useDocState";
 import { card, fieldError, hint, input, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
-import {
-  directoryHref,
-  directoryLabel,
-  moduleHref,
-  scopeSubtitle,
-  type EditScope,
-} from "@/components/admin/scope";
+import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { issuesToFieldErrors, type FieldErrors } from "@/lib/cms/parse";
 import { byKey } from "@/lib/cms/registry";
 import { schemaFor } from "@/lib/cms/schema";
 import type { ObjectSpec } from "@/lib/cms/spec";
-import { saveDefaultDocAction, saveModuleDocAction, type ActionState } from "@/app/admin/actions";
+import { saveContentDocAction, type ActionState } from "@/app/admin/actions";
 import { Feedback } from "@/app/admin/ui";
 import { usePublishDirty, useLeaveGuard } from "@/components/admin/ContentNav";
 
-/** One thing "Reset" can put back, and which of the two it is. */
-export interface ResetTarget {
-  kind: "template" | "shared";
-  doc: unknown;
-}
-
 export interface ModuleFormProps {
-  /** the board being edited, or the agency-wide shared content */
-  scope: EditScope;
   /** a string, never the definition: definitions carry functions and RegExps */
   moduleKey: string;
-  /** what is stored, or what this scope is currently showing */
+  /** what is stored, or the built-in content when nothing is */
   initialDoc: unknown;
-  /** what "start again" can mean here, most specific first; never empty */
-  resets: ResetTarget[];
+  /** what "Reset to template" puts back: the content built into the code */
+  resetDoc: unknown;
   /** true when the stored doc no longer fits its definition */
   invalid?: boolean;
-  /** board scope: this module has no doc of its own and is showing the shared one */
-  showingShared?: boolean;
   /** false when there is nowhere to save to at all */
   canSave: boolean;
   /** a standing caveat about saving here, shown before anything is typed */
@@ -83,29 +60,16 @@ const LOCK = (
   </svg>
 );
 
-const RESET_LABEL: Record<ResetTarget["kind"], string> = {
-  template: "Reset to template…",
-  shared: "Reset to shared default…",
-};
-
-const RESET_ASK: Record<ResetTarget["kind"], string> = {
-  template: "Replace everything with the content built into the code?",
-  shared: "Replace everything with the agency's shared content?",
-};
-
 export function ModuleForm({
-  scope,
   moduleKey,
   initialDoc,
-  resets,
+  resetDoc,
   invalid = false,
-  showingShared = false,
   canSave,
   warning,
 }: ModuleFormProps) {
   const def = byKey(moduleKey);
-  const saveAction = scope.kind === "board" ? saveModuleDocAction : saveDefaultDocAction;
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveAction, {});
+  const [state, action, pending] = useActionState<ActionState, FormData>(saveContentDocAction, {});
   const { doc, dirty, set, reset } = useDocState(initialDoc);
   const guard = useLeaveGuard();
   usePublishDirty(dirty);
@@ -114,8 +78,8 @@ export function ModuleForm({
      database confirmed */
   const [saved, setSaved] = useState<{ at?: number; doc: unknown }>({ doc: initialDoc });
   const [showErrors, setShowErrors] = useState(invalid);
-  /* which reset is asking for confirmation, if any */
-  const [arming, setArming] = useState<ResetTarget["kind"] | null>(null);
+  /* true while the reset is waiting to be confirmed */
+  const [arming, setArming] = useState(false);
   /* The JSON panel's own text, and the document it was typed against. Keeping
      the base is what lets the panel be live-bound without fighting the form:
      while they agree the textarea keeps its exact characters (so the caret
@@ -161,8 +125,6 @@ export function ModuleForm({
 
   const replace = useCallback((next: unknown) => set([], next), [set]);
 
-  const armed = resets.find((r) => r.kind === arming) ?? null;
-
   const showingDraft = draft !== null && draft.base === docJson;
   const jsonText = showingDraft ? draft.text : pretty;
 
@@ -197,7 +159,6 @@ export function ModuleForm({
   return (
     <FieldAnchors>
       <form action={action} onSubmit={onSubmit} className="flex min-w-0 flex-col gap-5">
-        {scope.kind === "board" && <input type="hidden" name="slug" value={scope.slug} />}
         <input type="hidden" name="moduleKey" value={moduleKey} />
         <input type="hidden" name="doc" value={docJson} />
 
@@ -206,19 +167,9 @@ export function ModuleForm({
             <div className="min-w-0">
               <h1 className="text-2xl font-bold tracking-tight">{def?.label ?? moduleKey}</h1>
               <p className={hint}>
-                <span className="font-mono">{moduleKey}</span> · {scopeSubtitle(scope)}
+                <span className="font-mono">{moduleKey}</span> · shown on every board
               </p>
             </div>
-            {scope.kind === "board" && (
-              <a
-                href={`https://${scope.host}${def?.boardPath ?? "/"}`}
-                target="_blank"
-                rel="noreferrer"
-                className={quietBtn}
-              >
-                Open board ↗
-              </a>
-            )}
           </div>
 
           {def ? (
@@ -248,34 +199,16 @@ export function ModuleForm({
 
           {def?.intro && <p className="text-sm text-graphite">{def.intro}</p>}
 
-          {scope.kind === "defaults" && (
-            <p className="rounded-xl bg-green/10 px-4 py-3 text-sm text-ink">
-              This is the agency&apos;s shared copy of this module. Every board that has no content of its
-              own for it shows what you save here — including boards created later. A board that has its own
-              content is not touched.
-            </p>
-          )}
-
-          {scope.kind === "board" && showingShared && (
-            <p className="rounded-xl bg-green/10 px-4 py-3 text-sm text-ink">
-              This board has no content of its own here — it is showing the agency&apos;s{" "}
-              <Link
-                href={moduleHref({ kind: "defaults" }, moduleKey)}
-                onClick={guard}
-                className="font-semibold underline underline-offset-2 hover:text-orange"
-              >
-                shared content
-              </Link>
-              , loaded below. Saving gives this board its own copy and it stops following the shared one;
-              the shared content itself is untouched.
-            </p>
-          )}
+          <p className="rounded-xl bg-green/10 px-4 py-3 text-sm text-ink">
+            This is the one copy of this module: what you save here is what every board shows, including
+            boards created later.
+          </p>
 
           {invalid && (
             <p className="rounded-xl bg-yellow/15 px-4 py-3 text-sm text-ink">
-              What is saved for this module no longer matches its fields, so the board is showing other
-              content instead. The saved document is loaded below — fix what is flagged and save to put it
-              back in use.
+              What is saved for this module no longer matches its fields, so the boards are showing the
+              content built into the code instead. The saved document is loaded below — fix what is flagged
+              and save to put it back in use.
             </p>
           )}
 
@@ -350,42 +283,32 @@ export function ModuleForm({
             Discard changes
           </button>
 
-          {armed ? (
+          {arming ? (
             <span className="flex items-center gap-2">
-              <span className={hint}>{RESET_ASK[armed.kind]}</span>
+              <span className={hint}>Replace everything with the content built into the code?</span>
               <button
                 type="button"
                 onClick={() => {
-                  replace(structuredClone(armed.doc));
+                  replace(structuredClone(resetDoc));
                   setDraft(null);
-                  setArming(null);
+                  setArming(false);
                 }}
                 className="rounded-full bg-red px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/60"
               >
                 Yes, reset
               </button>
-              <button type="button" onClick={() => setArming(null)} className={quietBtn}>
+              <button type="button" onClick={() => setArming(false)} className={quietBtn}>
                 Keep mine
               </button>
             </span>
           ) : (
-            /* both, when both exist: a board with its own content and a shared
-               copy behind it can go back to either, and neither is the obvious
-               meaning of a single unlabelled "start again" */
-            resets.map((target) => (
-              <button
-                key={target.kind}
-                type="button"
-                onClick={() => setArming(target.kind)}
-                className={quietBtn}
-              >
-                {RESET_LABEL[target.kind]}
-              </button>
-            ))
+            <button type="button" onClick={() => setArming(true)} className={quietBtn}>
+              Reset to template…
+            </button>
           )}
 
-          <Link href={directoryHref(scope)} onClick={guard} className={quietBtn}>
-            {directoryLabel(scope)}
+          <Link href={CONTENT_HREF} onClick={guard} className={quietBtn}>
+            All content
           </Link>
 
           <span className="ml-auto flex items-center gap-3">

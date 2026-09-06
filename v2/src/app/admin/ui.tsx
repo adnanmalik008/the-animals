@@ -37,8 +37,8 @@ export function Feedback({ state }: { state: ActionState }) {
   return null;
 }
 
-/* Step eyebrow — the three sections of a board page are a real sequence:
-   identity, then content, then who gets in. */
+/* Step eyebrow — the two sections of a board page are a real sequence:
+   identity, then who gets in. Content is not per board and lives elsewhere. */
 export function StepEyebrow({ n, children }: { n: string; children: React.ReactNode }) {
   return (
     <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-graphite">
@@ -315,7 +315,7 @@ export function UsersManager({
   return (
     <div className={`${card} flex flex-col gap-4`}>
       <div>
-        <StepEyebrow n="03">Access</StepEyebrow>
+        <StepEyebrow n="02">Access</StepEyebrow>
         <h2 className="mt-1 text-lg font-bold">Client logins</h2>
         <p className="mt-0.5 text-sm text-graphite">
           Each login opens <span className="font-mono text-ink">{host}</span> only.

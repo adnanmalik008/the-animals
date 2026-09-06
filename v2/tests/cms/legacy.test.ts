@@ -19,7 +19,7 @@ const LEGACY_DOCS: Record<string, unknown> = {
   "wild-cams": wildCamsLegacy,
 };
 
-describe("legacy module_data shapes", () => {
+describe("legacy saved shapes", () => {
   it.each(Object.entries(LEGACY_DOCS))("%s: the saved shape still parses", (key, raw) => {
     const def = byKey(key);
     expect(def, `no registry definition for ${key}`).toBeDefined();

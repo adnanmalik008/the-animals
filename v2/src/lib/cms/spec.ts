@@ -199,7 +199,7 @@ export type Infer<S> = S extends { kind: "select"; options: readonly { value: in
 export type ModuleTab = "header" | "live" | "competition" | "wild" | "anomalies";
 
 export interface ModuleDefinition<K extends string = string, F extends Fields = Fields> {
-  /** module_data.module_key */
+  /** module_content.module_key */
   key: K;
   tab: ModuleTab;
   /** Live tab only */

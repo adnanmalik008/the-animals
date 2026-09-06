@@ -1,19 +1,13 @@
-/* The admin surface's two pieces of plain logic: what a scope can hold, and
-   where a link to it points. Both are shared by a server component (the
-   directory) and a client one (the rail), and both decide something a
+/* The admin surface's two pieces of plain logic: what the content screens
+   list, and where a link to one points. Both are shared by a server component
+   (the directory) and a client one (the rail), and both decide something a
    renderer cannot be asked about in this repo — there is no DOM here. */
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { legacyKeys, moduleGroups } from "@/components/admin/module-groups";
-import { directoryHref, directoryLabel, moduleHref, scopeSubtitle } from "@/components/admin/scope";
-import type { EditScope } from "@/components/admin/scope";
+import { CONTENT_HREF, legacyKeys, moduleGroups, moduleHref } from "@/components/admin/module-groups";
 import { MODULES } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
-import { getDefaultRowInfos, getSharedDoc } from "@/lib/server/docs";
-
-const board: EditScope = { kind: "board", slug: "acme", host: "acme.theanimals.live" };
-const defaults: EditScope = { kind: "defaults" };
 
 /** The keys that still save raw JSON, derived here from the two sources of
     truth rather than from the helper these tests are checking. */
@@ -33,19 +27,23 @@ describe("moduleGroups", () => {
       "In the Wild",
       "Anomalies",
     ];
-    const titles = moduleGroups({ includeLegacy: false }).map((g) => g.title);
+    const titles = moduleGroups()
+      .map((g) => g.title)
+      .filter((t) => t !== "Still JSON");
     expect(titles.every((t) => ORDER.includes(t))).toBe(true);
     expect(titles).toEqual(ORDER.filter((t) => titles.includes(t)));
     expect(titles.length).toBeGreaterThan(0);
   });
 
   it("lists every registry module exactly once", () => {
-    const keys = moduleGroups({ includeLegacy: false }).flatMap((g) => g.entries.map((e) => e.key));
+    const keys = moduleGroups()
+      .filter((g) => g.title !== "Still JSON")
+      .flatMap((g) => g.entries.map((e) => e.key));
     expect(keys.slice().sort()).toEqual(MODULES.map((m) => m.key).sort());
   });
 
   it("carries each module's locked heading, so the directory can show it", () => {
-    const entries = moduleGroups({ includeLegacy: false }).flatMap((g) => g.entries);
+    const entries = moduleGroups().flatMap((g) => g.entries);
     for (const def of MODULES) {
       const entry = entries.find((e) => e.key === def.key);
       expect(entry?.label).toBe(def.label);
@@ -60,11 +58,10 @@ describe("moduleGroups", () => {
      which `moduleGroups` calls itself: measuring a function with its own
      output moves whenever it does. The count is pinned, so a template that
      silently stopped being listed fails instead of passing quietly. */
-  it("adds the JSON-only keys last, and only for a board", () => {
+  it("adds the JSON-only keys last", () => {
     const groups = moduleGroups();
     expect(groups.at(-1)?.title).toBe("Still JSON");
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
-    expect(moduleGroups({ includeLegacy: false }).some((g) => g.title === "Still JSON")).toBe(false);
   });
 
   it("counts as JSON-only exactly the eighteen templates with no definition", () => {
@@ -78,36 +75,20 @@ describe("moduleGroups", () => {
   });
 });
 
-describe("scope links", () => {
-  it("points a board's rows at that board and the shared rows at the defaults", () => {
-    expect(moduleHref(board, "newswire")).toBe("/admin/acme/modules/newswire");
-    expect(moduleHref(defaults, "newswire")).toBe("/admin/defaults/newswire");
-    expect(directoryHref(board)).toBe("/admin/acme");
-    expect(directoryHref(defaults)).toBe("/admin/defaults");
+/* Content is edited in one place, so every module link lands under the one
+   static route. A board page carries publishing and access and no content at
+   all — nothing links a module to a slug. */
+describe("content links", () => {
+  it("points every module at the content screens", () => {
+    expect(CONTENT_HREF).toBe("/admin/content");
+    expect(moduleHref("newswire")).toBe("/admin/content/newswire");
+    expect(moduleHref("reddit")).toBe("/admin/content/reddit");
   });
 
-  it("names what is being edited, so a form page cannot be mistaken for the other one", () => {
-    expect(directoryLabel(board)).toBe("All modules");
-    expect(directoryLabel(defaults)).toBe("All shared content");
-    expect(scopeSubtitle(board)).toBe("acme");
-    expect(scopeSubtitle(defaults)).toMatch(/every board/);
-  });
-});
-
-describe("shared defaults, with no Supabase configured", () => {
-  /* This exercises the *unconfigured* early return, not the missing-table
-     branch — with no env vars `supabaseAdmin()` is null and no query is made.
-     The missing-table path, which is what the production database is in until
-     0002_cms.sql runs, is covered by `defaultsRead` in server-docs.test.ts.
-     Both must land on the same answer: "no shared content, and none to be
-     had", which is not a failed read. */
-  it("reads as an empty, unavailable table rather than an error", async () => {
-    await expect(getDefaultRowInfos()).resolves.toEqual({ ok: true, rows: [], available: false });
-  });
-
-  it("offers no shared document to reset a board onto", async () => {
-    await expect(getSharedDoc("newswire")).resolves.toBeUndefined();
-    await expect(getSharedDoc("reddit")).resolves.toBeUndefined();
+  it("gives every listed module a link, JSON-only keys included", () => {
+    for (const entry of moduleGroups().flatMap((g) => g.entries)) {
+      expect(moduleHref(entry.key)).toBe(`${CONTENT_HREF}/${entry.key}`);
+    }
   });
 });
 

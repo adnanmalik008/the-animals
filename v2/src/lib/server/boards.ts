@@ -109,31 +109,21 @@ export function boardToMeta(board: BoardRecord): BoardMeta {
 
 /* ---------------- module content ---------------- */
 
-/* `getModuleData` lived here: one query that answered `{}` both for a board
-   with nothing saved and for a query that failed. Its last caller was the
-   admin's JSON editor, which this milestone replaced, so it is gone rather
-   than repaired — `getModuleRows` in ./docs.ts reads the same table and says
-   which of the two happened, and nothing should be able to reach for the
-   version that cannot. */
+/* `getModuleData` and `setModuleData` lived here: per-board content, in
+   `module_data`. Content is one set for the whole product now — a board is an
+   access gate with a name of its own, not a content scope — so both are gone
+   and `module_data` is left empty and unread. `./docs.ts` is the only reader,
+   and it reads `module_content`. */
 
-export async function setModuleData(boardId: string, moduleKey: string, data: unknown) {
+/** The one copy of one module, read by every board. Throws on a missing table
+    exactly as it throws on any other write error: a read may shrug the
+    unapplied migration off and serve fixtures, but a save that quietly went
+    nowhere would be a lie. */
+export async function setModuleContent(moduleKey: string, data: unknown) {
   const db = supabaseAdmin();
   if (!db) throw new Error("CMS is not configured (missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
   const { error } = await db
-    .from("module_data")
-    .upsert({ board_id: boardId, module_key: moduleKey, data }, { onConflict: "board_id,module_key" });
-  if (error) throw new Error(error.message);
-}
-
-/** The agency-wide copy of one module, shared by every board that has none of
-    its own. Throws on a missing table exactly as it throws on any other write
-    error: a read may shrug the unapplied migration off and serve fixtures, but
-    a save that quietly went nowhere would be a lie. */
-export async function setDefaultData(moduleKey: string, data: unknown) {
-  const db = supabaseAdmin();
-  if (!db) throw new Error("CMS is not configured (missing SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY).");
-  const { error } = await db
-    .from("module_defaults")
+    .from("module_content")
     .upsert({ module_key: moduleKey, data }, { onConflict: "module_key" });
   if (error) throw new Error(error.message);
 }

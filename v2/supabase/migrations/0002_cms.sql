@@ -8,32 +8,33 @@
 -- anon/authenticated Data API roles can reach nothing.
 --
 -- Everything the app does works *before* this runs. Until it does,
--- `module_defaults` is absent and PostgREST answers PGRST205, which
--- the read layer treats as "no shared defaults yet" and serves the
+-- `module_content` is absent and PostgREST answers PGRST205, which
+-- the read layer treats as "nothing saved yet" and serves the
 -- built-in fixtures; the team-login queries fail closed.
 --
 -- Run in the Supabase SQL editor (or `supabase db push`).
 -- ============================================================
 
--- ---------- (a) module_defaults: agency-wide content ----------
--- The read chain is: a board's own module_data row, then this,
--- then the fixture compiled into the app. Content that is the same
--- for every client (the In the Wild cams, the starting Anomalies
--- circles) is edited here once instead of once per board.
-create table public.module_defaults (
+-- ---------- (a) module_content: the content ----------
+-- One set of content for the whole product: every board renders
+-- these documents. The read chain is this table, then the fixture
+-- compiled into the app. A board is an access gate with a name,
+-- brief and logins of its own, not a content scope — the older
+-- per-board module_data is left in place, empty and unread.
+create table public.module_content (
   module_key text primary key check (char_length(module_key) between 1 and 60),
   data jsonb not null default '{}'::jsonb,
   updated_at timestamptz not null default now()
 );
 
-comment on table public.module_defaults is
-  'Agency-wide default content: a board with no document of its own reads these before falling back to the built-in fixtures.';
+comment on table public.module_content is
+  'The one set of module content: every board reads these documents, falling back to the built-in fixtures for any module with no row.';
 
-create trigger module_defaults_touch_updated_at
-  before update on public.module_defaults
+create trigger module_content_touch_updated_at
+  before update on public.module_content
   for each row execute function public.touch_updated_at();
 
-alter table public.module_defaults enable row level security;
+alter table public.module_content enable row level security;
 
 -- ---------- (b) board-media: uploaded images ----------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)

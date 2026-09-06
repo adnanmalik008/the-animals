@@ -1,4 +1,5 @@
-/* Every module a scope can hold, grouped the way the agency reads a board.
+/* Every module the agency can edit, grouped the way it reads a board, and
+   where each one is edited.
 
    Plain data with no server or client marking: the directory (a server
    component) and the form page's rail (a client one) show the same list, so
@@ -6,6 +7,14 @@
 
 import { byKey, byTab } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
+
+/** The content screens. One set of content for the whole product, so one
+    place — a board page carries publishing and access, and no content. */
+export const CONTENT_HREF = "/admin/content";
+
+export function moduleHref(moduleKey: string): string {
+  return `${CONTENT_HREF}/${moduleKey}`;
+}
 
 export interface ModuleEntry {
   key: string;
@@ -26,16 +35,14 @@ const entriesFor = (defs: ReturnType<typeof byTab>): ModuleEntry[] =>
   defs.map((d) => ({ key: d.key, label: d.label, heading: headingOf(d.heading) }));
 
 /** Keys that still save raw JSON: a template but no definition, so there is
-    nothing to generate a form from yet. They belong to a board only — a
-    shared default has to validate before every board reads it, so an
-    unvalidatable key can never have one. */
+    nothing to generate a form from yet. */
 export function legacyKeys(): string[] {
   return Object.keys(MODULE_TEMPLATES).filter((key) => !byKey(key));
 }
 
-/** The board's own tabs, in the order the agency reads them.
-    `includeLegacy` adds the JSON-only keys, which is a board scope only. */
-export function moduleGroups({ includeLegacy = true } = {}): ModuleGroup[] {
+/** The board's tabs, in the order the agency reads them, with the JSON-only
+    keys last. */
+export function moduleGroups(): ModuleGroup[] {
   const live = byTab("live");
   /* a live module with no column is data, not nothing — the fallback keeps
      a future registry entry from disappearing out of the directory */
@@ -48,10 +55,8 @@ export function moduleGroups({ includeLegacy = true } = {}): ModuleGroup[] {
     { title: "Anomalies", entries: entriesFor(byTab("anomalies")) },
   ].filter((g) => g.entries.length > 0);
 
-  if (includeLegacy) {
-    const legacy = legacyKeys().map((key) => ({ key, label: key }));
-    if (legacy.length > 0) out.push({ title: "Still JSON", entries: legacy });
-  }
+  const legacy = legacyKeys().map((key) => ({ key, label: key }));
+  if (legacy.length > 0) out.push({ title: "Still JSON", entries: legacy });
 
   return out;
 }

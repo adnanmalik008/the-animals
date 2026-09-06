@@ -10,8 +10,8 @@ import {
   removeBoardUser,
   updateBoard,
 } from "@/lib/server/boards";
-import { saveDefaultDoc, saveModuleDoc } from "@/lib/server/docs";
-import { revalidateBoard, revalidateSharedDefault } from "@/lib/server/revalidate";
+import { saveContentDoc } from "@/lib/server/docs";
+import { revalidateBoard, revalidateContent } from "@/lib/server/revalidate";
 import { requireAdmin } from "@/lib/server/guard";
 
 export interface ActionState {
@@ -35,10 +35,10 @@ export async function createBoardAction(_prev: ActionState, formData: FormData):
   if (!/^[a-z0-9](?:[a-z0-9-]{0,46}[a-z0-9])?$/.test(slug)) {
     return { error: "Slug must be lowercase letters, numbers and dashes (this becomes the subdomain)." };
   }
-  /* /admin/defaults is the shared-content screen, and a static segment beats a
+  /* /admin/content is the content screen, and a static segment beats a
      dynamic one — a board on this slug would publish fine and then be
      unreachable in the admin */
-  if (slug === "defaults") return { error: '"defaults" is reserved by the admin — pick another slug.' };
+  if (slug === "content") return { error: '"content" is reserved by the admin — pick another slug.' };
   if (!clientName) return { error: "Client name is required." };
   try {
     await createBoard({ slug, clientName });
@@ -79,69 +79,35 @@ export async function deleteBoardAction(formData: FormData) {
   redirect("/admin");
 }
 
-/* The two module-form actions. Both scopes submit the same form — a module
-   key and the document as JSON — and both answer with the same
-   `{ ok, savedAt, doc, fieldErrors }`, because the form that reads the answer
-   is one component. Only the table underneath and what has to be dropped from
-   the cache afterwards differ. */
+/** The one content save. The form posts a module key and the document as
+    JSON; the answer is `{ ok, savedAt, doc, fieldErrors }`, which is what the
+    form reads back.
 
-interface DocSubmission {
-  moduleKey: string;
-  doc: unknown;
-}
-
-/** The half of a save that is identical either side: a module key, and JSON
-    that has to parse before anything else is worth doing. */
-function readSubmission(formData: FormData): DocSubmission | ActionState {
+    `setModuleContent` throws when the table is not there — until
+    `0002_cms.sql` is applied that is every save — and `fail` turns it into
+    the form's ordinary error line. Reads shrug the missing table off and
+    serve fixtures; a write must not, because a save that quietly went
+    nowhere is worse than one that visibly failed. */
+export async function saveContentDocAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
+  await requireAdmin();
   const moduleKey = String(formData.get("moduleKey") ?? "").trim();
   if (!moduleKey) return { error: "Module key is required." };
+
+  let doc: unknown;
   try {
-    return { moduleKey, doc: JSON.parse(String(formData.get("doc") ?? "")) };
+    doc = JSON.parse(String(formData.get("doc") ?? ""));
   } catch {
     return { error: "Invalid JSON — fix the syntax and save again." };
   }
-}
-
-const isSubmission = (v: DocSubmission | ActionState): v is DocSubmission => "moduleKey" in v;
-
-export async function saveModuleDocAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireAdmin();
-  const sub = readSubmission(formData);
-  if (!isSubmission(sub)) return sub;
-
-  const slug = String(formData.get("slug") ?? "");
-  const board = await getBoardBySlug(slug);
-  if (!board || board.id === "fixture") return { error: "Board not found (is the CMS configured?)." };
 
   let result;
   try {
-    result = await saveModuleDoc(board.id, sub.moduleKey, sub.doc);
+    result = await saveContentDoc(moduleKey, doc);
   } catch (e) {
     return fail(e);
   }
   if (!result.ok) return { error: result.error, fieldErrors: result.fieldErrors };
-  revalidateBoard(slug, sub.moduleKey);
-  return { ok: true, savedAt: Date.now(), doc: result.doc };
-}
-
-/** The agency-wide copy of one module. `setDefaultData` throws when the table
-    is not there — until `0002_cms.sql` is applied that is every save — and
-    `fail` turns it into the form's ordinary error line. Reads shrug the
-    missing table off and serve fixtures; a write must not, because a save
-    that quietly went nowhere is worse than one that visibly failed. */
-export async function saveDefaultDocAction(_prev: ActionState, formData: FormData): Promise<ActionState> {
-  await requireAdmin();
-  const sub = readSubmission(formData);
-  if (!isSubmission(sub)) return sub;
-
-  let result;
-  try {
-    result = await saveDefaultDoc(sub.moduleKey, sub.doc);
-  } catch (e) {
-    return fail(e);
-  }
-  if (!result.ok) return { error: result.error, fieldErrors: result.fieldErrors };
-  revalidateSharedDefault(sub.moduleKey);
+  revalidateContent(moduleKey);
   return { ok: true, savedAt: Date.now(), doc: result.doc };
 }
 

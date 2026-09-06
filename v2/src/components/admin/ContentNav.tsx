@@ -26,8 +26,7 @@ import {
   type ReactNode,
 } from "react";
 import { quietBtn } from "@/components/admin/form/tokens";
-import type { ModuleGroup } from "@/components/admin/module-groups";
-import { directoryHref, directoryLabel, moduleHref, type EditScope } from "@/components/admin/scope";
+import { CONTENT_HREF, moduleHref, type ModuleGroup } from "@/components/admin/module-groups";
 
 interface DirtyApi {
   dirty: boolean;
@@ -81,22 +80,14 @@ export function useLeaveGuard() {
   );
 }
 
-export function ContentNav({
-  scope,
-  currentKey,
-  groups,
-}: {
-  scope: EditScope;
-  currentKey: string;
-  groups: ModuleGroup[];
-}) {
+export function ContentNav({ currentKey, groups }: { currentKey: string; groups: ModuleGroup[] }) {
   const dirty = useContext(DirtyContext)?.dirty ?? false;
   const guard = useLeaveGuard();
 
   return (
     <nav aria-label="Modules" className="w-full shrink-0 lg:sticky lg:top-6 lg:w-56">
-      <Link href={directoryHref(scope)} onClick={guard} className={`${quietBtn} inline-block`}>
-        ← {directoryLabel(scope)}
+      <Link href={CONTENT_HREF} onClick={guard} className={`${quietBtn} inline-block`}>
+        ← All content
       </Link>
 
       <div className="mt-4 flex flex-col gap-4">
@@ -111,7 +102,7 @@ export function ContentNav({
                 return (
                   <li key={entry.key}>
                     <Link
-                      href={moduleHref(scope, entry.key)}
+                      href={moduleHref(entry.key)}
                       onClick={guard}
                       aria-current={current ? "page" : undefined}
                       className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 ${
