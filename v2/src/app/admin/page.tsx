@@ -1,23 +1,61 @@
 import Link from "next/link";
-import { listBoards } from "@/lib/server/boards";
+import { listAdminUsers, listBoards } from "@/lib/server/boards";
 import { boardHost } from "@/lib/board-url";
+import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { NewBoardForm, PublishChip } from "./ui";
+import { TeamLogins } from "./TeamLogins";
+import { requireAdmin } from "@/lib/server/guard";
+
+/* Content first, boards second — which is the order the work happens in.
+   There is one set of content for the whole product; a board is a name, an
+   address and a set of logins onto it. */
 
 export default async function AdminHome() {
+  /* Guarded here as well as in the layout: an RSC request renders one
+     without the other, and this page is what carries client data. */
+  await requireAdmin();
+
   const boards = await listBoards();
+  /* Empty until 0002_cms.sql makes board_id nullable. A failed read is still a
+     list, so the boards above keep rendering — but it carries `ok: false`,
+     because "we could not read the list" must not reach an admin as "nobody
+     holds agency admin". */
+  const teamLogins = await listAdminUsers();
   const root = process.env.BOARD_ROOT_DOMAIN;
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">
+        <h1 className="text-2xl font-bold tracking-tight">Board CMS</h1>
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
+          Edit the content once; publish it to as many clients as you like.
+        </p>
+      </div>
+
+      <Link
+        href={CONTENT_HREF}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-card p-5 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+      >
+        <span className="min-w-0">
+          <span className="block text-lg font-bold">Content</span>
+          <span className="mt-0.5 block max-w-2xl text-sm text-graphite">
+            Every box on the board — the newswire, the livestreams, the topic circles. One set, edited
+            once, shown on every board including the ones created next week.
+          </span>
+        </span>
+        <span className="shrink-0 text-xs font-medium text-ink">Open →</span>
+      </Link>
+
+      <div>
+        <h2 className="text-lg font-bold">
           Boards
           <span className="ml-2 align-middle text-sm font-medium text-graphite">
             {boards.length} live
           </span>
-        </h1>
-        <p className="mt-1 text-sm text-graphite">
-          One board per client. Creating a board publishes it at its own address immediately.
+        </h2>
+        <p className="mt-1 max-w-2xl text-sm text-graphite">
+          Publishing and access: each board is a name, its own address and its own logins. Creating one
+          publishes it immediately.
         </p>
       </div>
 
@@ -57,6 +95,8 @@ export default async function AdminHome() {
       </ul>
 
       <NewBoardForm rootDomain={root} />
+
+      <TeamLogins users={teamLogins.users} readOk={teamLogins.ok} />
     </div>
   );
 }

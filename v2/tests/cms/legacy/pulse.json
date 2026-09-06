@@ -1,0 +1,45 @@
+{
+  "spikes": 2,
+  "rows": [
+    {
+      "id": "wp-1",
+      "entity": "adidas (company)",
+      "meta": "12 editors · 8m ago",
+      "count": 47,
+      "window": "24H",
+      "pct": 100,
+      "baseline": "Baseline 4/day · 11.8× normal",
+      "spike": true
+    },
+    {
+      "id": "wp-2",
+      "entity": "Category: Super shoes",
+      "meta": "9 editors · 22m ago",
+      "count": 28,
+      "window": "24H",
+      "pct": 60,
+      "baseline": "Baseline 6/day · 4.7× normal",
+      "spike": true
+    },
+    {
+      "id": "wp-3",
+      "entity": "Rival Co.",
+      "meta": "5 editors · 1h ago",
+      "count": 12,
+      "window": "24H",
+      "pct": 26,
+      "baseline": "Baseline 3/day · 4.0× normal",
+      "spike": true
+    },
+    {
+      "id": "wp-4",
+      "entity": "Industry term (carbon plate)",
+      "meta": "3 editors · 3h ago",
+      "count": 6,
+      "window": "24H",
+      "pct": 13,
+      "baseline": "Baseline 2/day · 3.0× normal",
+      "spike": true
+    }
+  ]
+}

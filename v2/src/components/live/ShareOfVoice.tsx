@@ -1,6 +1,6 @@
 "use client";
 
-import { shareOfVoice } from "@/data/board";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
@@ -15,17 +15,18 @@ const barColor: Record<string, string> = {
 /* Every brand is its own drop target, so the section carries as many
    stickers as it has rows. */
 export function ShareOfVoice() {
+  const { subtitle, window: windowLabel, rows } = useModuleDoc("share-of-voice");
   const { ref, inView } = useInView<HTMLDivElement>();
 
   return (
     <div ref={ref} className="pt-4">
       <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-sm text-graphite">AI + Web conversation</p>
-        <span className="rounded-full border border-line px-3 py-1 text-xs text-graphite">7 days</span>
+        <p className="text-sm text-graphite">{subtitle}</p>
+        <span className="rounded-full border border-line px-3 py-1 text-xs text-graphite">{windowLabel}</span>
       </div>
 
       <ul className="flex flex-col gap-5">
-        {shareOfVoice.map((row) => (
+        {rows.map((row) => (
           <li key={row.id}>
             <StickerDropZone
               tagKey={`sov:${row.id}`}

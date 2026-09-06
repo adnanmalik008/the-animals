@@ -1,7 +1,8 @@
 "use client";
 
 import { Module } from "@/components/modules/ModuleColumn";
-import { podcastItems, type PodcastCover, type PodcastItem } from "@/data/live-extra";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { StickerDropZone } from "./stickers";
 
 /* ============================================================
@@ -12,11 +13,10 @@ import { StickerDropZone } from "./stickers";
    design lays them out, each note centred against its cover.
    ============================================================ */
 
-const covers: Record<PodcastCover, string> = {
-  pivot: "/assets/podcasts/pivot.jpg",
-  startup: "/assets/podcasts/startup.jpg",
-  oddlots: "/assets/podcasts/odd-lots.jpg",
-};
+/** One episode, as the CMS stores it. The cover used to be one of three
+    keys into a map of built-in art; it is a picture of its own now, so a
+    client's own shows are possible. */
+type PodcastItem = ModuleDocs["airwaves"]["items"][number];
 
 /* ---------------- annotations ---------------- */
 
@@ -65,7 +65,6 @@ function Annotation({ item }: { item: PodcastItem }) {
 /* ---------------- rows ---------------- */
 
 function PodcastRow({ item }: { item: PodcastItem }) {
-  const cover = covers[item.cover];
   return (
     <StickerDropZone
       className="rounded-lg"
@@ -84,7 +83,7 @@ function PodcastRow({ item }: { item: PodcastItem }) {
         <div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={cover}
+            src={item.cover}
             alt={`${item.show} cover art`}
             loading="lazy"
             className="aspect-square w-full object-cover shadow-sm"
@@ -102,10 +101,12 @@ function PodcastRow({ item }: { item: PodcastItem }) {
 }
 
 export function OnTheAirwaves({ id }: { id: string }) {
+  const { items } = useModuleDoc("airwaves");
+
   return (
     <Module id={id} eyebrow="Dispatch" title="On the Airwaves" variant="editorial">
       <div className="flex flex-col gap-10 pt-4">
-        {podcastItems.map((item) => (
+        {items.map((item) => (
           <PodcastRow key={item.id} item={item} />
         ))}
       </div>

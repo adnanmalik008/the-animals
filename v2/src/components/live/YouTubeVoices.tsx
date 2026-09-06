@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { creatorVideos, type CreatorVideo } from "@/data/live-extra";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { CarouselArrow } from "./SocialPulse";
 import { StickerDropZone } from "./stickers";
 
@@ -12,6 +13,9 @@ import { StickerDropZone } from "./stickers";
    and the channel wordmark are baked into each image, so nothing
    is drawn over them.
    ============================================================ */
+
+/** One video, as the CMS stores it. */
+type CreatorVideo = ModuleDocs["youtube-voices"]["videos"][number];
 
 /* The thumbnail art, shared by the card and the fullscreen stage. */
 function Thumbnail({ video, large = false }: { video: CreatorVideo; large?: boolean }) {
@@ -129,11 +133,12 @@ function VideoCard({ video, onOpen }: { video: CreatorVideo; onOpen: (v: Creator
 }
 
 export function YouTubeVoices({ id }: { id: string }) {
+  const { videos } = useModuleDoc("youtube-voices");
   const [index, setIndex] = useState(0);
   const [perView, setPerView] = useState(2);
   const [playing, setPlaying] = useState<CreatorVideo | null>(null);
 
-  const maxIndex = Math.max(0, creatorVideos.length - perView);
+  const maxIndex = Math.max(0, videos.length - perView);
   /* clamp at render time so a viewport change can never strand the track */
   const current = Math.min(index, maxIndex);
 
@@ -156,7 +161,7 @@ export function YouTubeVoices({ id }: { id: string }) {
             className="flex transition-transform duration-500 ease-out motion-reduce:transition-none"
             style={{ transform: `translateX(-${current * (100 / perView)}%)` }}
           >
-            {creatorVideos.map((video) => (
+            {videos.map((video) => (
               <div key={video.id} className="w-full shrink-0 px-1.5 md:w-1/2">
                 <VideoCard video={video} onOpen={setPlaying} />
               </div>

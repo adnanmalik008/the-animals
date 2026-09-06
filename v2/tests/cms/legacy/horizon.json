@@ -1,0 +1,105 @@
+{
+  "columns": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "thesis": "Doubling down on circularity as a product moat, not just a values line.",
+      "events": [
+        {
+          "kind": "Investment",
+          "date": "May 2026",
+          "status": "warm",
+          "headline": "$18M into Tin Shed Ventures Fund IV",
+          "detail": "Portfolio skewing to bio-based dyes and mycelium leather startups.",
+          "source": "Tin Shed Ventures release",
+          "implies": "Worn Wear scaling to in-country repair — service as product."
+        },
+        {
+          "kind": "R&D",
+          "date": "May 2026",
+          "status": "watch",
+          "headline": "Filed: solvent-free DWR coating process",
+          "detail": "USPTO application 2026/0421 — replaces C6 chemistry entirely.",
+          "source": "USPTO",
+          "implies": "PFAS-free rain shells become a real spec claim, not marketing."
+        },
+        {
+          "kind": "Hiring",
+          "date": "May 2026",
+          "status": "hot",
+          "headline": "3 senior roles in Repair Network Ops",
+          "detail": "New hub roles in Reno, Amsterdam, Osaka.",
+          "source": "LinkedIn",
+          "implies": "Worn Wear moving from campaign to P&L line."
+        }
+      ]
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "thesis": "Buying its way into the community layer it never earned organically.",
+      "events": [
+        {
+          "kind": "Investment",
+          "date": "May 2026",
+          "status": "warm",
+          "headline": "Acquired trail-run app Kōan (undisclosed)",
+          "detail": "Small Vancouver team, ~40k MAU, GPS + route sharing.",
+          "source": "The Globe and Mail",
+          "implies": "First-party athlete data feed — expect a connected shoe within a year."
+        },
+        {
+          "kind": "R&D",
+          "date": "May 2026",
+          "status": "watch",
+          "headline": "Whistler advanced materials lab expansion",
+          "detail": "Doubling headcount on 3D-knit and seamless construction.",
+          "source": "Amer Sports Q1 call"
+        },
+        {
+          "kind": "Hiring",
+          "date": "Jun 2026",
+          "status": "hot",
+          "headline": "12 firmware engineers — Vancouver HQ",
+          "detail": "Embedded systems, BLE, sensor fusion. None existed a quarter ago.",
+          "source": "Careers page diff",
+          "implies": "Hardware is no longer a rumour."
+        }
+      ]
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "thesis": "Betting on urban-adjacent culture and heat, not the mountain.",
+      "events": [
+        {
+          "kind": "Investment",
+          "date": "May 2026",
+          "status": "warm",
+          "headline": "Minority stake in Kelvin Thermal Technologies",
+          "detail": "Graphene-based passive cooling fabric, ~$12M round.",
+          "source": "Bloomberg",
+          "implies": "Summer product line pivoting to cooling — climate-hedge assortment."
+        },
+        {
+          "kind": "R&D",
+          "date": "May 2026",
+          "status": "watch",
+          "headline": "Filed: modular puffer with swappable insulation cassette",
+          "detail": "One shell, seasonal fills — reduces returns and inventory risk.",
+          "source": "EPO",
+          "implies": "Aiming to own the 'one jacket, four seasons' story before Uniqlo."
+        },
+        {
+          "kind": "Hiring",
+          "date": "May 2026",
+          "status": "hot",
+          "headline": "VP of Cultural Marketing, based Seoul",
+          "detail": "Former Nike SB and Adidas Originals background.",
+          "source": "LinkedIn",
+          "implies": "APAC streetwear push, less alpine — brand drifts urban."
+        }
+      ]
+    }
+  ]
+}

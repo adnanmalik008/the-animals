@@ -75,7 +75,9 @@ interface StoreState {
 
 const STORAGE_KEY = "animals-board-v1";
 
-const BUILTIN_CIRCLES: TopicCircle[] = [
+/* Exported so tests/cms/widgets.test.ts can hold WIDGET_DEFAULTS.circles7
+   to these seven — the two lists are the same circles, described twice. */
+export const BUILTIN_CIRCLES: TopicCircle[] = [
   { id: "news", name: "News", color: "orange", icon: "news", size: "md", builtIn: true },
   { id: "social", name: "Social", color: "blue", icon: "chat", size: "md", builtIn: true },
   { id: "key-influencers", name: "Key Influencers", color: "purple", icon: "chat", size: "sm", builtIn: true },

@@ -1,14 +1,19 @@
 "use client";
 
 import { Module } from "@/components/modules/ModuleColumn";
-import { hiringRows, hiringSummary } from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
 /* Open roles by function. Every function is its own drop target, so the
    section carries as many stickers as it has rows. */
 export function HiringVelocity({ id }: { id: string }) {
+  const { deltaPct, rows } = useModuleDoc("hiring");
   const { ref, inView } = useInView<HTMLDivElement>();
+
+  /* The chip's first half is the sum of the functions below it, added up
+     here so it can never disagree with them. */
+  const open = rows.reduce((total, row) => total + row.roles, 0);
 
   return (
     <Module
@@ -16,15 +21,15 @@ export function HiringVelocity({ id }: { id: string }) {
       title="Hiring Velocity"
       headerExtra={
         <span className="ml-auto whitespace-nowrap text-sm font-semibold tabular-nums">
-          {hiringSummary.open} OPEN ·{" "}
-          <span className="text-orange">+{hiringSummary.deltaPct}%</span>
+          {open} OPEN ·{" "}
+          <span className="text-orange">+{deltaPct}%</span>
         </span>
       }
     >
       <div ref={ref} className="pt-4">
         <p className="text-sm text-graphite">Open roles · strategic intent signal</p>
         <ul className="divide-y divide-line">
-          {hiringRows.map((row) => {
+          {rows.map((row) => {
             const up = row.delta >= 0;
             return (
               <li key={row.id}>

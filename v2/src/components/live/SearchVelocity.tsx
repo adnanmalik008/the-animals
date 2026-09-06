@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import { searchTerms } from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
@@ -53,14 +53,15 @@ function TrendLine({ points, up, inView }: { points: number[]; up: boolean; inVi
 /* Every term is its own drop target, so the section carries as many stickers
    as it has rows. */
 export function SearchVelocity({ id }: { id: string }) {
+  const { subtitle, terms } = useModuleDoc("search-velocity");
   const { ref, inView } = useInView<HTMLDivElement>();
 
   return (
     <Module id={id} title="Search Velocity">
       <div ref={ref} className="pt-4">
-        <p className="mb-4 text-sm text-graphite">Branded search, trailing 12 weeks</p>
+        <p className="mb-4 text-sm text-graphite">{subtitle}</p>
         <ul className="flex flex-col gap-5">
-          {searchTerms.map((t) => {
+          {terms.map((t) => {
             const up = t.delta >= 0;
             return (
               <li key={t.id}>

@@ -32,28 +32,49 @@ export interface IdeasExportInput {
   ideas: FusedIdea[];
   circles: TopicCircle[];
   insights: InsightItem[];
+  /** the client's logo from the board header document, if one is saved */
+  logoUrl?: string;
   /** how the list was narrowed at export time, shown under the title */
   filterLabel?: string;
 }
 
-interface Png {
+type DocxImageType = "png" | "jpg" | "gif" | "bmp";
+
+/** the raster formats docx can embed, by the MIME the server reports */
+const IMAGE_TYPES: Record<string, DocxImageType | undefined> = {
+  "image/png": "png",
+  "image/jpeg": "jpg",
+  "image/gif": "gif",
+  "image/bmp": "bmp",
+};
+
+interface LoadedImage {
   data: ArrayBuffer;
+  type: DocxImageType;
   width: number;
   height: number;
 }
 
-/* Fetch a PNG and measure it. Resolves null on any failure so the export
-   still goes out — the header falls back to text instead of throwing. */
-async function loadPng(url: string): Promise<Png | null> {
+/* Fetch an image and measure it. Resolves null on any failure so the export
+   still goes out — the header falls back to text instead of throwing.
+
+   The format has to be read off the blob rather than assumed: the client
+   logo is now whatever URL an editor pasted, and telling docx a JPEG is a
+   PNG produces a Word file with a broken picture in the header. An
+   unsupported format is no image at all, which is the wordmark. */
+async function loadImage(url: string): Promise<LoadedImage | null> {
   if (typeof window === "undefined") return null;
   try {
     const res = await fetch(url);
     if (!res.ok) return null;
     const blob = await res.blob();
+    /* a Content-Type can carry parameters ("image/png; charset=binary") */
+    const type = IMAGE_TYPES[blob.type.split(";")[0].trim().toLowerCase()];
+    if (!type) return null;
     const bitmap = await createImageBitmap(blob);
     const { width, height } = bitmap;
     bitmap.close();
-    return { data: await blob.arrayBuffer(), width, height };
+    return { data: await blob.arrayBuffer(), type, width, height };
   } catch {
     return null;
   }
@@ -78,7 +99,14 @@ function formatDate(ts: number) {
   });
 }
 
-export async function buildIdeasDocx({ meta, ideas, circles, insights, filterLabel }: IdeasExportInput) {
+export async function buildIdeasDocx({
+  meta,
+  ideas,
+  circles,
+  insights,
+  logoUrl,
+  filterLabel,
+}: IdeasExportInput) {
   const {
     Document,
     Packer,
@@ -100,12 +128,13 @@ export async function buildIdeasDocx({ meta, ideas, circles, insights, filterLab
     PageNumber,
   } = await import("docx");
 
-  /* the BrandBar shows the adidas PNG for adidas and a lowercase wordmark
-     for everyone else; the header mirrors that */
-  const isAdidas = meta.clientName.toLowerCase() === "adidas";
+  /* the same order BrandBar resolves: the saved logo, then the legacy
+     adidas branch, then a lowercase wordmark */
+  const clientLogo =
+    logoUrl ?? (meta.clientName.toLowerCase() === "adidas" ? ADIDAS_LOGO : undefined);
   const [animalsPng, clientPng] = await Promise.all([
-    loadPng(ANIMALS_LOGO),
-    isAdidas ? loadPng(ADIDAS_LOGO) : Promise.resolve(null),
+    loadImage(ANIMALS_LOGO),
+    clientLogo ? loadImage(clientLogo) : Promise.resolve(null),
   ]);
 
   const circleById = new Map(circles.map((c) => [c.id, c]));
@@ -123,9 +152,9 @@ export async function buildIdeasDocx({ meta, ideas, circles, insights, filterLab
 
   /* logo at a fixed height, width from the PNG's own aspect so it never
      stretches; the id is passed because docx restarts its counter per image */
-  const logo = (png: Png, name: string, id: number) =>
+  const logo = (png: LoadedImage, name: string, id: number) =>
     new ImageRun({
-      type: "png",
+      type: png.type,
       data: png.data,
       transformation: { width: Math.round((png.width / png.height) * LOGO_HEIGHT), height: LOGO_HEIGHT },
       altText: { name, description: name, title: name, id: String(id) },

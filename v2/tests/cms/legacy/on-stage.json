@@ -1,0 +1,34 @@
+{
+  "events": [
+    {
+      "id": "se-1",
+      "event": "THE RUNNING EVENT 2026 · AUSTIN, TX",
+      "hashtag": "#TRE2026",
+      "session": "Keynote · The Distribution Crisis",
+      "quote": "Retail isn't a shelf anymore. It's a Saturday morning run club with a waitlist — and most brands are still buying shelf space.",
+      "speaker": "Lena Ortiz",
+      "speakerTitle": "Founder, The Running Event",
+      "liveTweets": "1240"
+    },
+    {
+      "id": "se-2",
+      "event": "GLOBAL RUNNING SUMMIT 2026 · MUNICH",
+      "hashtag": "#RunSummit26",
+      "session": "Panel · Super Shoes After the Arms Race",
+      "quote": "The carbon-plate era taught runners to read midsole patents. You cannot market past an educated athlete.",
+      "speaker": "Dr. Femi Adeyemi",
+      "speakerTitle": "Head of Performance, Sportslab Institute",
+      "liveTweets": "860"
+    },
+    {
+      "id": "se-3",
+      "event": "SNEAKERCON 2026 · NEW YORK, NY",
+      "hashtag": "#SneakerCon",
+      "session": "Fireside · Heritage as Strategy",
+      "quote": "Every archive re-issue is a promise: we were here before the hype, and we'll be here after it.",
+      "speaker": "Maya Chen",
+      "speakerTitle": "VP Brand, Terrace Archive",
+      "liveTweets": "2310"
+    }
+  ]
+}

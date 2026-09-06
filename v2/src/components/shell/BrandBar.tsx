@@ -1,13 +1,27 @@
 "use client";
 
-import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { useBoardMeta, useModuleDoc } from "@/components/board/BoardDataContext";
 import { LiveClock } from "./LiveClock";
+
+/* The mark shown before any client uploaded one. It stays as a
+   name-matched fallback rather than moving into the header fixture:
+   a logo in the fixture is the logo every board with nothing saved
+   renders, which would put this on every new client's brief. */
+const ADIDAS_LOGO = "/assets/brand-bar/adidas-logo.png";
 
 export function BrandBar() {
   const boardMeta = useBoardMeta();
+  const header = useModuleDoc("board-header");
   /* close each pass with a full stop so the loop reads as a sentence */
   const q = boardMeta.briefQuestion.trim();
   const question = /[.?!]$/.test(q) ? q : q + ".";
+
+  /* saved logo → the legacy adidas branch → the client's name as a wordmark */
+  const logo = header.logoUrl
+    ? { src: header.logoUrl, alt: header.logoAlt ?? boardMeta.clientName }
+    : boardMeta.clientName.toLowerCase() === "adidas"
+      ? { src: ADIDAS_LOGO, alt: "adidas" }
+      : null;
 
   return (
     <div className="bg-card border-b border-line">
@@ -15,9 +29,9 @@ export function BrandBar() {
         {/* Client brief card */}
         <div className="flex min-w-0 flex-1 items-center gap-4 rounded-2xl bg-bg2 px-4 py-3 sm:px-5">
           <div className="flex h-14 w-16 shrink-0 items-center justify-center rounded-xl bg-card px-2">
-            {boardMeta.clientName.toLowerCase() === "adidas" ? (
+            {logo ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src="/assets/brand-bar/adidas-logo.png" alt="adidas" className="h-9 w-auto" />
+              <img src={logo.src} alt={logo.alt} className="h-9 w-auto" />
             ) : (
               <span className="text-lg font-black lowercase tracking-tight">
                 {boardMeta.clientName}
@@ -38,7 +52,7 @@ export function BrandBar() {
         </div>
 
         {/* Clock */}
-        <LiveClock />
+        <LiveClock timeZone={header.clock.timeZone} label={header.clock.label} />
       </div>
     </div>
   );

@@ -35,7 +35,7 @@ Protected boards redirect to `/login`; a client session only unlocks its own boa
 
 ## Later phase: live API feeds
 
-`module_data` stores one JSON document per module per board. The future Semrush/Meta integration writes the same keys on a schedule — no schema or UI change needed.
+`module_content` stores one JSON document per module — one set of content for the whole product, read by every board (a board is an access gate with a name of its own, not a content scope). The future Semrush/Meta integration writes the same keys on a schedule — no schema or UI change needed.
 
 ## Architecture notes
 

@@ -1,0 +1,71 @@
+{
+  "subreddits": [
+    {
+      "id": "rd-s1",
+      "name": "r/RunningShoeGeeks",
+      "members": "412K",
+      "activity": 92
+    },
+    {
+      "id": "rd-s2",
+      "name": "r/running",
+      "members": "3.9M",
+      "activity": 84
+    },
+    {
+      "id": "rd-s3",
+      "name": "r/AdvancedRunning",
+      "members": "310K",
+      "activity": 71
+    },
+    {
+      "id": "rd-s4",
+      "name": "r/Sneakers",
+      "members": "5.2M",
+      "activity": 65
+    },
+    {
+      "id": "rd-s5",
+      "name": "r/adidas",
+      "members": "210K",
+      "activity": 48
+    }
+  ],
+  "influencers": [
+    {
+      "id": "rd-i1",
+      "name": "u/tempo_junkie",
+      "karma": "184K karma",
+      "pct": 100
+    },
+    {
+      "id": "rd-i2",
+      "name": "u/marathon_matt",
+      "karma": "122K karma",
+      "pct": 66
+    },
+    {
+      "id": "rd-i3",
+      "name": "u/solereview_sam",
+      "karma": "98K karma",
+      "pct": 53
+    },
+    {
+      "id": "rd-i4",
+      "name": "u/trackclubtina",
+      "karma": "76K karma",
+      "pct": 41
+    },
+    {
+      "id": "rd-i5",
+      "name": "u/gel_vs_foam",
+      "karma": "41K karma",
+      "pct": 22
+    }
+  ],
+  "insights": [
+    "Fit inconsistency across lines is the single most repeated complaint — sizing threads outnumber colorway threads three to one.",
+    "The Evo SL has become the default “what shoe should I buy” answer, displacing a rival that held that slot for two years.",
+    "Run-club recruitment threads have doubled since January, and the gear questions increasingly come from first-time racers."
+  ]
+}

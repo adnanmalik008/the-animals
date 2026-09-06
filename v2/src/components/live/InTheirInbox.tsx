@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { newsletterItems, type NewsletterItem } from "@/data/live-extra";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { StickerBadge, useStickerTarget } from "./stickers";
+
+/** One send, as the CMS stores it. */
+type NewsletterItem = ModuleDocs["in-their-inbox"]["sends"][number];
 import { TornSheet } from "./TornSheet";
 
 /* ============================================================
@@ -95,15 +99,16 @@ function InboxItem({
 }
 
 export function InTheirInbox({ id }: { id: string }) {
-  const [openId, setOpenId] = useState<string | null>(newsletterItems[0]?.id ?? null);
+  const { sends } = useModuleDoc("in-their-inbox");
+  const [openId, setOpenId] = useState<string | null>(sends[0]?.id ?? null);
 
   return (
     <Module id={id} eyebrow="Bulletin" title="In Their Inbox" variant="editorial">
       <div className="pt-4">
         <div className="px-5 py-4 sm:px-6">
-          {newsletterItems.map((item, i) => {
+          {sends.map((item, i) => {
             const open = openId === item.id;
-            const prevOpen = i > 0 && openId === newsletterItems[i - 1].id;
+            const prevOpen = i > 0 && openId === sends[i - 1].id;
             return (
               <InboxItem
                 key={item.id}

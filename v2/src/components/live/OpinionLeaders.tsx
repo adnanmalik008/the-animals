@@ -1,13 +1,9 @@
 "use client";
 
-import { useModuleData } from "@/components/board/BoardDataContext";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { Avatar, type AvatarTone } from "@/components/shell/Avatar";
-import {
-  opinionLeaders as fixtureLeaders,
-  type LeaderPlatform,
-  type OpinionLeader,
-} from "@/data/live";
+import { Avatar } from "@/components/shell/Avatar";
+import type { LeaderPlatform } from "@/data/live";
 import { StickerDropZone } from "./stickers";
 
 const platformLabel: Record<LeaderPlatform, string> = {
@@ -28,17 +24,14 @@ function PlatformMark({ platform }: { platform: LeaderPlatform }) {
 }
 
 export function OpinionLeaders({ id }: { id: string }) {
-  const cms = useModuleData<{ leaders?: OpinionLeader[] }>("opinion-leaders");
-  const leaders = cms?.leaders?.length ? cms.leaders : fixtureLeaders;
+  const leaders = useModuleDoc("opinion-leaders").leaders;
 
   return (
     <Module id={id} title="Opinion Leaders">
       <div className="pt-4">
         <p className="mb-3 text-sm text-graphite">Who the category listens to</p>
         <div className="divide-y divide-line" role="list">
-          {leaders.map((leader) => {
-            const platform = leader.platform ?? "linkedin";
-            return (
+          {leaders.map((leader) => (
             <StickerDropZone
               key={leader.id}
               tagKey={`opinion-leader:${leader.id}`}
@@ -46,22 +39,22 @@ export function OpinionLeaders({ id }: { id: string }) {
               insight={() => ({
                 circleId: "key-influencers",
                 headline: `${leader.name} — ${leader.role}, ENG ${leader.eng}, ${leader.followers} followers`,
-                source: platformLabel[platform],
+                source: platformLabel[leader.platform],
                 category: "Voice",
                 categoryColor: "purple",
               })}
             >
               <div className="flex items-center gap-3 py-3.5" role="listitem">
                 <span className="relative shrink-0">
-                  <Avatar name={leader.name} tone={leader.tone as AvatarTone} size={44} />
-                  <span className="absolute -bottom-1 -right-1" title={platformLabel[platform]}>
-                    <PlatformMark platform={platform} />
+                  <Avatar name={leader.name} tone={leader.tone} size={44} />
+                  <span className="absolute -bottom-1 -right-1" title={platformLabel[leader.platform]}>
+                    <PlatformMark platform={leader.platform} />
                   </span>
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="block truncate font-semibold">{leader.name}</span>
                   <span className="block truncate text-sm text-graphite">
-                    {leader.role} · {platformLabel[platform]}
+                    {leader.role} · {platformLabel[leader.platform]}
                   </span>
                 </span>
                 <span className="shrink-0 text-sm tabular-nums">
@@ -73,8 +66,7 @@ export function OpinionLeaders({ id }: { id: string }) {
                 </span>
               </div>
             </StickerDropZone>
-            );
-          })}
+          ))}
         </div>
       </div>
     </Module>

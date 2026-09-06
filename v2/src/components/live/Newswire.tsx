@@ -1,17 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import {
-  incomingNewsItem as fixtureIncoming,
-  newsItems as fixtureItems,
-  type NewsItem,
-  type NewsSource,
-} from "@/data/board";
-import { useModuleData } from "@/components/board/BoardDataContext";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { ArticleModal } from "./ArticleModal";
 import { SourceMark } from "./SourceMark";
 import { StickerBadge, useStickerTarget } from "./stickers";
 import { TornSheet } from "./TornSheet";
+
+/** One article on the wire, as the CMS stores it. */
+export type NewswireArticle = ModuleDocs["newswire"]["items"][number];
 
 /* the design chips every category the same peach pill */
 const chipClass = "text-orange bg-orange/10";
@@ -19,8 +17,10 @@ const chipClass = "text-orange bg-orange/10";
 /* each publisher tears its own shade of paper. These are solved from the
    prototype's hovered rows: the sheet renders at --sheet-strength over the
    column, so each tint is whatever lands that composite on the design's
-   pixels. One torn asset takes the tint; there is no per-source image */
-const PAPER_TINT: Record<NewsSource, string> = {
+   pixels. One torn asset takes the tint; there is no per-source image.
+   A board may name a publisher we have no tint for — it tears the
+   neutral sheet below, the same one Bloomberg does. */
+const PAPER_TINT: Record<string, string | undefined> = {
   Bloomberg: "#e6d0c9",
   "The New York Times": "#edd0ad",
   CNN: "#edbea6",
@@ -29,15 +29,16 @@ const PAPER_TINT: Record<NewsSource, string> = {
   "New York Post": "#cbdbce",
   CNBC: "#edbcab",
 };
+const DEFAULT_TINT = "#e6d0c9";
 
 function NewswireCard({
   item,
   isNew,
   onOpen,
 }: {
-  item: NewsItem;
+  item: NewswireArticle;
   isNew?: boolean;
-  onOpen: (item: NewsItem) => void;
+  onOpen: (item: NewswireArticle) => void;
 }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -63,7 +64,7 @@ function NewswireCard({
       className={`torn-host group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
     >
       {/* the torn sheet slides in behind the row on hover and stays open */}
-      <TornSheet tint={PAPER_TINT[item.source]} shown={expanded ? true : "hover"} />
+      <TornSheet tint={PAPER_TINT[item.source] ?? DEFAULT_TINT} shown={expanded ? true : "hover"} />
 
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
 
@@ -134,16 +135,14 @@ function NewswireCard({
 }
 
 export function Newswire() {
-  /* CMS document when the board has one; fixtures otherwise. A CMS board
-     without an `incoming` article gets none — the fixture must not fold
-     into a real client's wire. */
-  const cms = useModuleData<{ items?: NewsItem[]; incoming?: NewsItem }>("newswire");
-  const baseItems = cms?.items?.length ? cms.items : fixtureItems;
-  const incoming = cms ? (cms.incoming ?? null) : fixtureIncoming;
+  const doc = useModuleDoc("newswire");
+  /* A board without a late arrival gets none — the built-in one must not
+     fold into a real client's wire. */
+  const incoming = doc.incoming ?? null;
 
-  const [items, setItems] = useState(baseItems);
+  const [items, setItems] = useState(doc.items);
   const [newId, setNewId] = useState<string | null>(null);
-  const [reading, setReading] = useState<NewsItem | null>(null);
+  const [reading, setReading] = useState<NewswireArticle | null>(null);
 
   /* A fresh article folds into the top after 30s — the wire feels alive */
   useEffect(() => {

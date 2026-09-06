@@ -1,13 +1,10 @@
+"use client";
+
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  horizon,
-  horizonLegend,
-  type HorizonColumn,
-  type HorizonEvent,
-  type HorizonKind,
-  type HorizonStatus,
-} from "@/data/competition";
-import { BrandMark } from "./BrandMark";
+import { horizonLegend } from "@/data/competition";
+import type { ModuleDocs } from "@/lib/cms/types";
+import { BrandMark, useCompetitor } from "./BrandMark";
 import { AnimalView } from "./AnimalView";
 import { Subtitle, bigTitle } from "./ui";
 
@@ -17,7 +14,14 @@ import { Subtitle, bigTitle } from "./ui";
    kind chip, its date, a status dot, the headline, the detail, the source
    and an orange-ruled "Implies". Static. */
 
-/* the legend's colours: hot in orange, warm in the second blue, watch in purple */
+type HorizonColumn = ModuleDocs["horizon"]["columns"][number];
+type HorizonEvent = HorizonColumn["events"][number];
+type HorizonStatus = HorizonEvent["status"];
+type HorizonKind = HorizonEvent["kind"];
+
+/* the legend's colours: hot in orange, warm in the second blue, watch in purple.
+   The scale is fixed, so both maps and the legend that captions them stay
+   here rather than becoming three colours a client could contradict. */
 const statusDot: Record<HorizonStatus, string> = {
   hot: "bg-orange",
   warm: "bg-blue2",
@@ -64,12 +68,17 @@ function EventCard({ event }: { event: HorizonEvent }) {
 }
 
 function BrandColumn({ column }: { column: HorizonColumn }) {
+  /* the column's title is the competitor's own name, not a second copy of
+     it; an id with no row behind it falls back to the id, the way the ref
+     picker labels a row that has lost its name */
+  const brand = useCompetitor(column.competitor);
+
   return (
     <div className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
       <div className="flex items-center gap-4 border-b border-white/5 p-5">
-        <BrandMark id={column.id} size={48} rounded="rounded-xl" plate />
+        <BrandMark id={column.competitor} size={48} rounded="rounded-xl" plate />
         <div className="flex flex-col gap-1">
-          <h4 className="font-display text-xl font-medium text-white">{column.name}</h4>
+          <h4 className="font-display text-xl font-medium text-white">{brand?.name ?? column.competitor}</h4>
           <p className="font-display text-base text-white/70">Forward Thesis</p>
         </div>
       </div>
@@ -78,7 +87,7 @@ function BrandColumn({ column }: { column: HorizonColumn }) {
           <p className="font-serif text-sm italic leading-[1.4] text-white">{column.thesis}</p>
         </div>
         {column.events.map((event) => (
-          <EventCard key={event.headline} event={event} />
+          <EventCard key={event.id} event={event} />
         ))}
       </div>
     </div>
@@ -86,12 +95,11 @@ function BrandColumn({ column }: { column: HorizonColumn }) {
 }
 
 export function Horizon({ id }: { id: string }) {
+  const { subtitle, columns } = useModuleDoc("horizon");
+
   return (
     <Module id={id} variant="panel" title="On the Horizon" titleClassName={bigTitle}>
-      <Subtitle>
-        What the competition is about to do — investments, patents, hires and deals that
-        reveal the next move before the launch.
-      </Subtitle>
+      <Subtitle>{subtitle}</Subtitle>
 
       {/* the legend reads across in white at 18, 16px in like the design */}
       <div className="mt-12 flex flex-wrap items-center gap-x-3 gap-y-1.5 px-4 font-display text-lg leading-[1.1] text-white">
@@ -111,7 +119,7 @@ export function Horizon({ id }: { id: string }) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {horizon.map((column) => (
+        {columns.map((column) => (
           <BrandColumn key={column.id} column={column} />
         ))}
       </div>

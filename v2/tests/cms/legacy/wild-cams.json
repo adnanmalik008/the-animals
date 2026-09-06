@@ -1,0 +1,52 @@
+{
+  "cams": [
+    {
+      "id": "tembe-elephants",
+      "videoId": "gdrNUUf-cQw",
+      "thumbnail": "/assets/wild/chameleon.jpg",
+      "emoji": "🐘",
+      "name": "Elephant Watch",
+      "location": "Tembe Elephant Park · South Africa"
+    },
+    {
+      "id": "namib-waterhole",
+      "videoId": "ydYDqZQpim8",
+      "thumbnail": "/assets/wild/sloth.png",
+      "emoji": "🦒",
+      "name": "Desert Waterhole",
+      "location": "Namib Desert · Namibia"
+    },
+    {
+      "id": "big-bear-eagles",
+      "videoId": "B4-L2nfGcuE",
+      "thumbnail": "/assets/wild/squirrel.jpg",
+      "emoji": "🦅",
+      "name": "Bald Eagle Nest",
+      "location": "Big Bear Valley · CA"
+    },
+    {
+      "id": "cornell-feeders",
+      "videoId": "N609loYkFJo",
+      "thumbnail": "/assets/wild/kitten.png",
+      "emoji": "🐦",
+      "name": "Bird Feeders",
+      "location": "Cornell Lab, Sapsucker Woods · NY"
+    },
+    {
+      "id": "tropical-reef",
+      "videoId": "DHUnz4dyb54",
+      "thumbnail": "/assets/wild/deer.jpg",
+      "emoji": "🐠",
+      "name": "Tropical Reef",
+      "location": "Explore.org · Cayman Islands"
+    },
+    {
+      "id": "earth-orbit",
+      "videoId": "P9C25Un7xaM",
+      "thumbnail": "/assets/wild/giraffe.png",
+      "emoji": "🌍",
+      "name": "The Blue Marble",
+      "location": "ISS · Low Earth Orbit"
+    }
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "ios": {
+    "rating": 4.3,
+    "totalLabel": "12 840 reviews",
+    "stats": [
+      {
+        "value": "+34%",
+        "label": "Onboarding"
+      },
+      {
+        "value": "+128%",
+        "label": "Crashes"
+      },
+      {
+        "value": "+212%",
+        "label": "AI features"
+      },
+      {
+        "value": "+48%",
+        "label": "Pricing"
+      }
+    ],
+    "review": {
+      "text": "The new AI running coach is genuinely useful but the app crashes every time I open it on iOS 18.",
+      "author": "Runner_Jules"
+    }
+  },
+  "android": {
+    "rating": 4.5,
+    "totalLabel": "31 260 reviews",
+    "stats": [
+      {
+        "value": "+21%",
+        "label": "Onboarding"
+      },
+      {
+        "value": "+64%",
+        "label": "Crashes"
+      },
+      {
+        "value": "+176%",
+        "label": "AI features"
+      },
+      {
+        "value": "+39%",
+        "label": "Pricing"
+      }
+    ],
+    "review": {
+      "text": "Club challenges keep our whole Tuesday group on one plan — just let me sync the calendar without three menus.",
+      "author": "kwame.runs"
+    }
+  }
+}

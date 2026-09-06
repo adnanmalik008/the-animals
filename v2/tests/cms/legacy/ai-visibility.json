@@ -1,0 +1,41 @@
+{
+  "score": 71,
+  "mentionsLabel": "1.3M",
+  "mentions": 1.3,
+  "citedLabel": "3.2M",
+  "cited": 3.2,
+  "platforms": [
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "mentions": 326.5,
+      "mentionsLabel": "326.5K",
+      "cited": 1.5,
+      "citedLabel": "1.5M"
+    },
+    {
+      "id": "grok",
+      "name": "Grok",
+      "mentions": 353.8,
+      "mentionsLabel": "353.8K",
+      "cited": 507.4,
+      "citedLabel": "507.4K"
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "mentions": 333.4,
+      "mentionsLabel": "333.4K",
+      "cited": 1.6,
+      "citedLabel": "1.6M"
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "mentions": 318,
+      "mentionsLabel": "318K",
+      "cited": 717,
+      "citedLabel": "717"
+    }
+  ]
+}

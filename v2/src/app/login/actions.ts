@@ -1,7 +1,12 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { checkBoardLogin, checkEnvAdmin, getCurrentBoard } from "@/lib/server/boards";
+import {
+  checkAdminLogin,
+  checkBoardLogin,
+  checkEnvAdmin,
+  getCurrentBoard,
+} from "@/lib/server/boards";
 import { clearSession, setSession } from "@/lib/server/session";
 
 export interface LoginState {
@@ -32,7 +37,18 @@ export async function login(_prev: LoginState, formData: FormData): Promise<Logi
   const board = await getCurrentBoard();
   const boardSlug = board.slug;
   const result = await checkBoardLogin(boardSlug, username, password);
-  if (!result.ok) return { error: "Wrong username or password for this board." };
+
+  if (!result.ok) {
+    /* Last, and only after the two paths that existed before: an agency login
+       — role='admin' with no board_id — opens /admin from whatever host the
+       request arrived on. It answers no on every error, so a failure here can
+       only ever leave the message below unchanged. */
+    if (await checkAdminLogin(username, password)) {
+      await setSession({ username, role: "admin", boardSlug: "*" });
+      redirect(next);
+    }
+    return { error: "Wrong username or password for this board." };
+  }
 
   await setSession({
     username,

@@ -1,13 +1,13 @@
 "use client";
 
-import { useModuleData } from "@/components/board/BoardDataContext";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { trafficChannels as fixtureChannels, type TrafficChannel } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
-/* Static context labels. Not controls: the window is fixed until the
-   CMS drives it, so they carry no dropdown affordance. */
+/* One icon per context chip, in the order the doc names them: period,
+   region, scope. Not controls — the window is whatever the board says it
+   is — so they carry no dropdown affordance. */
 const filterIcons = [
   {
     icon: (
@@ -23,18 +23,13 @@ const filterIcons = [
 ];
 
 export function TrafficSources({ id }: { id: string }) {
-  const cms = useModuleData<{
-    period?: string;
-    region?: string;
-    scope?: string;
-    channels?: TrafficChannel[];
-  }>("traffic-sources");
-  const trafficChannels = cms?.channels?.length ? cms.channels : fixtureChannels;
-  const filters = [cms?.period ?? "Jan 2026", cms?.region ?? "Worldwide", cms?.scope ?? "All Traffic"].map(
-    (label, index) => ({ label, icon: filterIcons[index].icon })
-  );
+  const { period, region, scope, channels } = useModuleDoc("traffic-sources");
+  const filters = [period, region, scope].map((label, index) => ({
+    label,
+    icon: filterIcons[index].icon,
+  }));
   const { ref, inView } = useInView<HTMLDivElement>();
-  const lead = [...trafficChannels].sort((a, b) => b.value - a.value)[0];
+  const lead = [...channels].sort((a, b) => b.value - a.value)[0];
 
   return (
     <Module id={id} title="Sources of Traffic">
@@ -78,7 +73,7 @@ export function TrafficSources({ id }: { id: string }) {
               ))}
             </div>
             <div className="absolute inset-y-0 left-11 right-0 flex items-end gap-2 pb-[18px]">
-              {trafficChannels.map((c) => (
+              {channels.map((c) => (
                 <div key={c.id} className="flex flex-1 flex-col items-center justify-end">
                   <div
                     className="w-full rounded-t-sm border-t-2 border-orange bg-gradient-to-b from-orange/45 to-orange/0 transition-[height] duration-1000 ease-out motion-reduce:transition-none"
@@ -89,7 +84,7 @@ export function TrafficSources({ id }: { id: string }) {
             </div>
           </div>
           <div className="ml-11 flex gap-2">
-            {trafficChannels.map((c) => (
+            {channels.map((c) => (
               <span key={c.id} className="flex-1 text-center text-[10px] text-graphite">
                 {c.label}
               </span>

@@ -1,34 +1,43 @@
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  aiObservations,
-  aiProfiles,
-  paidObservations,
-  paidSearch,
-  searchLandscape,
-  searchObservations,
-  type AiPlatformId,
-  type AiProfile,
-  type PaidSearchCard,
-  type SearchLandscapeCard,
-  type SeoStat,
-  type TextAd,
-} from "@/data/competition";
-import { BrandMark } from "./BrandMark";
+import type { ModuleDocs } from "@/lib/cms/types";
+import { BrandMark, useCompetitor } from "./BrandMark";
 import { AnimalView } from "./AnimalView";
 import { GroupHeading, Kicker, Observations, bigTitle } from "./ui";
 
 /* "How People Find Them" — the AI Search Visibility layout re-rendered
-   dark per competitor, then per-brand SEO stat cards. Fully static. */
+   dark per competitor, then per-brand SEO stat cards, then their paid
+   results. Three CMS modules under one section title; the title, and each
+   group's kicker and heading, are fixed in code. */
+
+/* the rows, as the CMS stores them */
+type AiProfile = ModuleDocs["ai-profile"]["profiles"][number];
+type AiPlatformId = AiProfile["platforms"][number]["id"];
+type SearchCard = ModuleDocs["search-landscape"]["cards"][number];
+type SeoStat = SearchCard["stats"][number];
+type PaidCard = ModuleDocs["paid-search"]["cards"][number];
+type TextAd = PaidCard["ads"][number];
 
 /* the design lists each model behind its own mark: the file's raster tiles,
    exported for the dark board — ChatGPT is its green app tile, Grok its white
-   plate — with the corner radius the file gives each */
-const platformMark: Record<AiPlatformId, { src: string; rounded: string }> = {
-  chatgpt: { src: "/assets/competition/ai-chatgpt.png", rounded: "rounded-[5px]" },
-  grok: { src: "/assets/competition/ai-grok.png", rounded: "rounded-[3px]" },
-  claude: { src: "/assets/competition/ai-claude.png", rounded: "" },
-  gemini: { src: "/assets/competition/ai-gemini.png", rounded: "" },
+   plate — with the corner radius the file gives each. The name sits here with
+   the art for the same reason the Live tab keeps it in code: it is a brand's
+   own spelling, not a value the client owns. The module's `platforms` options
+   are the tie — a value added to one without the other stops compiling. */
+const platformMark: Record<AiPlatformId, { src: string; rounded: string; name: string }> = {
+  chatgpt: { src: "/assets/competition/ai-chatgpt.png", rounded: "rounded-[5px]", name: "ChatGPT" },
+  grok: { src: "/assets/competition/ai-grok.png", rounded: "rounded-[3px]", name: "Grok" },
+  claude: { src: "/assets/competition/ai-claude.png", rounded: "", name: "Claude" },
+  gemini: { src: "/assets/competition/ai-gemini.png", rounded: "", name: "Gemini" },
 };
+
+/* Every card on this section names its brand from the competitors document
+   rather than carrying a copy of it. A card pointing at a competitor since
+   deleted prints the id it still holds — a blank would hide the mistake,
+   and the id is what an editor has to go and fix. */
+function useBrandName(id: string): string {
+  return useCompetitor(id)?.name ?? id;
+}
 
 /* one tile of the black stats box: the figure in its colour over a muted label */
 function StatBox({
@@ -64,11 +73,12 @@ function TodayPill() {
 }
 
 function AiProfileCard({ profile }: { profile: AiProfile }) {
+  const name = useBrandName(profile.id);
   return (
     <article>
       {/* the design's three cards are unlabelled placeholders; ours carry real
           figures per brand, so the brand is named above in the card's own grey */}
-      <p className="mb-3 font-display text-base text-white/70">{profile.name}</p>
+      <p className="mb-3 font-display text-base text-white/70">{name}</p>
       <div className="flex flex-col gap-8 rounded-2xl border border-white/5 bg-bg3 p-5">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
@@ -99,7 +109,7 @@ function AiProfileCard({ profile }: { profile: AiProfile }) {
                 <span className="flex items-center gap-3 font-display text-xl font-medium leading-[1.1] text-white">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={mark.src} alt="" aria-hidden className={`size-6 shrink-0 object-cover ${mark.rounded}`} />
-                  {p.name}
+                  {mark.name}
                 </span>
                 <span className="flex items-center gap-3 font-display text-lg leading-[1.1] tabular-nums text-white">
                   <span className="flex items-center gap-2">
@@ -122,6 +132,9 @@ function AiProfileCard({ profile }: { profile: AiProfile }) {
 }
 
 function SeoStatCell({ stat }: { stat: SeoStat }) {
+  /* the tone used to be its own authored field; it is only ever the sign of
+     the movement, so the cell reads it off the figure it is colouring */
+  const down = stat.delta?.trimStart().startsWith("-") ?? false;
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
@@ -132,11 +145,7 @@ function SeoStatCell({ stat }: { stat: SeoStat }) {
           </span>
         )}
         {stat.delta && (
-          <span
-            className={`font-display text-sm lowercase tabular-nums ${
-              stat.deltaTone === "down" ? "text-orange" : "text-green"
-            }`}
-          >
+          <span className={`font-display text-sm lowercase tabular-nums ${down ? "text-orange" : "text-green"}`}>
             {stat.delta}
           </span>
         )}
@@ -147,11 +156,11 @@ function SeoStatCell({ stat }: { stat: SeoStat }) {
 }
 
 /* a paid result as the SERP renders it: mark on a plate, headline, url, body */
-function TextAdRow({ id, ad, last }: { id: PaidSearchCard["id"]; ad: TextAd; last: boolean }) {
+function TextAdRow({ competitorId, ad, last }: { competitorId: string; ad: TextAd; last: boolean }) {
   return (
     <li className={`flex flex-col gap-4 p-5 ${last ? "" : "border-b border-white/5"}`}>
       <div className="flex items-start gap-3">
-        <BrandMark id={id} size={32} rounded="rounded-[4px]" plate />
+        <BrandMark id={competitorId} size={32} rounded="rounded-[4px]" plate />
         <div className="flex min-w-0 flex-col gap-1">
           <p className="font-display text-lg font-medium leading-[1.3] text-white">{ad.headline}</p>
           <p className="flex items-center gap-2 font-display text-base text-white/70">
@@ -166,33 +175,35 @@ function TextAdRow({ id, ad, last }: { id: PaidSearchCard["id"]; ad: TextAd; las
   );
 }
 
-function PaidSearchCardView({ card }: { card: PaidSearchCard }) {
+function PaidSearchCardView({ card }: { card: PaidCard }) {
+  const name = useBrandName(card.id);
   return (
     <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
       <p className="flex items-center gap-2 border-b border-white/5 p-5 font-display text-base">
         <span className="font-medium text-white">Sample Text Ads</span>
-        <span className="text-white/70">{card.name}</span>
+        <span className="text-white/70">{name}</span>
       </p>
       <ul>
         {card.ads.map((ad, i) => (
-          <TextAdRow key={ad.headline} id={card.id} ad={ad} last={i === card.ads.length - 1} />
+          <TextAdRow key={ad.id} competitorId={card.id} ad={ad} last={i === card.ads.length - 1} />
         ))}
       </ul>
     </article>
   );
 }
 
-function SeoCard({ card }: { card: SearchLandscapeCard }) {
+function SeoCard({ card }: { card: SearchCard }) {
+  const name = useBrandName(card.id);
   return (
     <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
       <div className="flex items-center justify-between border-b border-white/5 p-5">
         <span className="rounded-lg bg-white/5 px-2.5 py-1.5 font-display text-base leading-5 text-white/70">SEO</span>
-        <span className="font-display text-base text-white/70">{card.name}</span>
+        <span className="font-display text-base text-white/70">{name}</span>
       </div>
       {/* two columns, read down: the first half of the stats, then the second */}
       <div className="grid grid-cols-2 gap-x-4 gap-y-8 p-5">
         {card.stats.map((stat) => (
-          <SeoStatCell key={stat.label} stat={stat} />
+          <SeoStatCell key={stat.id} stat={stat} />
         ))}
       </div>
     </article>
@@ -200,34 +211,38 @@ function SeoCard({ card }: { card: SearchLandscapeCard }) {
 }
 
 export function FindThem({ id }: { id: string }) {
+  const ai = useModuleDoc("ai-profile");
+  const search = useModuleDoc("search-landscape");
+  const paid = useModuleDoc("paid-search");
+
   return (
     <Module id={id} variant="panel" title="How People Find Them" titleClassName={bigTitle}>
       <Kicker className="mt-12">Machine Vision</Kicker>
       <GroupHeading>Their AI Profile</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {aiProfiles.map((profile) => (
+        {ai.profiles.map((profile) => (
           <AiProfileCard key={profile.id} profile={profile} />
         ))}
       </div>
-      <Observations text={aiObservations} className="mt-6" />
+      <Observations text={ai.observations} className="mt-6" />
 
       <Kicker className="mt-12">Search Footprint</Kicker>
       <GroupHeading>Their Search Landscape</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {searchLandscape.map((card) => (
+        {search.cards.map((card) => (
           <SeoCard key={card.id} card={card} />
         ))}
       </div>
-      <Observations text={searchObservations} className="mt-6" />
+      <Observations text={search.observations} className="mt-6" />
 
       <Kicker className="mt-12">Paid Search</Kicker>
       <GroupHeading>Words They Pay For</GroupHeading>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-3">
-        {paidSearch.map((card) => (
+        {paid.cards.map((card) => (
           <PaidSearchCardView key={card.id} card={card} />
         ))}
       </div>
-      <Observations text={paidObservations} className="mt-6" />
+      <Observations text={paid.observations} className="mt-6" />
 
       <AnimalView section={id} className="mt-12" />
     </Module>

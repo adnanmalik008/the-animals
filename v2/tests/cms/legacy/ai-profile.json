@@ -1,0 +1,104 @@
+{
+  "rows": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "visibility": 71,
+      "mentions": "1.3M",
+      "cited": "3.2M",
+      "platforms": [
+        {
+          "id": "chatgpt",
+          "name": "ChatGPT",
+          "mentions": "326.5K",
+          "cited": "1.5M"
+        },
+        {
+          "id": "grok",
+          "name": "Grok",
+          "mentions": "353.8K",
+          "cited": "507.4K"
+        },
+        {
+          "id": "claude",
+          "name": "Claude",
+          "mentions": "333.4K",
+          "cited": "1.6M"
+        },
+        {
+          "id": "gemini",
+          "name": "Gemini",
+          "mentions": "318K",
+          "cited": "717"
+        }
+      ]
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "visibility": 68,
+      "mentions": "412K",
+      "cited": "3.8M",
+      "platforms": [
+        {
+          "id": "chatgpt",
+          "name": "ChatGPT",
+          "mentions": "118.2K",
+          "cited": "1.9M"
+        },
+        {
+          "id": "grok",
+          "name": "Grok",
+          "mentions": "96.4K",
+          "cited": "611.2K"
+        },
+        {
+          "id": "claude",
+          "name": "Claude",
+          "mentions": "104.8K",
+          "cited": "1.1M"
+        },
+        {
+          "id": "gemini",
+          "name": "Gemini",
+          "mentions": "92.6K",
+          "cited": "214K"
+        }
+      ]
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "visibility": 64,
+      "mentions": "980K",
+      "cited": "1.9M",
+      "platforms": [
+        {
+          "id": "chatgpt",
+          "name": "ChatGPT",
+          "mentions": "248.1K",
+          "cited": "640K"
+        },
+        {
+          "id": "grok",
+          "name": "Grok",
+          "mentions": "261.7K",
+          "cited": "380.2K"
+        },
+        {
+          "id": "claude",
+          "name": "Claude",
+          "mentions": "244.9K",
+          "cited": "560K"
+        },
+        {
+          "id": "gemini",
+          "name": "Gemini",
+          "mentions": "225.3K",
+          "cited": "310K"
+        }
+      ]
+    }
+  ],
+  "observations": "Arc'teryx punches above its weight — smaller mention volume but the highest citation rate, meaning models trust it. Patagonia has the loudest voice but the weakest conversion to citation. North Face sits in the middle, coasting on brand recognition rather than earning it in the answer layer."
+}

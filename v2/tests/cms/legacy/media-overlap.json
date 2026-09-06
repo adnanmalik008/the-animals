@@ -1,0 +1,72 @@
+{
+  "brands": [
+    "Patagonia",
+    "Arc'teryx",
+    "The North Face"
+  ],
+  "rows": [
+    {
+      "channel": "Direct",
+      "presence": [
+        true,
+        true,
+        true
+      ],
+      "kind": "earned"
+    },
+    {
+      "channel": "Referral",
+      "presence": [
+        false,
+        true,
+        false
+      ],
+      "kind": "earned"
+    },
+    {
+      "channel": "Social",
+      "presence": [
+        true,
+        true,
+        true
+      ],
+      "kind": "earned"
+    },
+    {
+      "channel": "Organic Search",
+      "presence": [
+        true,
+        true,
+        true
+      ],
+      "kind": "earned"
+    },
+    {
+      "channel": "Paid Search",
+      "presence": [
+        true,
+        true,
+        true
+      ],
+      "kind": "paid"
+    },
+    {
+      "channel": "Display Ads",
+      "presence": [
+        true,
+        true,
+        true
+      ],
+      "kind": "paid"
+    },
+    {
+      "channel": "Mail",
+      "presence": [
+        true,
+        false,
+        false
+      ],
+      "kind": "owned"
+    }
+  ]
+}

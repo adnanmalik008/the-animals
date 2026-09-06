@@ -379,7 +379,6 @@ export type LeaderPlatform = "linkedin" | "instagram" | "youtube" | "tiktok" | "
 export interface OpinionLeader {
   id: string;
   name: string;
-  initials: string;
   /** avatar gradient key, mapped to classes in the component */
   tone: LeaderTone;
   role: string;
@@ -389,11 +388,11 @@ export interface OpinionLeader {
 }
 
 export const opinionLeaders: OpinionLeader[] = [
-  { id: "ol-1", name: "Kofi Mensah", initials: "KM", tone: "ember", role: "Run culture analyst", eng: 92, followers: "2.1M", platform: "linkedin" },
-  { id: "ol-2", name: "Elsa Brandt", initials: "EB", tone: "ocean", role: "Performance gear reviewer", eng: 87, followers: "1.4M", platform: "instagram" },
-  { id: "ol-3", name: "Jay Okafor", initials: "JO", tone: "moss", role: "Marathon coach", eng: 84, followers: "980K", platform: "youtube" },
-  { id: "ol-4", name: "Mara Silva", initials: "MS", tone: "violet", role: "Run club organiser", eng: 79, followers: "640K", platform: "tiktok" },
-  { id: "ol-5", name: "Tom Whitfield", initials: "TW", tone: "sun", role: "Track podcast host", eng: 75, followers: "420K", platform: "x" },
+  { id: "ol-1", name: "Kofi Mensah", tone: "ember", role: "Run culture analyst", eng: 92, followers: "2.1M", platform: "linkedin" },
+  { id: "ol-2", name: "Elsa Brandt", tone: "ocean", role: "Performance gear reviewer", eng: 87, followers: "1.4M", platform: "instagram" },
+  { id: "ol-3", name: "Jay Okafor", tone: "moss", role: "Marathon coach", eng: 84, followers: "980K", platform: "youtube" },
+  { id: "ol-4", name: "Mara Silva", tone: "violet", role: "Run club organiser", eng: 79, followers: "640K", platform: "tiktok" },
+  { id: "ol-5", name: "Tom Whitfield", tone: "sun", role: "Track podcast host", eng: 75, followers: "420K", platform: "x" },
 ];
 
 /* ---------------- Reddit ---------------- */

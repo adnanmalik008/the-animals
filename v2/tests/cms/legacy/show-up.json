@@ -1,0 +1,39 @@
+{
+  "homepage": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "caption": "“Performance Foundations — For the pursuit of your wildest days.”",
+      "observation": "Softens activism, foregrounds performance. A quiet pivot from cause-led to capability-led messaging."
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "caption": "“Fresh Off the Line — Spring Climbing Collection”",
+      "observation": "Product-first, calendar-driven. Frames the site as a drop culture destination — closer to streetwear than gear."
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "caption": "“finding your moment in the sun”",
+      "observation": "Leads with a lifestyle mood, not product. 'Moment in the sun' softens the mountain codes — chasing warmth-seekers, not just climbers."
+    }
+  ],
+  "social": [
+    {
+      "id": "patagonia",
+      "name": "Patagonia",
+      "observation": "Documentary aesthetic. Real people, real places. Still the most editorial feed, but noticeably less protest, more product."
+    },
+    {
+      "id": "arcteryx",
+      "name": "Arc'teryx",
+      "observation": "Cold palette, alpine-only. Disciplined to the point of narrow — no lifestyle, no compromise on the mountain."
+    },
+    {
+      "id": "northface",
+      "name": "The North Face",
+      "observation": "Warm palette, sun-drenched. Feed reads editorial travel more than technical outdoor — broadening beyond core."
+    }
+  ]
+}

@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import { topSites, topSitesSubtitle, type SiteTab } from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
+import type { SiteTab } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 import { TabPills } from "./TabPills";
@@ -14,10 +15,15 @@ const tabs: { id: SiteTab; label: string }[] = [
 ];
 
 export function TopSites({ id }: { id: string }) {
+  const doc = useModuleDoc("top-sites");
   const [tab, setTab] = useState<SiteTab>("news");
   const { ref, inView } = useInView<HTMLDivElement>();
-  const groups = topSites[tab];
+  const groups = doc[tab];
+  /* The schema keeps every tab non-empty; this is the belt to that brace,
+     since a headline that reads a sorted list's first row would otherwise
+     take the board down on a hand-edited document. */
   const leader = [...groups].sort((a, b) => b.audience - a.audience)[0];
+  if (!leader) return null;
 
   return (
     <Module
@@ -36,7 +42,7 @@ export function TopSites({ id }: { id: string }) {
         })}
       >
         <div ref={ref} className="pt-4">
-          <p className="text-sm leading-snug text-graphite">{topSitesSubtitle}</p>
+          <p className="text-sm leading-snug text-graphite">{doc.subtitle}</p>
 
           <div className="mt-3 flex items-center gap-4 text-xs text-graphite">
             <span className="flex items-center gap-1.5">

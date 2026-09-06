@@ -1,7 +1,7 @@
 /* Templates for the admin module editor: every CMS-editable module
    key with its default (fixture) document. Saving a key writes the
-   same shape to module_data; the board components read it back via
-   useModuleData(key) and fall back to these fixtures when unset. */
+   same shape to module_content; the board reads it back through
+   getContentDocs and falls back to these fixtures when unset. */
 
 import { aiVisibility, incomingNewsItem, newsItems, shareOfVoice } from "@/data/board";
 import {

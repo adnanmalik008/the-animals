@@ -1,27 +1,24 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { BoardRecord, BoardUserRecord } from "@/lib/server/boards";
+import { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 import {
   addUserAction,
   createBoardAction,
   deleteBoardAction,
   removeUserAction,
-  saveModuleAction,
   updateBoardAction,
   type ActionState,
 } from "./actions";
 
-const input =
-  "w-full rounded-xl border border-line bg-card px-3.5 py-2.5 text-sm text-ink placeholder:text-graphite/60 outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const label = "flex flex-col gap-1.5 text-sm font-medium";
-const primaryBtn =
-  "rounded-full bg-orange px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-orange-hover disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const quietBtn =
-  "rounded-full border border-line bg-card px-3 py-1.5 text-xs font-medium text-graphite transition-colors hover:bg-bg2 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70";
-const card = "rounded-2xl border border-line bg-card p-6 shadow-sm";
+/* The class vocabulary now lives with the generated form, which has to look
+   like this page; re-exported here so an import of it keeps working. */
+export { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 
-function Feedback({ state }: { state: ActionState }) {
+/* The one save-result line every admin form shows. Exported: the generated
+   module form is a second surface that has to report a save the same way. */
+export function Feedback({ state }: { state: ActionState }) {
   if (state.error)
     return (
       <p role="alert" className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
@@ -40,8 +37,8 @@ function Feedback({ state }: { state: ActionState }) {
   return null;
 }
 
-/* Step eyebrow — the three sections of a board page are a real sequence:
-   identity, then content, then who gets in. */
+/* Step eyebrow — the two sections of a board page are a real sequence:
+   identity, then who gets in. Content is not per board and lives elsewhere. */
 export function StepEyebrow({ n, children }: { n: string; children: React.ReactNode }) {
   return (
     <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-graphite">
@@ -151,7 +148,10 @@ export function NewBoardForm({ rootDomain }: { rootDomain?: string | null }) {
             name="slug"
             required
             placeholder="nike"
-            pattern="[a-z0-9]([a-z0-9-]{0,46}[a-z0-9])?"
+            /* the dash is escaped: HTML compiles `pattern` with the `v` flag,
+               under which a bare `-` inside a class is a syntax error and the
+               whole attribute is silently ignored */
+            pattern="[a-z0-9]([a-z0-9\-]{0,46}[a-z0-9])?"
             value={effectiveSlug}
             onChange={(e) => {
               setSlugTouched(true);
@@ -277,138 +277,6 @@ export function BoardMetaForm({ board }: { board: BoardRecord }) {
   );
 }
 
-/* ---------------- module content (JSON with templates) ---------------- */
-
-function describeJson(value: unknown): string {
-  if (Array.isArray(value)) return `list of ${value.length}`;
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).map(([k, v]) =>
-      Array.isArray(v) ? `${k} (${v.length})` : k
-    );
-    return entries.slice(0, 6).join(", ") + (entries.length > 6 ? ", …" : "");
-  }
-  return typeof value;
-}
-
-export function ModuleEditor({
-  board,
-  moduleKeys,
-  existing,
-  templates,
-}: {
-  board: BoardRecord;
-  moduleKeys: string[];
-  existing: Record<string, unknown>;
-  templates: Record<string, unknown>;
-}) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveModuleAction, {});
-  const [key, setKey] = useState(moduleKeys[0] ?? "newswire");
-  const [text, setText] = useState(() =>
-    JSON.stringify(existing[key] ?? templates[key] ?? {}, null, 2)
-  );
-
-  const loadFor = (k: string, source: Record<string, unknown>, fallback?: Record<string, unknown>) =>
-    JSON.stringify(source[k] ?? fallback?.[k] ?? {}, null, 2);
-
-  /* validated on every keystroke — the save button never sends bad JSON */
-  const parse = useMemo(() => {
-    try {
-      return { value: JSON.parse(text) as unknown, error: null };
-    } catch (e) {
-      return { value: null, error: e instanceof Error ? e.message : "Invalid JSON" };
-    }
-  }, [text]);
-
-  const isCustom = existing[key] !== undefined;
-
-  return (
-    <form action={action} className={`${card} flex flex-col gap-4`}>
-      <input type="hidden" name="slug" value={board.slug} />
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <StepEyebrow n="02">Content</StepEyebrow>
-          <h2 className="mt-1 text-lg font-bold">Module content</h2>
-          <p className="mt-0.5 text-sm text-graphite">
-            Each module reads one JSON document. Start from the template and replace the copy.
-          </p>
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-            isCustom ? "bg-orange/10 text-orange" : "bg-bg2 text-graphite"
-          }`}
-        >
-          {isCustom ? "Custom content for this board" : "Default template"}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <label className={`${label} min-w-56 flex-1`}>
-          Module
-          <select
-            name="moduleKey"
-            value={key}
-            onChange={(e) => {
-              const k = e.target.value;
-              setKey(k);
-              setText(loadFor(k, existing, templates));
-            }}
-            className={input}
-          >
-            {moduleKeys.map((k) => (
-              <option key={k} value={k}>
-                {k}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex gap-2 pb-0.5">
-          <button
-            type="button"
-            disabled={!!parse.error}
-            onClick={() => setText(JSON.stringify(parse.value, null, 2))}
-            className={quietBtn}
-          >
-            Format
-          </button>
-          <button
-            type="button"
-            onClick={() => setText(loadFor(key, templates))}
-            className={quietBtn}
-          >
-            Load template
-          </button>
-        </div>
-      </div>
-
-      <label className={label}>
-        <span className="sr-only">Content (JSON)</span>
-        <textarea
-          name="json"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={18}
-          spellCheck={false}
-          aria-invalid={!!parse.error}
-          className={`${input} font-mono text-xs leading-relaxed ${
-            parse.error ? "border-red/60 focus-visible:ring-red/50" : ""
-          }`}
-        />
-      </label>
-
-      <p className={`text-xs ${parse.error ? "text-red" : "text-graphite"}`} aria-live="polite">
-        {parse.error ? `Invalid JSON — ${parse.error}` : `Valid JSON · ${describeJson(parse.value)}`}
-      </p>
-
-      <div className="flex items-center gap-4">
-        <button type="submit" disabled={pending || !!parse.error} className={primaryBtn}>
-          {pending ? "Saving…" : "Save module"}
-        </button>
-        <Feedback state={state} />
-      </div>
-    </form>
-  );
-}
-
 /* ---------------- credentials ---------------- */
 
 export function UsersManager({
@@ -425,6 +293,13 @@ export function UsersManager({
   const [draft, setDraft] = useState({ username: "", password: "" });
   const [invite, setInvite] = useState<{ username: string; password: string } | null>(null);
   const [inviteCopied, setInviteCopied] = useState(false);
+
+  /* Board logins only. A team login belongs to the agency, has no board_id and
+     is managed on the admin home — it must never appear here, because a Remove
+     button rendered for one would offer to delete it from the board screen.
+     `listBoardUsers` already filters by board_id; this is the second lock, and
+     the one that holds if a row ever arrives from somewhere else. */
+  const boardUsers = users.filter((u) => u.role === "client");
 
   /* when a login lands, keep its credentials on screen once for the
      invite — the password is hashed after this and cannot be shown again */
@@ -447,16 +322,16 @@ export function UsersManager({
   return (
     <div className={`${card} flex flex-col gap-4`}>
       <div>
-        <StepEyebrow n="03">Access</StepEyebrow>
+        <StepEyebrow n="02">Access</StepEyebrow>
         <h2 className="mt-1 text-lg font-bold">Client logins</h2>
         <p className="mt-0.5 text-sm text-graphite">
           Each login opens <span className="font-mono text-ink">{host}</span> only.
         </p>
       </div>
 
-      {users.length > 0 ? (
+      {boardUsers.length > 0 ? (
         <ul className="divide-y divide-line rounded-xl border border-line">
-          {users.map((u) => (
+          {boardUsers.map((u) => (
             <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
               <span className="font-medium">{u.username}</span>
               <span className="ml-auto text-xs text-graphite">{u.role}</span>
@@ -534,7 +409,7 @@ export function UsersManager({
             className={input}
           />
         </label>
-        <button type="submit" disabled={pending || users.length >= 10} className={primaryBtn}>
+        <button type="submit" disabled={pending || boardUsers.length >= 10} className={primaryBtn}>
           {pending ? "Adding…" : "Add login"}
         </button>
       </form>

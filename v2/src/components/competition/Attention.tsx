@@ -1,7 +1,10 @@
+"use client";
+
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
-import { channelMix, type ChannelBubble, type CompetitorMix } from "@/data/competition";
+import type { ModuleDocs } from "@/lib/cms/types";
 import { AnimalView } from "./AnimalView";
-import { BrandMark } from "./BrandMark";
+import { BrandMark, useCompetitor } from "./BrandMark";
 import { MediaOverlap } from "./MediaOverlap";
 import { Kicker, Subtitle, bigTitle } from "./ui";
 
@@ -12,6 +15,9 @@ import { Kicker, Subtitle, bigTitle } from "./ui";
    ring is a single SVG in the design's own 840-unit card coordinates,
    measured off the design export, so it scales with the card and nothing
    in it is eyeballed. */
+
+/** One card, as the CMS stores it: a competitor id and its numbers. */
+type Card = ModuleDocs["channel-mix"]["competitors"][number];
 
 /* the design's card is 840 units wide; the ring takes y 240–860 of it */
 const VIEW_W = 840;
@@ -24,21 +30,28 @@ const BUBBLE_R = 43;
 const TILE = 108;
 const LABEL_DY = 66;
 
-/** bubble centres from the design; order matches CompetitorMix.channels
-    (Direct, Referral, Social, Organic search, Paid search, Display ADS, Mail) */
-const BUBBLES: { x: number; y: number }[] = [
-  { x: 419, y: 99 },
-  { x: 590, y: 199 },
-  { x: 613, y: 351 },
-  { x: 534, y: 487 },
-  { x: 306, y: 487 },
-  { x: 224, y: 351 },
-  { x: 250, y: 199 },
-];
+/** The ring: the seven channels in the order they go round the circle,
+    each with the bubble centre measured off the design. Name and position
+    travel together, so a label can never drift onto another bubble — and
+    they stay in code, because the ring is a drawing and not a list a
+    client edits. The document supplies only the shares. */
+const CHANNELS = [
+  { key: "direct", label: "Direct", x: 419, y: 99 },
+  { key: "referral", label: "Referral", x: 590, y: 199 },
+  { key: "social", label: "Social", x: 613, y: 351 },
+  { key: "organic", label: "Organic search", x: 534, y: 487 },
+  { key: "paid", label: "Paid search", x: 306, y: 487 },
+  { key: "display", label: "Display ADS", x: 224, y: 351 },
+  { key: "mail", label: "Mail", x: 250, y: 199 },
+] as const satisfies readonly { key: keyof Card["channels"]; label: string; x: number; y: number }[];
 
-function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number }) {
+/** A channel counts towards "5 / 7 active" at 1% or more — the same
+    threshold the bubble uses to decide it reads red. */
+const ACTIVE_AT = 1;
+
+function Bubble({ label, pct, x, y }: { label: string; pct: number; x: number; y: number }) {
   /* under 1% the share reads red; everything else gold */
-  const weak = bubble.pct < 1;
+  const weak = pct < ACTIVE_AT;
   return (
     <g>
       <circle cx={x} cy={y} r={BUBBLE_R} className="fill-white/10" />
@@ -50,7 +63,7 @@ function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number 
         fontSize={30}
         className={`font-semibold tabular-nums ${weak ? "fill-red" : "fill-yellow"}`}
       >
-        {bubble.pct}%
+        {pct}%
       </text>
       <text
         x={x}
@@ -60,21 +73,27 @@ function Bubble({ bubble, x, y }: { bubble: ChannelBubble; x: number; y: number 
         fontSize={26}
         className="fill-white/70"
       >
-        {bubble.label}
+        {label}
       </text>
     </g>
   );
 }
 
-function ChannelRing({ mix }: { mix: CompetitorMix }) {
+function ChannelRing({ card }: { card: Card }) {
   return (
     <div className="relative mt-2">
       <svg viewBox={`0 0 ${VIEW_W} ${VIEW_H}`} className="block h-auto w-full" aria-hidden>
         {/* the enclosing disc: the card's own colour with a hairline edge */}
         <circle cx={CX} cy={CY} r={OUTER_R} className="fill-bg3 stroke-white/5" strokeWidth={1.5} />
         <circle cx={CX} cy={CY} r={CENTER_R} className="fill-white/5" />
-        {mix.channels.map((bubble, i) => (
-          <Bubble key={bubble.key} bubble={bubble} x={BUBBLES[i].x} y={BUBBLES[i].y} />
+        {CHANNELS.map((channel) => (
+          <Bubble
+            key={channel.key}
+            label={channel.label}
+            pct={card.channels[channel.key]}
+            x={channel.x}
+            y={channel.y}
+          />
         ))}
       </svg>
       {/* the brand tile sits in the centre circle, sized in the ring's units */}
@@ -86,7 +105,7 @@ function ChannelRing({ mix }: { mix: CompetitorMix }) {
           width: `${(TILE / VIEW_W) * 100}%`,
         }}
       >
-        <BrandMark id={mix.id} size="100%" rounded="rounded-[25%]" plate />
+        <BrandMark id={card.competitor} size="100%" rounded="rounded-[25%]" plate />
       </div>
     </div>
   );
@@ -120,18 +139,27 @@ function ReachSlider({ pct, label }: { pct: number; label: string }) {
   );
 }
 
-function CompetitorCard({ mix }: { mix: CompetitorMix }) {
-  const active = mix.channels.filter((c) => c.pct >= 1).length;
+function CompetitorCard({ card }: { card: Card }) {
+  /* the name, the domain and the art are the competitor's, not this card's */
+  const brand = useCompetitor(card.competitor);
+
+  /* a card naming a competitor that has since been deleted has no mark, no
+     name and no domain — three quarters of it — so it stands down rather
+     than printing an empty tile over a raw slug */
+  if (!brand) return null;
+
+  const active = CHANNELS.filter((channel) => card.channels[channel.key] >= ACTIVE_AT).length;
+
   return (
     <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3 px-5 pb-5">
       {/* header — the mark on a 48px white/5 tile whose corners crop it, as in the file */}
       <div className="flex items-center gap-4 py-5">
-        <BrandMark id={mix.id} size={48} rounded="rounded-xl" plate />
-        <h4 className="font-display text-xl font-medium text-white">{mix.name}</h4>
+        <BrandMark id={card.competitor} size={48} rounded="rounded-xl" plate />
+        <h4 className="font-display text-xl font-medium text-white">{brand.name}</h4>
         <span className="ml-auto flex items-center gap-2 font-display text-base text-white/70">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/assets/competition/globe.svg" alt="" aria-hidden className="size-4 shrink-0" />
-          {mix.domain}
+          {brand.domain}
         </span>
       </div>
 
@@ -141,25 +169,27 @@ function CompetitorCard({ mix }: { mix: CompetitorMix }) {
           <span className="flex items-center gap-[3px] tabular-nums">
             <span className="text-yellow">{active}</span>
             <span className="text-white/15">/</span>
-            <span className="text-white/70">{mix.channels.length} active</span>
+            <span className="text-white/70">{CHANNELS.length} active</span>
           </span>
         </div>
-        <ChannelRing mix={mix} />
+        <ChannelRing card={card} />
       </div>
 
-      <ReachSlider pct={mix.reachPct} label={mix.reachLabel} />
+      <ReachSlider pct={card.reachPct} label={card.reachLabel} />
     </article>
   );
 }
 
 export function Attention({ id }: { id: string }) {
+  const { competitors } = useModuleDoc("channel-mix");
+
   return (
     <Module id={id} variant="panel" title="What's Driving Their Attention" titleClassName={bigTitle}>
       <Subtitle>How the category shows up.</Subtitle>
       <Kicker className="mt-12">Channel Mix</Kicker>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {channelMix.map((mix) => (
-          <CompetitorCard key={mix.id} mix={mix} />
+        {competitors.map((card) => (
+          <CompetitorCard key={card.id} card={card} />
         ))}
       </div>
 

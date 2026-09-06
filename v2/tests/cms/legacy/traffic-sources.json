@@ -1,0 +1,42 @@
+{
+  "period": "Jan 2026",
+  "region": "Worldwide",
+  "scope": "All Traffic",
+  "channels": [
+    {
+      "id": "tc-1",
+      "label": "Direct",
+      "value": 98
+    },
+    {
+      "id": "tc-2",
+      "label": "Organic",
+      "value": 88
+    },
+    {
+      "id": "tc-3",
+      "label": "Paid",
+      "value": 76
+    },
+    {
+      "id": "tc-4",
+      "label": "Referrals",
+      "value": 100
+    },
+    {
+      "id": "tc-5",
+      "label": "Display",
+      "value": 90
+    },
+    {
+      "id": "tc-6",
+      "label": "Social",
+      "value": 54
+    },
+    {
+      "id": "tc-7",
+      "label": "Email",
+      "value": 82
+    }
+  ]
+}
