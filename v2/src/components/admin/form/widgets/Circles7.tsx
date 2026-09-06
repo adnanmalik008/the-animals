@@ -48,7 +48,8 @@ export function Circles7({ value, onChange, id, describedBy, invalid }: WidgetEd
               <tr key={circleId}>
                 <td className="px-3 py-2">
                   <input
-                    id={`${id}-${circleId}-name`}
+                    // the field's own <label for> points at the bare id
+                    id={row === 0 ? id : `${id}-${circleId}-name`}
                     value={circle.name}
                     maxLength={24}
                     aria-label={`Circle ${row + 1} name`}

@@ -114,6 +114,7 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
             <input
               id={controlId}
               type="checkbox"
+              aria-invalid={invalid || undefined}
               aria-describedby={describedBy}
               checked={value === true}
               onChange={(e) => onChange(e.target.checked)}

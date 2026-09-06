@@ -65,6 +65,8 @@ function RowButton({
 export function ListField({ spec, path, value, onChange, errors, renderField: Field, ...sources }: Props) {
   const rows = Array.isArray(value) ? value : [];
   const key = pathKey(path);
+  // a list at the document root has an empty path key; "-title" is not an id
+  const titleId = `cms-${key || "doc"}-title`;
   const ownError = errors[key];
   const bounds = listBounds(spec, rows.length);
 
@@ -105,9 +107,9 @@ export function ListField({ spec, path, value, onChange, errors, renderField: Fi
     setOpen((was) => (isOpen ? (was.includes(index) ? was : [...was, index]) : was.filter((i) => i !== index)));
 
   return (
-    <section className="flex flex-col gap-2" aria-labelledby={`${key}-title`}>
+    <section className="flex flex-col gap-2" aria-labelledby={titleId}>
       <div className="flex flex-wrap items-baseline gap-2">
-        <h3 id={`${key}-title`} className="text-sm font-semibold text-ink">
+        <h3 id={titleId} className="text-sm font-semibold text-ink">
           {spec.label}
         </h3>
         <span className={hint}>

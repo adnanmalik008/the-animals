@@ -23,7 +23,7 @@ import {
   withFreshIds,
 } from "@/components/admin/form/list-ops";
 import { docReducer, initDocState, isDirty } from "@/components/admin/form/useDocState";
-import { sparklinePath, toCircles7, toPoints12, toPresence3 } from "@/components/admin/form/widgets";
+import { sparklinePath, toCircles7, toPoints12, toPresence3, withPoint } from "@/components/admin/form/widgets";
 
 /* a list whose rows carry ids at two levels, so "fresh ids all the way
    down" is actually exercised */
@@ -383,6 +383,39 @@ describe("widget value coercion", () => {
       icon: defaults.news.icon,
       size: defaults.news.size,
     });
+  });
+
+  /* the box shows a clamped number, so the document must hold the clamped
+     number too: storing 500 while displaying 100 fails the save with "At
+     most 100" against a field that visibly reads 100, and nothing on screen
+     tells the editor what to change */
+  it("writing a point stores exactly what the box will show", () => {
+    const zeroes = WIDGET_DEFAULTS.points12();
+    expect(withPoint(zeroes, 3, "42")[3]).toBe(42);
+    expect(withPoint(zeroes, 3, "500")[3]).toBe(100);
+    expect(withPoint(zeroes, 3, "-5")[3]).toBe(0);
+    expect(withPoint(zeroes, 0, "100")[0]).toBe(100);
+  });
+
+  it("an emptied or unparseable box writes zero, never NaN", () => {
+    const zeroes = WIDGET_DEFAULTS.points12();
+    expect(withPoint(zeroes, 2, "")[2]).toBe(0);
+    expect(withPoint(zeroes, 2, "abc")[2]).toBe(0);
+    expect(Number.isNaN(withPoint(zeroes, 2, "abc")[2])).toBe(false);
+  });
+
+  it("writing one point leaves the other eleven and the original alone", () => {
+    const original = Array.from({ length: 12 }, (_, i) => i);
+    const next = withPoint(original, 5, "99");
+    expect(next[5]).toBe(99);
+    expect(next.filter((_, i) => i !== 5)).toEqual(original.filter((_, i) => i !== 5));
+    expect(original[5]).toBe(5);
+    expect(next).not.toBe(original);
+  });
+
+  it("writes through whatever a malformed document held", () => {
+    expect(withPoint([1, 2, 3], 11, "7")).toHaveLength(12);
+    expect(withPoint([1, 2, 3], 11, "7")[11]).toBe(7);
   });
 
   it("draws a sparkline that spans the box and inverts the axis", () => {

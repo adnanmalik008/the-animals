@@ -111,37 +111,41 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
     </>
   );
 
-  /* an optional group is a switch, not a set of blank inputs */
-  if (spec.optional) {
-    const present = record !== undefined;
-    return (
-      <fieldset className="flex flex-col gap-2 rounded-xl border border-line bg-bg2/40 p-4">
-        <legend className="sr-only">{spec.label ?? key}</legend>
-        <div className="flex flex-wrap items-center gap-2">
-          {heading}
-          <button
-            type="button"
-            onClick={() =>
-              onChange(present ? undefined : blankObject(spec, () => newId(prefixFromPath(path, "id"))))
-            }
-            className={`${quietBtn} ml-auto`}
-          >
-            {present ? "Remove" : "Add"}
-          </button>
-        </div>
-        {spec.help && <p className={hint}>{spec.help}</p>}
-        {ownError && <p className={fieldError}>{ownError}</p>}
-        {present && <div className="mt-2">{body}</div>}
-      </fieldset>
-    );
-  }
+  const present = record !== undefined;
 
-  if (spec.collapsible) {
+  /* an optional group is a switch, not a set of blank inputs. Adding also
+     opens it — otherwise "Add" appears to do nothing but grow a caret. */
+  const toggle = spec.optional ? (
+    <button
+      type="button"
+      onClick={() => {
+        if (present) onChange(undefined);
+        else {
+          onChange(blankObject(spec, () => newId(prefixFromPath(path, "id"))));
+          setOpen(true);
+        }
+      }}
+      className={quietBtn}
+    >
+      {present ? "Remove" : "Add"}
+    </button>
+  ) : null;
+
+  /* Both flags together is a real combination — newswire's `incoming` sets
+     them — and `optional` must not swallow `collapsible`: that would put a
+     whole duplicate article form, permanently expanded, under a twelve-row
+     list. An absent optional group has no body to fold, so it falls through
+     to the flat switch below. */
+  if (spec.collapsible && (!spec.optional || present)) {
     return (
-      <fieldset className="rounded-xl border border-line bg-bg2/40">
+      <fieldset className="relative rounded-xl border border-line bg-bg2/40">
         <legend className="sr-only">{spec.label ?? key}</legend>
         <details open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
-          <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl px-4 py-3 hover:bg-bg2 [&::-webkit-details-marker]:hidden">
+          <summary
+            className={`flex cursor-pointer list-none items-center gap-2 rounded-xl py-3 pl-4 hover:bg-bg2 [&::-webkit-details-marker]:hidden ${
+              toggle ? "pr-28" : "pr-4"
+            }`}
+          >
             <span aria-hidden className="text-graphite">
               {open ? "▾" : "▸"}
             </span>
@@ -153,6 +157,23 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
             {body}
           </div>
         </details>
+        {/* outside the <summary>: buttons nested in one are unreliable */}
+        {toggle && <div className="absolute right-3 top-2.5">{toggle}</div>}
+      </fieldset>
+    );
+  }
+
+  if (spec.optional) {
+    return (
+      <fieldset className="flex flex-col gap-2 rounded-xl border border-line bg-bg2/40 p-4">
+        <legend className="sr-only">{spec.label ?? key}</legend>
+        <div className="flex flex-wrap items-center gap-2">
+          {heading}
+          <span className="ml-auto">{toggle}</span>
+        </div>
+        {spec.help && <p className={hint}>{spec.help}</p>}
+        {ownError && <p className={fieldError}>{ownError}</p>}
+        {present && <div className="mt-2">{body}</div>}
       </fieldset>
     );
   }

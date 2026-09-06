@@ -28,4 +28,4 @@ export const WIDGET_EDITORS: Record<WidgetId, ComponentType<WidgetEditorProps>> 
   circles7: Circles7,
 };
 
-export { sparklinePath, toCircles7, toPoints12, toPresence3 } from "./values";
+export { sparklinePath, toCircles7, toPoints12, toPresence3, withPoint } from "./values";

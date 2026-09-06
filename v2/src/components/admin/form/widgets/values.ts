@@ -15,14 +15,29 @@ type Circle = Circles7[(typeof CIRCLE_IDS)[number]];
 
 const asArray = (value: unknown): readonly unknown[] => (Array.isArray(value) ? value : []);
 
+const clampPoint = (n: number): number => Math.min(100, Math.max(0, n));
+
 /** Twelve numbers in 0–100: padded, truncated and clamped. */
 export function toPoints12(value: unknown): number[] {
   const raw = asArray(value);
   return Array.from({ length: 12 }, (_, i) => {
     const n = raw[i];
     if (typeof n !== "number" || !Number.isFinite(n)) return 0;
-    return Math.min(100, Math.max(0, n));
+    return clampPoint(n);
   });
+}
+
+/** One point written back, clamped the same way the box displays it.
+
+    `max={100}` on a number input does not stop anyone typing 500, and
+    `toPoints12` clamps only on the way out — so without this the document
+    would hold 500 while the box read 100, and the save would fail with
+    "At most 100" against a field that visibly says 100. */
+export function withPoint(points: readonly number[], index: number, raw: string): number[] {
+  const parsed = Number(raw);
+  const next = toPoints12(points);
+  next[index] = raw.trim() === "" || Number.isNaN(parsed) ? 0 : clampPoint(parsed);
+  return next;
 }
 
 /** Exactly three booleans; anything else in a slot reads as unticked. */
