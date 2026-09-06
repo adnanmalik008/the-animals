@@ -8,17 +8,14 @@
 import type { ComponentType, ReactNode } from "react";
 import type { FieldErrors } from "@/lib/cms/parse";
 import type { Path } from "@/lib/cms/paths";
+import type { RefSources } from "@/lib/cms/refs";
 import type { FieldSpec } from "@/lib/cms/spec";
 
-export interface RefOption {
-  value: string;
-  label: string;
-}
-
-/** Options for `ref` fields, keyed by `spec.source.doc ?? "self"`. A key with
-    no entry (or an empty one) leaves the field as a plain text input, so a
-    reference can still be typed before its source module exists. */
-export type RefSources = Record<string, readonly RefOption[]>;
+/* Options for `ref` fields, keyed by `refKey(spec.source)` — the document
+   and the list, since one document can hold two lists. A key with no entry
+   leaves the field a plain text input, so a reference can still be typed
+   before its source module has any rows. */
+export type { RefOption, RefSources } from "@/lib/cms/refs";
 
 /** What the renderer needs that a FieldSpec cannot carry: values that come
     from other documents. Threaded unchanged through objects and lists. */

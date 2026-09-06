@@ -11,6 +11,7 @@ import { airwaves } from "./airwaves";
 import { anomalies } from "./anomalies";
 import { appStore } from "./app-store";
 import { boardHeader } from "./board-header";
+import { competitors } from "./competitors";
 import { conversation } from "./conversation";
 import { inTheirInbox } from "./in-their-inbox";
 import { hiring } from "./hiring";
@@ -48,6 +49,7 @@ export const MODULES = [
   trafficSources,
   pulse,
   hiring,
+  competitors,
   wildCams,
   anomalies,
 ] as const;

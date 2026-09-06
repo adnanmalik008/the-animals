@@ -9,6 +9,7 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { refKey } from "@/lib/cms/refs";
 import { f } from "@/lib/cms/spec";
 import type { FieldSpec } from "@/lib/cms/spec";
 import { WIDGET_DEFAULTS } from "@/lib/cms/widgets";
@@ -157,9 +158,19 @@ describe("field wiring", () => {
 
   it("a ref with no source list falls back to a text input", () => {
     expect(render(SPECS.ref, "news")).toContain("<input");
-    const withOptions = render(SPECS.ref, "news", {}, { refSources: { self: [{ value: "news", label: "News" }] } });
+    const withOptions = render(SPECS.ref, "news", {}, {
+      refSources: { [refKey(SPECS.ref.source)]: [{ value: "news", label: "News" }] },
+    });
     expect(withOptions).toContain("<select");
     expect(withOptions).toContain("News");
+  });
+
+  /* The key is the document *and* the list: one document can hold two, and
+     keying by the document alone handed a field the other list's rows. */
+  it("a ref ignores options filed under the document alone", () => {
+    const html = render(SPECS.ref, "news", {}, { refSources: { self: [{ value: "news", label: "News" }] } });
+    expect(html).toContain("<input");
+    expect(html).not.toContain("<select");
   });
 
   it("an image renders its alt field beside the preview, and only once", () => {

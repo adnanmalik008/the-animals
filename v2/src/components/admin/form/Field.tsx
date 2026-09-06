@@ -14,6 +14,7 @@
 
 import type { ReactElement } from "react";
 import { pathKey } from "@/lib/cms/paths";
+import { refKey } from "@/lib/cms/refs";
 import type { FieldSpec } from "@/lib/cms/spec";
 import { useFieldAnchor } from "./ErrorSummary";
 import type { FieldProps } from "./field-types";
@@ -206,7 +207,7 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
         );
 
       case "ref": {
-        const options = sources.refSources?.[spec.source.doc ?? "self"] ?? [];
+        const options = sources.refSources?.[refKey(spec.source)] ?? [];
         const current = asText(value);
         /* nothing to choose from yet — the referenced module may not be
            filled in, so let the id be typed rather than blocking the field */

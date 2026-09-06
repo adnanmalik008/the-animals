@@ -117,6 +117,9 @@ const HEADING_SOURCE: Record<string, string | null> = {
   /* the shell itself — logo, faces, clock. "Board header" is the admin's name
      for it and is printed nowhere on the board. */
   "board-header": null,
+  /* the competitive set is named on every Competition module but has no
+     heading of its own; "Competitors" is the admin's word for the list */
+  competitors: null,
   newswire: "src/components/live/LiveBoard.tsx",
   "social-pulse": "src/components/live/SocialPulse.tsx",
   conversation: "src/components/live/TheConversation.tsx",

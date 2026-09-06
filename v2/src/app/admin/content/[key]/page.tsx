@@ -1,8 +1,9 @@
 import "server-only";
 import { notFound } from "next/navigation";
+import { buildRefSources } from "@/lib/cms/refs";
 import { byKey } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
-import { getContentRowInfos } from "@/lib/server/docs";
+import { getContentDocs, getContentRowInfos } from "@/lib/server/docs";
 import { isCmsConfigured } from "@/lib/server/supabase";
 import { ContentNav, DirtyGuard } from "@/components/admin/ContentNav";
 import { ModuleForm } from "@/components/admin/ModuleForm";
@@ -55,6 +56,13 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
   const row = read.rows.find((r) => r.moduleKey === key);
   const invalid = row?.status === "invalid";
   const configured = isCmsConfigured();
+  const startingDoc = row ? row.data : def ? def.fixture() : template;
+
+  /* A `ref` field stores the id of a row in another module — a competitor,
+     say. The options are resolved here, where every document is already in
+     hand, and travel to the form as plain {value,label} pairs: definitions
+     do not cross the RSC boundary, and neither does the registry. */
+  const refSources = def ? buildRefSources(def.fields, { ...(await getContentDocs()) }, startingDoc) : undefined;
 
   return (
     <DirtyGuard>
@@ -63,10 +71,11 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
         <div className="min-w-0 flex-1">
           <ModuleForm
             moduleKey={key}
-            initialDoc={row ? row.data : def ? def.fixture() : template}
+            initialDoc={startingDoc}
             resetDoc={def ? def.fixture() : template}
             invalid={invalid}
             canSave={configured}
+            refSources={refSources}
             warning={
               !configured
                 ? "Supabase is not configured, so there is nowhere to save content (see v2/README.md)."

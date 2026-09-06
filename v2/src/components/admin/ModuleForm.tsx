@@ -33,6 +33,7 @@ import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { issuesToFieldErrors, type FieldErrors } from "@/lib/cms/parse";
 import { byKey } from "@/lib/cms/registry";
 import { schemaFor } from "@/lib/cms/schema";
+import type { RefSources } from "@/lib/cms/refs";
 import type { ObjectSpec } from "@/lib/cms/spec";
 import { saveContentDocAction, type ActionState } from "@/app/admin/actions";
 import { Feedback } from "@/app/admin/ui";
@@ -51,6 +52,10 @@ export interface ModuleFormProps {
   canSave: boolean;
   /** a standing caveat about saving here, shown before anything is typed */
   warning?: string;
+  /** rows a `ref` field can point at, built on the server from the other
+      modules' documents; a source with nothing to offer is absent, and the
+      field falls back to a typed id */
+  refSources?: RefSources;
 }
 
 const LOCK = (
@@ -67,6 +72,7 @@ export function ModuleForm({
   invalid = false,
   canSave,
   warning,
+  refSources,
 }: ModuleFormProps) {
   const def = byKey(moduleKey);
   const [state, action, pending] = useActionState<ActionState, FormData>(saveContentDocAction, {});
@@ -221,7 +227,14 @@ export function ModuleForm({
 
         {rootSpec && (
           <div className={`${card} flex flex-col gap-5`}>
-            <Field spec={rootSpec} path={[]} value={doc} onChange={replace} errors={errors} />
+            <Field
+              spec={rootSpec}
+              path={[]}
+              value={doc}
+              onChange={replace}
+              errors={errors}
+              refSources={refSources}
+            />
           </div>
         )}
 
