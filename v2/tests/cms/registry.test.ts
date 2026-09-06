@@ -36,7 +36,25 @@ describe("registry", () => {
   it("the board-header fixture keeps the nav's two moderators and a GMT+1 clock", () => {
     const fixture = byKey("board-header").fixture();
     expect(fixture.moderators.map((m) => m.name)).toEqual(["Amara Osei", "Jonas Keller"]);
-    expect(fixture.clock).toEqual({ timeZone: "Europe/Paris", label: "GMT+1" });
+    expect(fixture.clock).toEqual({ timeZone: "Etc/GMT-1", label: "GMT+1" });
+  });
+
+  /* The clock's label is fixed text, not something derived from the zone,
+     and the clock this replaced simply added 60 minutes all year. So the
+     shipped zone has to be a fixed offset: a city zone would put the board
+     an hour off its own GMT+1 label every summer, which is a bug nobody
+     sees until the clocks change. Etc/GMT-1 is UTC+1 with no daylight
+     saving — the sign is inverted by the POSIX convention these names
+     follow. Same UTC instant in January and July, same wall clock. */
+  it("the default clock zone is a fixed UTC+1 with no daylight-saving shift", () => {
+    const { timeZone } = byKey("board-header").fixture().clock;
+    const hourAt = (utc: string) =>
+      new Intl.DateTimeFormat("en-GB", { timeZone, hour: "2-digit", hour12: false }).format(
+        new Date(utc)
+      );
+
+    expect(hourAt("2026-01-15T12:00:00Z")).toBe("13");
+    expect(hourAt("2026-07-15T12:00:00Z")).toBe("13");
   });
 
   it("finds a definition by key", () => {

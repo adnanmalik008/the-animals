@@ -50,16 +50,22 @@ export const boardHeader = defineModule({
     clock: f.object({
       label: "Clock",
       fields: {
-        /* A real zone, not a fixed offset, so the clock follows the
-           client's summer time instead of drifting an hour every spring.
-           Europe/Paris is therefore GMT+2 for half the year while the
-           label below still reads GMT+1 — the label is free text on
-           purpose, so an agency that wants the offset frozen can pin the
-           zone to Etc/GMT-1 instead. */
+        /* The default has to be a *fixed* offset, because the label beside
+           it is fixed text rather than something derived from the zone.
+           The clock this replaced simply added 60 minutes all year, so a
+           city zone as the default — Europe/Paris is UTC+2 every summer —
+           would leave the shipped board reading an hour off its own GMT+1
+           label for half the year. Etc/GMT-1 never observes summer time
+           and is UTC+1: the sign is inverted by the POSIX convention these
+           zone names follow, so it reads backwards on purpose.
+
+           A client who wants a city's real local time sets the zone and
+           the label together — that is what an IANA field is for, and it
+           stays available here. */
         timeZone: f.text({
           label: "Time zone",
-          help: "An IANA zone name — Europe/Paris, America/New_York, Asia/Tokyo. The clock keeps this zone whatever the viewer's own.",
-          default: "Europe/Paris",
+          help: "An IANA zone name — Europe/Paris, America/New_York, Asia/Tokyo. The clock keeps this zone whatever the viewer's own. Change the label to match: it is not derived from the zone, and a city zone moves with summer time.",
+          default: "Etc/GMT-1",
           maxLength: 60,
         }),
         label: f.text({
@@ -80,6 +86,6 @@ export const boardHeader = defineModule({
       { id: "mod-1", name: "Amara Osei" },
       { id: "mod-2", name: "Jonas Keller" },
     ],
-    clock: { timeZone: "Europe/Paris", label: "GMT+1" },
+    clock: { timeZone: "Etc/GMT-1", label: "GMT+1" },
   }),
 });
