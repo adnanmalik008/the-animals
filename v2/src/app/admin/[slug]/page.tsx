@@ -1,19 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getBoardBySlug, getModuleData, listBoardUsers } from "@/lib/server/boards";
+import { getBoardBySlug, listBoardUsers } from "@/lib/server/boards";
 import { boardHost } from "@/lib/board-url";
-import { BoardMetaForm, DeleteBoardButton, ModuleEditor, PublishChip, UsersManager } from "../ui";
-import { MODULE_TEMPLATES } from "@/lib/module-templates";
+import { BoardMetaForm, DeleteBoardButton, PublishChip, UsersManager } from "../ui";
+import { BoardModuleDirectory } from "@/components/admin/ModuleDirectory";
 
 export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug]">) {
   const { slug } = await params;
   const board = await getBoardBySlug(slug);
   if (!board) notFound();
 
-  const [modules, users] = await Promise.all([
-    getModuleData(board.id),
-    listBoardUsers(board.id),
-  ]);
+  const users = await listBoardUsers(board.id);
   const host = boardHost(board.slug, process.env.BOARD_ROOT_DOMAIN);
 
   return (
@@ -48,12 +45,7 @@ export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug
       )}
 
       <BoardMetaForm board={board} />
-      <ModuleEditor
-        board={board}
-        moduleKeys={Object.keys(MODULE_TEMPLATES)}
-        existing={modules}
-        templates={MODULE_TEMPLATES}
-      />
+      <BoardModuleDirectory board={board} />
       <UsersManager board={board} users={users} host={host} />
     </div>
   );

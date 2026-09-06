@@ -63,14 +63,35 @@ export type SaveDocResult =
   | { ok: true; doc: unknown }
   | { ok: false; error: string; fieldErrors: FieldErrors };
 
+/** A stored row, with `updated_at`. */
+interface SavedModuleRow {
+  module_key: string;
+  data: unknown;
+  updated_at: string;
+}
+
+/** A stored row + whether it still fits its definition. The same judgement for
+    a board's row and for a shared one: both are documents an editor typed and
+    a schema may since have moved past. */
+function rowInfo(row: SavedModuleRow): ModuleRowInfo {
+  const moduleKey = String(row.module_key);
+  const def = byKey(moduleKey);
+  return {
+    moduleKey,
+    data: row.data,
+    updatedAt: String(row.updated_at),
+    status: !def ? "unmanaged" : parseDoc(def, row.data).ok ? "custom" : "invalid",
+  };
+}
+
 /* ---------------- shared defaults ---------------- */
 
 /** A `module_defaults` read. `available: false` means the table is not there
     at all — the migration is unapplied, or Supabase is unconfigured — which is
     "no shared defaults", the expected state, and not a failure. `ok: false` is
     a real one. */
-export type DefaultsRead =
-  | { ok: true; rows: ModuleRow[]; available: boolean }
+export type DefaultsRead<T = ModuleRow> =
+  | { ok: true; rows: T[]; available: boolean }
   | { ok: false; error: string };
 
 /* Two codes mean the same thing: PostgREST answers from its schema cache and
@@ -86,8 +107,8 @@ const MISSING_TABLE_CODES: ReadonlySet<string> = new Set(["PGRST205", "42P01"]);
     use. Pure and exported so the pre-migration path is testable without a live
     client, which matters because that path is the normal one until Adnan runs
     `0002_cms.sql`. */
-export function defaultsRead(res: QueryAnswer): DefaultsRead {
-  const read = readResult<ModuleRow>(res);
+export function defaultsRead<T = ModuleRow>(res: QueryAnswer): DefaultsRead<T> {
+  const read = readResult<T>(res);
   if (read.ok) return { ok: true, rows: read.rows, available: true };
   if (read.code && MISSING_TABLE_CODES.has(read.code)) return { ok: true, rows: [], available: false };
   return { ok: false, error: read.error };
@@ -122,6 +143,38 @@ export async function saveDefaultDoc(moduleKey: string, raw: unknown): Promise<S
   return { ok: true, doc: res.doc };
 }
 
+/** The shared-defaults admin view: what is stored, whether it still validates,
+    and whether the table is there at all. `available: false` is the normal
+    state until `0002_cms.sql` runs — no shared content, not a failure. */
+export async function getDefaultRowInfos(): Promise<DefaultsRead<ModuleRowInfo>> {
+  const db = supabaseAdmin();
+  if (!db) return { ok: true, rows: [], available: false };
+
+  const read = defaultsRead<SavedModuleRow>(
+    await db.from("module_defaults").select("module_key,data,updated_at")
+  );
+  if (!read.ok) {
+    console.warn(`[cms] shared defaults: ${read.error} — cannot say what is saved`);
+    return read;
+  }
+  return { ok: true, available: read.available, rows: read.rows.map(rowInfo) };
+}
+
+/** The agency-wide default for one module, validated and cloned — what "Reset
+    to shared default" puts back on a board form. `undefined` when there is
+    none, or when the one there no longer fits its definition: a board must
+    never be reset onto a document the board itself would refuse. */
+export async function getSharedDoc(moduleKey: string): Promise<unknown> {
+  const def = byKey(moduleKey);
+  if (!def) return undefined;
+  const read = await getDefaultRows();
+  if (!read.ok) return undefined;
+  const row = read.rows.find((r) => r.module_key === moduleKey);
+  if (!row) return undefined;
+  const res = parseDoc(def, row.data);
+  return res.ok ? structuredClone(res.doc) : undefined;
+}
+
 /* ---------------- board content ---------------- */
 
 /** Every registry key, with its validated doc or its fixture. Cached per
@@ -151,12 +204,6 @@ export const getBoardDocs = cache(async (boardId: string): Promise<BoardContent>
   };
 });
 
-interface SavedModuleRow {
-  module_key: string;
-  data: unknown;
-  updated_at: string;
-}
-
 /** The admin's view: what is actually stored, and whether it still validates.
     A failed read comes back as `ok: false` so the screen can say so instead of
     offering a template as though it were the board's saved content. */
@@ -172,19 +219,7 @@ export async function getModuleRows(boardId: string): Promise<ReadResult<ModuleR
     return read;
   }
 
-  return {
-    ok: true,
-    rows: read.rows.map((row) => {
-      const moduleKey = String(row.module_key);
-      const def = byKey(moduleKey);
-      return {
-        moduleKey,
-        data: row.data,
-        updatedAt: String(row.updated_at),
-        status: !def ? "unmanaged" : parseDoc(def, row.data).ok ? "custom" : "invalid",
-      };
-    }),
-  };
+  return { ok: true, rows: read.rows.map(rowInfo) };
 }
 
 /** Stores the *normalised* doc, so what the board reads back is what the

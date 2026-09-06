@@ -109,18 +109,12 @@ export function boardToMeta(board: BoardRecord): BoardMeta {
 
 /* ---------------- module content ---------------- */
 
-export async function getModuleData(boardId: string): Promise<Record<string, unknown>> {
-  const db = supabaseAdmin();
-  if (!db || boardId === "fixture") return {};
-  const { data, error } = await db
-    .from("module_data")
-    .select("module_key,data")
-    .eq("board_id", boardId);
-  if (error || !data) return {};
-  const out: Record<string, unknown> = {};
-  for (const row of data) out[row.module_key] = row.data;
-  return out;
-}
+/* `getModuleData` lived here: one query that answered `{}` both for a board
+   with nothing saved and for a query that failed. Its last caller was the
+   admin's JSON editor, which this milestone replaced, so it is gone rather
+   than repaired — `getModuleRows` in ./docs.ts reads the same table and says
+   which of the two happened, and nothing should be able to reach for the
+   version that cannot. */
 
 export async function setModuleData(boardId: string, moduleKey: string, data: unknown) {
   const db = supabaseAdmin();

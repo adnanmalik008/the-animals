@@ -15,3 +15,18 @@ export function revalidateBoard(slug: string, moduleKey?: string) {
   revalidatePath(`/admin/${slug}`);
   if (moduleKey) revalidatePath(`/admin/${slug}/modules/${moduleKey}`);
 }
+
+/** A shared default is the content of every board that has none of its own,
+    so one save changes what an unknown number of clients render. There is no
+    list of affected boards to walk — the four tab routes are the same routes
+    for every subdomain, and the admin's per-board screens are reached by
+    revalidating their route patterns rather than each slug in turn. */
+export function revalidateSharedDefault(moduleKey?: string) {
+  for (const path of BOARD_PATHS) revalidatePath(path);
+  revalidatePath("/admin/defaults");
+  if (moduleKey) revalidatePath(`/admin/defaults/${moduleKey}`);
+  /* every board's admin pages: their badges say whether a module is showing
+     the shared copy, and that answer just moved */
+  revalidatePath("/admin/[slug]", "page");
+  revalidatePath("/admin/[slug]/modules/[key]", "page");
+}

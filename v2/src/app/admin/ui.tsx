@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import type { BoardRecord, BoardUserRecord } from "@/lib/server/boards";
 import { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 import {
@@ -8,7 +8,6 @@ import {
   createBoardAction,
   deleteBoardAction,
   removeUserAction,
-  saveModuleDocAction,
   updateBoardAction,
   type ActionState,
 } from "./actions";
@@ -17,7 +16,9 @@ import {
    like this page; re-exported here so an import of it keeps working. */
 export { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 
-function Feedback({ state }: { state: ActionState }) {
+/* The one save-result line every admin form shows. Exported: the generated
+   module form is a second surface that has to report a save the same way. */
+export function Feedback({ state }: { state: ActionState }) {
   if (state.error)
     return (
       <p role="alert" className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
@@ -147,7 +148,10 @@ export function NewBoardForm({ rootDomain }: { rootDomain?: string | null }) {
             name="slug"
             required
             placeholder="nike"
-            pattern="[a-z0-9]([a-z0-9-]{0,46}[a-z0-9])?"
+            /* the dash is escaped: HTML compiles `pattern` with the `v` flag,
+               under which a bare `-` inside a class is a syntax error and the
+               whole attribute is silently ignored */
+            pattern="[a-z0-9]([a-z0-9\-]{0,46}[a-z0-9])?"
             value={effectiveSlug}
             onChange={(e) => {
               setSlugTouched(true);
@@ -266,150 +270,6 @@ export function BoardMetaForm({ board }: { board: BoardRecord }) {
       <div className="flex items-center gap-4">
         <button type="submit" disabled={pending} className={primaryBtn}>
           {pending ? "Saving…" : "Save settings"}
-        </button>
-        <Feedback state={state} />
-      </div>
-    </form>
-  );
-}
-
-/* ---------------- module content (JSON with templates) ---------------- */
-
-function describeJson(value: unknown): string {
-  if (Array.isArray(value)) return `list of ${value.length}`;
-  if (value && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>).map(([k, v]) =>
-      Array.isArray(v) ? `${k} (${v.length})` : k
-    );
-    return entries.slice(0, 6).join(", ") + (entries.length > 6 ? ", …" : "");
-  }
-  return typeof value;
-}
-
-export function ModuleEditor({
-  board,
-  moduleKeys,
-  existing,
-  templates,
-}: {
-  board: BoardRecord;
-  moduleKeys: string[];
-  existing: Record<string, unknown>;
-  templates: Record<string, unknown>;
-}) {
-  const [state, action, pending] = useActionState<ActionState, FormData>(saveModuleDocAction, {});
-  const [key, setKey] = useState(moduleKeys[0] ?? "newswire");
-  const [text, setText] = useState(() =>
-    JSON.stringify(existing[key] ?? templates[key] ?? {}, null, 2)
-  );
-
-  const loadFor = (k: string, source: Record<string, unknown>, fallback?: Record<string, unknown>) =>
-    JSON.stringify(source[k] ?? fallback?.[k] ?? {}, null, 2);
-
-  /* validated on every keystroke — the save button never sends bad JSON */
-  const parse = useMemo(() => {
-    try {
-      return { value: JSON.parse(text) as unknown, error: null };
-    } catch (e) {
-      return { value: null, error: e instanceof Error ? e.message : "Invalid JSON" };
-    }
-  }, [text]);
-
-  const isCustom = existing[key] !== undefined;
-  const fieldErrors = Object.entries(state.fieldErrors ?? {});
-
-  return (
-    <form action={action} className={`${card} flex flex-col gap-4`}>
-      <input type="hidden" name="slug" value={board.slug} />
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <StepEyebrow n="02">Content</StepEyebrow>
-          <h2 className="mt-1 text-lg font-bold">Module content</h2>
-          <p className="mt-0.5 text-sm text-graphite">
-            Each module reads one JSON document. Start from the template and replace the copy.
-          </p>
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-1 text-xs font-medium ${
-            isCustom ? "bg-orange/10 text-orange" : "bg-bg2 text-graphite"
-          }`}
-        >
-          {isCustom ? "Custom content for this board" : "Default template"}
-        </span>
-      </div>
-
-      <div className="flex flex-wrap items-end gap-3">
-        <label className={`${label} min-w-56 flex-1`}>
-          Module
-          <select
-            name="moduleKey"
-            value={key}
-            onChange={(e) => {
-              const k = e.target.value;
-              setKey(k);
-              setText(loadFor(k, existing, templates));
-            }}
-            className={input}
-          >
-            {moduleKeys.map((k) => (
-              <option key={k} value={k}>
-                {k}
-              </option>
-            ))}
-          </select>
-        </label>
-        <div className="flex gap-2 pb-0.5">
-          <button
-            type="button"
-            disabled={!!parse.error}
-            onClick={() => setText(JSON.stringify(parse.value, null, 2))}
-            className={quietBtn}
-          >
-            Format
-          </button>
-          <button
-            type="button"
-            onClick={() => setText(loadFor(key, templates))}
-            className={quietBtn}
-          >
-            Load template
-          </button>
-        </div>
-      </div>
-
-      <label className={label}>
-        <span className="sr-only">Content (JSON)</span>
-        <textarea
-          name="doc"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          rows={18}
-          spellCheck={false}
-          aria-invalid={!!parse.error}
-          className={`${input} font-mono text-xs leading-relaxed ${
-            parse.error ? "border-red/60 focus-visible:ring-red/50" : ""
-          }`}
-        />
-      </label>
-
-      <p className={`text-xs ${parse.error ? "text-red" : "text-graphite"}`} aria-live="polite">
-        {parse.error ? `Invalid JSON — ${parse.error}` : `Valid JSON · ${describeJson(parse.value)}`}
-      </p>
-
-      {/* the syntax is fine but the shape is not: name the fields, in order */}
-      {fieldErrors.length > 0 && (
-        <ul className="flex flex-col gap-1 rounded-lg bg-red/10 px-3 py-2 text-xs text-red">
-          {fieldErrors.map(([path, message]) => (
-            <li key={path}>
-              <span className="font-mono">{path}</span> — {message}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      <div className="flex items-center gap-4">
-        <button type="submit" disabled={pending || !!parse.error} className={primaryBtn}>
-          {pending ? "Saving…" : "Save module"}
         </button>
         <Feedback state={state} />
       </div>

@@ -57,6 +57,23 @@ export default async function AdminHome() {
       </ul>
 
       <NewBoardForm rootDomain={root} />
+
+      {/* Shared content is the answer to "the tenth client should not have to
+          retype the same six livestreams", so it belongs on the boards list —
+          the screen where a tenth client gets created. */}
+      <Link
+        href="/admin/defaults"
+        className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line bg-card p-5 shadow-sm transition-shadow hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+      >
+        <span className="min-w-0">
+          <span className="block text-lg font-bold">Shared content</span>
+          <span className="mt-0.5 block max-w-2xl text-sm text-graphite">
+            One set of content every board falls back to when it has nothing of its own — edit it once and
+            it lands on every client, including the ones created next week.
+          </span>
+        </span>
+        <span className="shrink-0 text-xs font-medium text-ink">Open →</span>
+      </Link>
     </div>
   );
 }
