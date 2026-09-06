@@ -1,6 +1,7 @@
 import "server-only";
 import { headers } from "next/headers";
 import { compare, hash } from "bcryptjs";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { supabaseAdmin } from "./supabase";
 import { boardMeta as fixtureMeta } from "@/data/board";
 import type { BoardMeta } from "@/data/board";
@@ -244,28 +245,90 @@ const TEAM_USERNAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9._-]{1,39}$/;
 const TEAM_MATCH_LIMIT = 25;
 
 /** Escape the LIKE metacharacters so `ilike` matches the username literally.
-    (PostgREST also rewrites `*` to `%`, which no escape survives — hence
-    TEAM_USERNAME_RE, and hence the exact re-check in `teamAdminHash`.) */
-function likeLiteral(value: string): string {
-  return value.replace(/[\%_]/g, (c) => "\\" + c);
+
+    The backslash goes first because it is the escape character: without it,
+    the username `a\_b` would go out as the pattern `a\\_b`, which LIKE
+    reads as a literal backslash followed by a live `_` wildcard — escaping
+    the metacharacters while leaving the escape itself unescaped widens the
+    match instead of narrowing it. One pass over the three characters does it;
+    a second pass would double the first pass's own output.
+
+    `*` is beyond reach: PostgREST rewrites a literal `*` in the value to `%`
+    after any escaping we do. That is why TEAM_USERNAME_RE keeps `*` out of the
+    table, and why both lookups re-check the name in JavaScript rather than
+    trusting the pattern to have matched exactly. */
+export function likeLiteral(value: string): string {
+  return value.replace(/[\\%_]/g, (c) => "\\" + c);
 }
 
-export async function listAdminUsers(): Promise<BoardUserRecord[]> {
+/** A read of the team-login list: the rows to show, and whether the list is
+    an answer at all. Split like `getContentRows` in `./docs.ts`, and for the
+    same reason — "the database did not answer" and "nobody holds agency
+    admin" are opposite facts, and this is the one screen where mistaking the
+    first for the second would be read as a statement about who can get in. */
+export interface AdminUsersRead {
+  users: BoardUserRecord[];
+  /** false when the read failed. The list is then empty because it could not
+      be read, not because it is empty. */
+  ok: boolean;
+}
+
+/** Supabase's `{ data, error }` from `board_users` → the team logins to
+    show. Pure and exported so both branches are reachable without a live
+    client — which is the only way to reach them at all while 0002_cms.sql
+    is unapplied and no row can satisfy the query. */
+export function adminUsersRead(result: TeamAdminQuery): AdminUsersRead {
+  if (result.error) return { ok: false, users: [] };
+  if (!Array.isArray(result.data)) return { ok: false, users: [] };
+
+  const users: BoardUserRecord[] = [];
+  for (const row of result.data) {
+    if (!row || typeof row !== "object") continue;
+    const r = row as Record<string, unknown>;
+    /* Re-checked in JS for the same reason `teamAdminHash` re-checks: a row
+       that reaches this list is offered a Remove button, so the query filters
+       are not the last word on whether it belongs here. An absent `board_id`
+       key is not a board-less row — it is a row nothing has vouched for. */
+    if (!("board_id" in r) || r.board_id !== null) continue;
+    if (r.role !== "admin") continue;
+    if (typeof r.username !== "string") continue;
+    /* No id is no Remove button, so there is nothing to draw. `id` is a
+       Postgres bigint: PostgREST sends it as a JSON number today, and a digit
+       string is accepted too so a change there empties the *button*, never the
+       whole list. Nothing else keys off it — `removeAdminUser` is scoped to
+       board-less admin rows whatever id reaches it. */
+    const id =
+      typeof r.id === "number" && Number.isInteger(r.id)
+        ? r.id
+        : typeof r.id === "string" && /^\d+$/.test(r.id)
+          ? Number(r.id)
+          : null;
+    if (id === null) continue;
+    users.push({
+      id,
+      username: r.username,
+      role: "admin",
+      createdAt: typeof r.created_at === "string" ? r.created_at : "",
+    });
+  }
+  return { ok: true, users };
+}
+
+export async function listAdminUsers(): Promise<AdminUsersRead> {
   const db = supabaseAdmin();
-  if (!db) return [];
-  const { data, error } = await db
-    .from("board_users")
-    .select("id,username,role,board_id,created_at")
-    .is("board_id", null)
-    .eq("role", "admin")
-    .order("created_at");
-  if (error || !Array.isArray(data)) return [];
-  /* Re-checked in JS for the same reason `teamAdminHash` re-checks: a row shown
-     here is offered a Remove button, so a board login must not be able to
-     arrive in this list however the filters behaved. */
-  return data
-    .filter((r) => r && r.board_id == null && r.role === "admin")
-    .map((r) => ({ id: r.id, username: r.username, role: "admin" as const, createdAt: r.created_at }));
+  /* An unconfigured CMS is not a failed read: there is nothing to list and the
+     screen should say so plainly, as it does for content. */
+  if (!db) return { ok: true, users: [] };
+  const read = adminUsersRead(
+    await db
+      .from("board_users")
+      .select("id,username,role,board_id,created_at")
+      .is("board_id", null)
+      .eq("role", "admin")
+      .order("created_at")
+  );
+  if (!read.ok) console.warn("[cms] team logins: the list could not be read");
+  return read;
 }
 
 export async function addAdminUser(username: string, password: string) {
@@ -318,31 +381,75 @@ export function checkEnvAdmin(username: string, password: string): boolean {
   return Boolean(u && p && username === u && password === p);
 }
 
+export interface BoardLoginRow {
+  password_hash: string;
+  role: "client" | "admin";
+}
+
+/** The stored row to check a board login against, or null. Pure, for the same
+    reason `teamAdminHash` is: it is the whole decision about whether the row
+    that came back belongs to the person who typed the name, and it has to be
+    testable without a database.
+
+    The name is re-checked here because the query cannot be taken at its word.
+    PostgREST rewrites a literal `*` in an `ilike` value to `%` — after
+    `likeLiteral` has run, so no escape survives it — and on a board with
+    exactly one login `maybeSingle` then hands that row over for a username
+    nobody has. Not an escalation (the password must still be right, and the
+    row's own role is all it grants) but a username that is optional is half a
+    credential gone. */
+export function boardLoginMatch(data: unknown, username: string): BoardLoginRow | null {
+  if (typeof username !== "string") return null;
+  const wanted = username.trim().toLowerCase();
+  if (!wanted) return null;
+  if (!data || typeof data !== "object" || Array.isArray(data)) return null;
+  const r = data as Record<string, unknown>;
+  if (typeof r.username !== "string" || r.username.toLowerCase() !== wanted) return null;
+  if (typeof r.password_hash !== "string" || r.password_hash.length === 0) return null;
+  /* Anything that is not exactly "admin" is a client — unchanged, and the
+     conservative direction. */
+  return { password_hash: r.password_hash, role: r.role === "admin" ? "admin" : "client" };
+}
+
+/** A fresh object each time, deliberately: a single shared literal handed back
+    from an authentication check is an answer any caller could edit for every
+    later caller. */
+function noBoardLogin(): { ok: boolean; role: "client" | "admin" } {
+  return { ok: false, role: "client" };
+}
+
 export async function checkBoardLogin(
   boardSlug: string,
   username: string,
   password: string
 ): Promise<{ ok: boolean; role: "client" | "admin" }> {
+  if (typeof username !== "string" || typeof password !== "string") return noBoardLogin();
+  /* Trimmed once, here, so the pattern that goes to the database and the name
+     `boardLoginMatch` compares are the same string. `login()` already trims;
+     this makes the function true on its own terms. */
+  const name = username.trim();
+  if (!name || !password) return noBoardLogin();
   const db = supabaseAdmin();
-  if (!db) return { ok: false, role: "client" };
+  if (!db) return noBoardLogin();
   const board = await getBoardBySlug(boardSlug);
-  if (!board || board.id === "fixture") return { ok: false, role: "client" };
+  if (!board || board.id === "fixture") return noBoardLogin();
   const { data } = await db
     .from("board_users")
-    .select("password_hash,role")
+    .select("username,password_hash,role")
     .eq("board_id", board.id)
-    .ilike("username", likeLiteral(username))
+    .ilike("username", likeLiteral(name))
     .maybeSingle();
-  if (!data || typeof data.password_hash !== "string") return { ok: false, role: "client" };
+  const row = boardLoginMatch(data, name);
+  if (!row) return noBoardLogin();
   /* bcrypt throws on a malformed hash; a stored value we cannot read is a
      failed login, not a 500 that would also block the team-login check below. */
   let ok = false;
   try {
-    ok = (await compare(password, data.password_hash)) === true;
+    ok = (await compare(password, row.password_hash)) === true;
   } catch {
     ok = false;
   }
-  return { ok, role: ok && data.role === "admin" ? "admin" : "client" };
+  return { ok, role: ok && row.role === "admin" ? "admin" : "client" };
 }
 
 /* ---------------- team-login check ----------------
@@ -363,6 +470,7 @@ export interface TeamAdminQuery {
 export function teamAdminHash(result: TeamAdminQuery, username: string): string | null {
   if (result.error) return null;
   if (!Array.isArray(result.data)) return null;
+  if (typeof username !== "string") return null;
   const wanted = username.trim().toLowerCase();
   if (!wanted) return null;
 
@@ -372,7 +480,12 @@ export function teamAdminHash(result: TeamAdminQuery, username: string): string 
     /* Re-check in JS what the query filtered on. `ilike` is a pattern match and
        the filters are the server's word for it; neither is trusted to be the
        last say on whether this row is a board-less admin. */
-    if (r.board_id !== null && r.board_id !== undefined) return false;
+    /* `!("board_id" in r)` and not a plain `!= null`: a row whose board_id key
+       is absent, or undefined, is not a board-less row — it is a row this
+       function has been given no way to vouch for, and "no way to tell" is a
+       no. Unreachable while the select above names the column; reachable the
+       day it does not, which is the whole reason this re-check exists. */
+    if (!("board_id" in r) || r.board_id !== null) return false;
     if (r.role !== "admin") return false;
     if (typeof r.username !== "string" || r.username.toLowerCase() !== wanted) return false;
     return typeof r.password_hash === "string" && r.password_hash.length > 0;
@@ -382,10 +495,24 @@ export function teamAdminHash(result: TeamAdminQuery, username: string): string 
 }
 
 /** A login that belongs to the agency, not to a board. Checked after the
-    per-board lookup misses. Returns false on every error path. */
-export async function checkAdminLogin(username: string, password: string): Promise<boolean> {
-  if (!username || !password) return false;
-  const db = supabaseAdmin();
+    per-board lookup misses. Returns false on every error path.
+
+    The client is a parameter, defaulting to `supabaseAdmin()`, purely so the
+    guards in front of the query are reachable in a test. Without it the suite
+    runs with no Supabase environment, `supabaseAdmin()` is null, and the `!db`
+    return answers "no" for every input — which makes an assertion about
+    any other guard pass whether that guard exists or not. An assertion that
+    cannot fail is worse than none in an authentication suite. */
+export async function checkAdminLogin(
+  username: string,
+  password: string,
+  db: SupabaseClient | null = supabaseAdmin()
+): Promise<boolean> {
+  if (typeof username !== "string" || typeof password !== "string") return false;
+  /* Trimmed once, here, so the name the query asks about and the name
+     `teamAdminHash` insists on are the same string. */
+  const name = username.trim();
+  if (!name || !password) return false;
   if (!db) return false;
   try {
     const result = await db
@@ -393,9 +520,9 @@ export async function checkAdminLogin(username: string, password: string): Promi
       .select("username,role,board_id,password_hash")
       .is("board_id", null)
       .eq("role", "admin")
-      .ilike("username", likeLiteral(username))
+      .ilike("username", likeLiteral(name))
       .limit(TEAM_MATCH_LIMIT);
-    const stored = teamAdminHash(result, username);
+    const stored = teamAdminHash(result, name);
     if (!stored) return false;
     return (await compare(password, stored)) === true;
   } catch {

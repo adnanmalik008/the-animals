@@ -18,8 +18,34 @@ export interface Session {
 const COOKIE_NAME = "animals_session";
 const MAX_AGE_S = 60 * 60 * 24 * 7; // 7 days
 
-function secret(): string {
-  return process.env.SESSION_SECRET || "dev-only-secret-change-me";
+/** The development fallback. It is a fixed string committed to this
+    repository, so it is public: anyone holding a checkout can mint
+    `{role:"admin", boardSlug:"*"}` against it and reach every client board. */
+const DEV_FALLBACK = "dev-only-secret-change-me";
+
+/** The HMAC key every session cookie is signed and verified with.
+
+    In production an unset — or still-default — SESSION_SECRET does not
+    weaken the lock, it removes it: sessions are stateless, so the key is the
+    whole of the access control. Refuse rather than serve forgeable cookies.
+    Nobody can log in, which is loud and recoverable; the alternative is a
+    login page that quietly honours forged admin sessions and looks fine.
+
+    `env` is a parameter so both branches are testable without mutating the
+    process the suite runs in. */
+export function sessionSecret(env: NodeJS.ProcessEnv = process.env): string {
+  const configured = env.SESSION_SECRET ?? "";
+  if (env.NODE_ENV === "production") {
+    const trimmed = configured.trim();
+    if (!trimmed || trimmed === DEV_FALLBACK) {
+      throw new Error(
+        "SESSION_SECRET is unset (or still the development default). Refusing to sign or " +
+          "verify sessions with a secret published in this repository — set SESSION_SECRET " +
+          "in the deployment environment."
+      );
+    }
+  }
+  return configured || DEV_FALLBACK;
 }
 
 function b64url(buf: Buffer): string {
@@ -27,7 +53,7 @@ function b64url(buf: Buffer): string {
 }
 
 function sign(payload: string): string {
-  return b64url(createHmac("sha256", secret()).update(payload).digest());
+  return b64url(createHmac("sha256", sessionSecret()).update(payload).digest());
 }
 
 export function encodeSession(session: Session): string {

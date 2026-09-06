@@ -11,9 +11,11 @@ import { TeamLogins } from "./TeamLogins";
 
 export default async function AdminHome() {
   const boards = await listBoards();
-  /* Empty until 0002_cms.sql makes board_id nullable, and empty rather than
-     an error if the read fails at all — the boards below must still list. */
-  const teamUsers = await listAdminUsers();
+  /* Empty until 0002_cms.sql makes board_id nullable. A failed read is still a
+     list, so the boards above keep rendering — but it carries `ok: false`,
+     because "we could not read the list" must not reach an admin as "nobody
+     holds agency admin". */
+  const teamLogins = await listAdminUsers();
   const root = process.env.BOARD_ROOT_DOMAIN;
 
   return (
@@ -89,7 +91,7 @@ export default async function AdminHome() {
 
       <NewBoardForm rootDomain={root} />
 
-      <TeamLogins users={teamUsers} />
+      <TeamLogins users={teamLogins.users} readOk={teamLogins.ok} />
     </div>
   );
 }

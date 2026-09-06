@@ -48,6 +48,15 @@ on conflict (id) do nothing;
 -- cascade-delete with it. A team login belongs to the agency, so its
 -- board_id is null and no board deletion can take it away.
 alter table public.board_users alter column board_id drop not null;
+-- The constraint is one-way: it stops a *client* row losing its board, but it
+-- still permits a board-scoped row with role='admin' (board_id not null,
+-- role='admin'). Nothing in the app creates one — addBoardUser inserts no
+-- role, so Postgres defaults it to 'client' — but a hand-written row of that
+-- shape would be invisible and unremovable in the CMS: the board screen lists
+-- only role='client' rows and the team screen lists only board-less ones. Its
+-- holder would keep admin access with no way to revoke it short of SQL. The
+-- live table holds three logins and zero admin rows, so none exists today; if
+-- one is ever created by hand, delete it by hand too.
 alter table public.board_users add constraint board_users_admin_or_board
   check (board_id is not null or role = 'admin');
 create unique index board_users_team_admin_username_key

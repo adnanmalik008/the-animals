@@ -15,7 +15,7 @@ import { addTeamLoginAction, removeTeamLoginAction, type ActionState } from "./a
    Removal is two-step, like `DeleteBoardButton`: this is the list that can
    lock the agency out of its own CMS, so a stray click must not be enough. */
 
-export function TeamLogins({ users }: { users: BoardUserRecord[] }) {
+export function TeamLogins({ users, readOk }: { users: BoardUserRecord[]; readOk: boolean }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(addTeamLoginAction, {});
   const formRef = useRef<HTMLFormElement | null>(null);
   const [draft, setDraft] = useState({ username: "", password: "" });
@@ -65,10 +65,20 @@ export function TeamLogins({ users }: { users: BoardUserRecord[] }) {
             </li>
           ))}
         </ul>
-      ) : (
+      ) : readOk ? (
         <p className="rounded-xl bg-bg2 px-4 py-3 text-sm text-graphite">
           No team logins yet — the agency shares the ADMIN_PASSWORD from the environment until one
           exists.
+        </p>
+      ) : (
+        /* An empty list and a list that could not be read look identical, and
+           on this screen the difference is who can get into the CMS. Say which
+           one it is rather than letting a database hiccup read as "nobody has
+           admin". */
+        <p className="rounded-xl border border-red/30 bg-red/5 px-4 py-3 text-sm text-ink">
+          The team logins couldn&apos;t be read, so this list isn&apos;t an answer — there may
+          well be logins it isn&apos;t showing. Reload; if it persists, check Supabase before adding
+          or removing anything here.
         </p>
       )}
 
