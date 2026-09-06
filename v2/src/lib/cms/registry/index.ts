@@ -15,8 +15,12 @@ import { inTheirInbox } from "./in-their-inbox";
 import { newswire } from "./newswire";
 import { onStage } from "./on-stage";
 import { opinionLeaders } from "./opinion-leaders";
+import { reddit } from "./reddit";
+import { searchVelocity } from "./search-velocity";
+import { shareOfVoiceModule } from "./share-of-voice";
 import { sightings } from "./sightings";
 import { socialPulse } from "./social-pulse";
+import { topSitesModule } from "./top-sites";
 import { trafficSources } from "./traffic-sources";
 import { wildCams } from "./wild-cams";
 import { youtubeVoices } from "./youtube-voices";
@@ -32,7 +36,11 @@ export const MODULES = [
   airwaves,
   youtubeVoices,
   aiVisibilityModule,
+  shareOfVoiceModule,
+  searchVelocity,
+  topSitesModule,
   opinionLeaders,
+  reddit,
   trafficSources,
   wildCams,
   anomalies,

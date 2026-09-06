@@ -12,6 +12,10 @@ import conversationLegacy from "./legacy/conversation.json";
 import newswireLegacy from "./legacy/newswire.json";
 import onStageLegacy from "./legacy/on-stage.json";
 import opinionLeadersLegacy from "./legacy/opinion-leaders.json";
+import redditLegacy from "./legacy/reddit.json";
+import searchVelocityLegacy from "./legacy/search-velocity.json";
+import shareOfVoiceLegacy from "./legacy/share-of-voice.json";
+import topSitesLegacy from "./legacy/top-sites.json";
 import socialPulseLegacy from "./legacy/social-pulse.json";
 import trafficSourcesLegacy from "./legacy/traffic-sources.json";
 import wildCamsLegacy from "./legacy/wild-cams.json";
@@ -22,6 +26,9 @@ const LEGACY_DOCS: Record<string, unknown> = {
   conversation: conversationLegacy,
   "on-stage": onStageLegacy,
   "ai-visibility": aiVisibilityLegacy,
+  "share-of-voice": shareOfVoiceLegacy,
+  "search-velocity": searchVelocityLegacy,
+  "top-sites": topSitesLegacy,
   "opinion-leaders": opinionLeadersLegacy,
   "traffic-sources": trafficSourcesLegacy,
   "wild-cams": wildCamsLegacy,
@@ -96,5 +103,38 @@ describe("legacy saved shapes", () => {
     const def = byKey("newswire");
     const res = parseDoc(def, { items: [] });
     expect(res.ok).toBe(false);
+  });
+});
+
+/* Reddit is the one snapshot deliberately left out of LEGACY_DOCS above.
+   Its template was already stale: it stores `insights` as one flat list,
+   while the board has rendered three states behind pills — drivers,
+   problems, solutions — for as long as the module has existed. So the
+   shape the old editor would have saved was never the shape the board
+   reads, and preserving it would mean carrying a shape nothing renders.
+   Production holds zero saved documents, so nothing is lost; this test
+   records the reason rather than asserting it. */
+describe("reddit's legacy template was stale before it was wired", () => {
+  it("stored one flat list where the board reads three states", () => {
+    const legacy = redditLegacy as { insights: unknown };
+    expect(Array.isArray(legacy.insights)).toBe(true);
+
+    const def = byKey("reddit");
+    expect(Object.keys(def.fields.insights.fields).sort()).toEqual(["drivers", "problems", "solutions"]);
+
+    /* and so it does not parse — which is why it is not in the net above */
+    expect(parseDoc(def, legacy).ok).toBe(false);
+  });
+
+  it("gives every insight an id, so a sticker survives a reorder", () => {
+    const def = byKey("reddit");
+    const fixture = def.fixture();
+    const ids = [
+      ...fixture.insights.drivers,
+      ...fixture.insights.problems,
+      ...fixture.insights.solutions,
+    ].map((i) => i.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    expect(ids.every((id) => id.length > 0)).toBe(true);
   });
 });

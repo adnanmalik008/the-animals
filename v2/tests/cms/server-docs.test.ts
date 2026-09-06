@@ -13,7 +13,7 @@ import {
   readResult,
   saveContentDoc,
 } from "@/lib/server/docs";
-import { MODULES } from "@/lib/cms/registry";
+import { MODULES, byKey } from "@/lib/cms/registry";
 
 describe("getContentDocs", () => {
   it("serves every registry key's fixture, marked default", async () => {
@@ -149,6 +149,10 @@ describe("saveContentDoc", () => {
      the contract it has always had: the raw JSON goes to the table as typed.
      It gets that far — the failure below is the missing write, not a refusal. */
   it("sends an unmanaged key's raw JSON to the table rather than refusing it", async () => {
-    await expect(saveContentDoc("reddit", { anything: true })).rejects.toThrow(/not configured/);
+    /* `horizon` is chosen because it is still definition-less; the key here
+       has to be swapped each time a module is wired, and the assertion below
+       proves the one in use still is. */
+    expect(byKey("horizon")).toBeUndefined();
+    await expect(saveContentDoc("horizon", { anything: true })).rejects.toThrow(/not configured/);
   });
 });

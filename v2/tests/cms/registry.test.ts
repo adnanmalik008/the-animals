@@ -360,3 +360,70 @@ describe("ai-visibility", () => {
     expect(parseDoc(def, { ...fixture, score: 101 }).ok).toBe(false);
   });
 });
+
+/* Batch three: the rest of the Live data column. */
+describe("the Live data column", () => {
+  it("search-velocity: the trend is the points12 widget, twelve points 0–100", () => {
+    const def = byKey("search-velocity");
+    const fixture = def.fixture();
+    expect(def.fields.terms.item.fields.points.widget).toBe("points12");
+
+    const withPoints = (points: number[]) => ({ ...fixture, terms: [{ ...fixture.terms[0], points }] });
+    expect(parseDoc(def, withPoints(Array.from({ length: 12 }, () => 50))).ok).toBe(true);
+    expect(parseDoc(def, withPoints(Array.from({ length: 11 }, () => 50))).ok).toBe(false);
+    expect(parseDoc(def, withPoints([101, ...Array.from({ length: 11 }, () => 0)])).ok).toBe(false);
+  });
+
+  it("search-velocity: a fall keeps its sign", () => {
+    const def = byKey("search-velocity");
+    const fixture = def.fixture();
+    const withDelta = (delta: number) => ({ ...fixture, terms: [{ ...fixture.terms[0], delta }] });
+    const fell = parseDoc(def, withDelta(-7));
+    expect(fell.ok, fell.ok ? "" : JSON.stringify(fell.fieldErrors)).toBe(true);
+    if (fell.ok) expect(fell.doc.terms[0].delta).toBe(-7);
+  });
+
+  it("top-sites: no tab may be empty, because the headline reads a sorted first row", () => {
+    const def = byKey("top-sites");
+    const fixture = def.fixture();
+    for (const tab of ["news", "social", "searchai"] as const) {
+      expect(parseDoc(def, { ...fixture, [tab]: [] }).ok, `${tab} accepted an empty list`).toBe(false);
+    }
+  });
+
+  it("top-sites: a document saved before the subtitle existed gets the shipped one", () => {
+    const def = byKey("top-sites");
+    const fixture = def.fixture();
+    const noSubtitle: Record<string, unknown> = { ...fixture };
+    delete noSubtitle.subtitle;
+    const res = parseDoc(def, noSubtitle);
+    expect(res.ok, res.ok ? "" : JSON.stringify(res.fieldErrors)).toBe(true);
+    if (res.ok) expect(res.doc.subtitle).toBe(fixture.subtitle);
+  });
+
+  it("share-of-voice: the chips are editable and default to what shipped", () => {
+    const def = byKey("share-of-voice");
+    const res = parseDoc(def, { rows: def.fixture().rows });
+    expect(res.ok, res.ok ? "" : JSON.stringify(res.fieldErrors)).toBe(true);
+    if (res.ok) {
+      expect(res.doc.subtitle).toBe("AI + Web conversation");
+      expect(res.doc.window).toBe("7 days");
+    }
+  });
+
+  it("share-of-voice: the bar colour is a palette token, not a colour", () => {
+    const def = byKey("share-of-voice");
+    const fixture = def.fixture();
+    const withColor = (color: string) => ({ ...fixture, rows: [{ ...fixture.rows[0], color }] });
+    expect(parseDoc(def, withColor("#ff0000")).ok).toBe(false);
+    expect(parseDoc(def, withColor("purple")).ok).toBe(true);
+  });
+
+  it("reddit: each tab keeps at least one row", () => {
+    const def = byKey("reddit");
+    const fixture = def.fixture();
+    expect(parseDoc(def, { ...fixture, subreddits: [] }).ok).toBe(false);
+    expect(parseDoc(def, { ...fixture, influencers: [] }).ok).toBe(false);
+    expect(parseDoc(def, { ...fixture, insights: { ...fixture.insights, problems: [] } }).ok).toBe(false);
+  });
+});

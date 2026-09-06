@@ -64,8 +64,8 @@ describe("moduleGroups", () => {
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
-  it("counts as JSON-only exactly the fourteen templates with no definition", () => {
-    expect(JSON_ONLY).toHaveLength(14);
+  it("counts as JSON-only exactly the ten templates with no definition", () => {
+    expect(JSON_ONLY).toHaveLength(10);
     expect(legacyKeys().slice().sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
@@ -127,6 +127,10 @@ const HEADING_SOURCE: Record<string, string | null> = {
   "youtube-voices": "src/components/live/YouTubeVoices.tsx",
   /* printed by the column that frames the module, not by the module */
   "ai-visibility": "src/components/live/LiveBoard.tsx",
+  "share-of-voice": "src/components/live/LiveBoard.tsx",
+  "search-velocity": "src/components/live/SearchVelocity.tsx",
+  "top-sites": "src/components/live/TopSites.tsx",
+  reddit: "src/components/live/RedditModule.tsx",
   "opinion-leaders": "src/components/live/OpinionLeaders.tsx",
   "traffic-sources": "src/components/live/TrafficSources.tsx",
   "wild-cams": "src/app/(board)/in-the-wild/page.tsx",

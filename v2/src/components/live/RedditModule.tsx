@@ -2,14 +2,8 @@
 
 import { useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import {
-  insightStateLabel,
-  redditInsightStates,
-  redditors,
-  subreddits,
-  type InsightState,
-  type RedditTab,
-} from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
+import { insightStateLabel, type InsightState, type RedditTab } from "@/data/live";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone, type InsightPayload } from "./stickers";
 import { TabPills } from "./TabPills";
@@ -56,6 +50,7 @@ function BarRow({
 }
 
 export function RedditModule({ id }: { id: string }) {
+  const { subreddits, influencers, insights } = useModuleDoc("reddit");
   const [tab, setTab] = useState<RedditTab>("subreddits");
   const [state, setState] = useState<InsightState>("drivers");
   const { ref, inView } = useInView<HTMLDivElement>();
@@ -90,7 +85,7 @@ export function RedditModule({ id }: { id: string }) {
         )}
         {tab === "influencers" && (
           <ul className="flex flex-col">
-            {redditors.map((r) => (
+            {influencers.map((r) => (
               <BarRow
                 key={r.id}
                 name={r.name}
@@ -133,10 +128,10 @@ export function RedditModule({ id }: { id: string }) {
             </div>
             {/* each insight is its own drop target too */}
             <ul className="flex flex-col gap-4">
-              {redditInsightStates[state].map((text, i) => (
-                <li key={`${state}-${i}`}>
+              {insights[state].map(({ id: insightId, text }) => (
+                <li key={insightId}>
                   <StickerDropZone
-                    tagKey={`reddit:insight:${state}:${i}`}
+                    tagKey={`reddit:insight:${insightId}`}
                     className="rounded-lg"
                     insight={() => ({
                       circleId: "customer-opinion",
