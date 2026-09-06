@@ -34,9 +34,16 @@ describe("registry", () => {
   });
 
   it("the board-header fixture keeps the nav's two moderators and a GMT+1 clock", () => {
-    const fixture = byKey("board-header").fixture();
+    const def = byKey("board-header");
+    const fixture = def.fixture();
     expect(fixture.moderators.map((m) => m.name)).toEqual(["Amara Osei", "Jonas Keller"]);
     expect(fixture.clock).toEqual({ timeZone: "Etc/GMT-1", label: "GMT+1" });
+
+    /* The field's own default matters as much as the fixture's value: it is
+       what a cleared box in the form falls back to, so a city zone left here
+       would put the summer-time drift back one save later. */
+    expect(def.fields.clock.fields.timeZone.default).toBe("Etc/GMT-1");
+    expect(def.fields.clock.fields.label.default).toBe("GMT+1");
   });
 
   /* The clock's label is fixed text, not something derived from the zone,
