@@ -4,7 +4,7 @@ import Link from "next/link";
 import { BoardProgress } from "./BoardProgress";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { useBoardMeta, useModuleDoc } from "@/components/board/BoardDataContext";
 import { logout } from "@/app/login/actions";
 import { Avatar } from "./Avatar";
 
@@ -15,9 +15,16 @@ const tabs = [
   { label: "In the Wild", href: "/in-the-wild" },
 ];
 
+/* The two stock portraits this nav has always shown, by position, so a
+   board that has never saved a header renders exactly as before. A
+   moderator with a picture of their own overrides it. */
+const MODERATOR_PICKS = [1, 3];
+const USER_PICK = 9;
+
 export function TopNav() {
   const pathname = usePathname();
   const boardMeta = useBoardMeta();
+  const header = useModuleDoc("board-header");
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
@@ -60,14 +67,33 @@ export function TopNav() {
         {/* Right cluster */}
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2">
-            <span className="flex -space-x-1.5">
-              <Avatar name="Amara Osei" pick={1} size={28} className="border-2 border-card" />
-              <Avatar name="Jonas Keller" pick={3} size={28} className="border-2 border-card" />
-            </span>
-            <span className="text-graphite text-sm">/</span>
+            {/* an agency can name none, and a lone "/" before the user's
+                name reads like a mistake — so the pair goes together */}
+            {header.moderators.length > 0 && (
+              <>
+                <span className="flex -space-x-1.5">
+                  {header.moderators.map((moderator, i) => (
+                    <Avatar
+                      key={moderator.id}
+                      name={moderator.name}
+                      src={moderator.avatarUrl}
+                      pick={MODERATOR_PICKS[i]}
+                      size={28}
+                      className="border-2 border-card"
+                    />
+                  ))}
+                </span>
+                <span className="text-graphite text-sm">/</span>
+              </>
+            )}
             <span className="text-sm font-medium">{boardMeta.userName}</span>
           </div>
-          <Avatar name={boardMeta.userName} pick={9} size={36} />
+          <Avatar
+            name={boardMeta.userName}
+            src={header.userAvatarUrl}
+            pick={USER_PICK}
+            size={36}
+          />
 
           {/* Sign out — the board is behind a client login, so the way
               out has to be on the board itself, not only in admin */}

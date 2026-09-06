@@ -16,6 +16,29 @@ describe("registry", () => {
     if (res.ok) expect(res.doc).toEqual(fixture);
   });
 
+  /* The fixture is what every board with no saved header renders. A logo
+     in it would hang the first client's mark over every later client's
+     brief — an error nobody would see in a test, and everybody would see
+     on the board. The adidas PNG stays a name-matched branch in BrandBar
+     instead, which is why nothing here should carry a logo. */
+  it("the board-header fixture ships no logo", () => {
+    const fixture = byKey("board-header").fixture();
+    expect(fixture.logoUrl).toBeUndefined();
+    expect(fixture.logoAlt).toBeUndefined();
+    expect(JSON.stringify(fixture)).not.toContain("adidas");
+
+    // and the saved doc that comes back out of validation carries none either
+    const res = parseDoc(byKey("board-header"), fixture);
+    expect(res.ok).toBe(true);
+    if (res.ok) expect(res.doc.logoUrl).toBeUndefined();
+  });
+
+  it("the board-header fixture keeps the nav's two moderators and a GMT+1 clock", () => {
+    const fixture = byKey("board-header").fixture();
+    expect(fixture.moderators.map((m) => m.name)).toEqual(["Amara Osei", "Jonas Keller"]);
+    expect(fixture.clock).toEqual({ timeZone: "Europe/Paris", label: "GMT+1" });
+  });
+
   it("finds a definition by key", () => {
     expect(byKey("newswire")?.heading).toEqual({ eyebrow: "Dispatch", title: "Newswire" });
     expect(byKey("nope")).toBeUndefined();

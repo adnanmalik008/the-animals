@@ -39,12 +39,15 @@ export function toneFor(name: string): AvatarTone {
 
 export function Avatar({
   name,
+  src,
   tone,
   pick,
   size = 36,
   className = "",
 }: {
   name: string;
+  /** a real picture for this person; without one the stock headshots stand in */
+  src?: string;
   tone?: AvatarTone;
   /** explicit portrait index, for rows curated to exact faces */
   pick?: number;
@@ -57,7 +60,9 @@ export function Avatar({
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/assets/headshots/${file}`}
+      /* a cleared image field can still arrive as "", which would render a
+         broken picture where a face belongs — treat it as no picture */
+      src={src || `/assets/headshots/${file}`}
       alt={name}
       width={size}
       height={size}

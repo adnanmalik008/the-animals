@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useBoardMeta } from "@/components/board/BoardDataContext";
+import { useBoardMeta, useModuleDoc } from "@/components/board/BoardDataContext";
 import { downloadIdeasDocx } from "@/lib/ideas-export";
 import { deleteIdea, tagIdea, useBoardStore, type FusedIdea } from "@/lib/insights";
 import { LightbulbIcon, XIcon } from "./CircleIcon";
@@ -20,6 +20,7 @@ const TAGS: NonNullable<FusedIdea["colorTag"]>[] = [
 export function IdeasPanel({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { circles, ideas, insights } = useBoardStore();
   const meta = useBoardMeta();
+  const header = useModuleDoc("board-header");
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("all");
   const [paletteFor, setPaletteFor] = useState<string | null>(null);
@@ -49,6 +50,8 @@ export function IdeasPanel({ open, onClose }: { open: boolean; onClose: () => vo
         ideas: visible,
         circles,
         insights,
+        /* the page header carries the client's logo; the document's does too */
+        logoUrl: header.logoUrl,
         filterLabel: parts.filter(Boolean).join(" · ") || undefined,
       });
     } finally {

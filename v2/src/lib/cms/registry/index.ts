@@ -1,13 +1,19 @@
-/* Every CMS module, in admin order. Client-safe: entries carry plain data
-   and functions, no zod. */
+/* Every CMS module, in admin order.
+
+   Entries carry plain data and functions. The board never imports this at
+   runtime — @/lib/cms/types is its type-only view — so the zod that
+   reaches the Anomalies entry through widgets.ts stays out of the board
+   bundle. */
 
 import type { ModuleTab } from "../spec";
+import { anomalies } from "./anomalies";
+import { boardHeader } from "./board-header";
 import { newswire } from "./newswire";
 import { opinionLeaders } from "./opinion-leaders";
 import { trafficSources } from "./traffic-sources";
 import { wildCams } from "./wild-cams";
 
-export const MODULES = [newswire, opinionLeaders, trafficSources, wildCams] as const;
+export const MODULES = [boardHeader, newswire, opinionLeaders, trafficSources, wildCams, anomalies] as const;
 
 export type AnyModule = (typeof MODULES)[number];
 
