@@ -157,7 +157,7 @@ function NoContentTable() {
       <p className="text-sm text-graphite">
         The <code className="font-mono text-xs">module_content</code> table has not been created, so every
         module below is showing the content built into the code and saving here will fail with a database
-        error. Applying <code className="font-mono text-xs">v2/supabase/migrations/0002_cms.sql</code> turns
+        error. Applying <code className="font-mono text-xs">supabase/migrations/0002_cms.sql</code> turns
         this screen on. Nothing else is affected — the boards themselves are unchanged.
       </p>
     </div>

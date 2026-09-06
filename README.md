@@ -1,4 +1,4 @@
-# The Animals — Intelligence Board (v2)
+# The Animals — Client Intelligence Boards
 
 Four-tab client intelligence dashboard: **Live**, **Anomalies**, **Competition**, **In the Wild**, plus a lightweight CMS at **/admin**.
 

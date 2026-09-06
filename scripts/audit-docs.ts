@@ -1,7 +1,7 @@
 /* Read-only dry run against the real Supabase project: for every saved
    module_data row, reports whether the new CMS validation would accept it.
    Never writes — selects only. Runs outside Next.js (via `tsx`), so it
-   loads SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY by parsing v2/.env.local
+   loads SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY by parsing .env.local
    itself rather than relying on Next's env loading. */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";

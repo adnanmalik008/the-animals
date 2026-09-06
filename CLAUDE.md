@@ -5,16 +5,18 @@ A multi-tenant client intelligence dashboard for The Animals agency. Each client
 gets a board — four tabs (Live, Anomalies, Competition, In the Wild) — published
 at its own subdomain behind its own logins, all managed from a small admin CMS.
 
-**All code lives in `v2/`.** The original vanilla-JS prototype that used to sit at
-the repo root was retired and removed (see git history if ever needed).
-`design-reference/` holds stills from the client's Figma walkthrough videos.
+**The repo root is the app.** It used to live one level down in `v2/`, beside a
+vanilla-JS prototype that has since been retired and removed; the nesting went
+with it, so `src/` and `package.json` now sit at the top (see git history for
+either if ever needed). `design-reference/` holds stills from the client's
+Figma walkthrough videos, and `docs/` the client correspondence.
 
 ## Stack
-- Next.js (App Router) + React + TypeScript strict + Tailwind v4, in `v2/`
+- Next.js (App Router) + React + TypeScript strict + Tailwind v4
 - Supabase (Postgres) for boards/users/module content; service_role key
   server-side only; stateless HMAC session cookies
-- Deployed on Vercel, project `the-animals`, **Root Directory = `v2`** —
-  pushing to `main` auto-deploys
+- Deployed on Vercel, project `the-animals`, **Root Directory = `.`** (the repo
+  root — it was `v2` until the flattening) — pushing to `main` auto-deploys
 
 ## Publishing model (the point of the product)
 - Domain `theanimals.live` uses Vercel nameservers; `*.theanimals.live` is
@@ -25,7 +27,7 @@ the repo root was retired and removed (see git history if ever needed).
 - Unknown subdomains fall back to the default board (`DEFAULT_BOARD_SLUG`).
 - Admin entry: `https://on-view.theanimals.live/admin`.
 
-## Route layout (v2/src/app)
+## Route layout (src/app)
 - `(board)/` — the client-facing board (nav + brand bar chrome): `/`,
   `/anomalies`, `/competition`, `/in-the-wild`
 - `admin/` — chrome-free CMS (boards list, per-board settings / module JSON /
@@ -33,17 +35,17 @@ the repo root was retired and removed (see git history if ever needed).
 - `login/` — chrome-free, shared by clients and admin (`?admin=1`)
 
 ## Conventions
-- Secrets only in `v2/.env.local` (gitignored). `.env.example` = placeholders.
-- Design assets in `v2/public/assets/` are exported from the client's Figma
+- Secrets only in `.env.local` (gitignored). `.env.example` = placeholders.
+- Design assets in `public/assets/` are exported from the client's Figma
   file — use real assets, don't hand-draw stand-ins.
 - Figma keyframes/utilities gotcha: Tailwind v4 translate utilities compile to
   the native `translate` property; keyframes must animate `translate`/`scale`
   (not `transform`) or they stack and displace elements.
 - Board data flows: server components read Supabase through
-  `v2/src/lib/server/docs.ts` → `BoardDataProvider` → modules read
+  `src/lib/server/docs.ts` → `BoardDataProvider` → modules read
   `useModuleDoc(key)` from the typed board context. Documents are validated
   server-side against the module registry, and the built-in fixture in
-  `v2/src/data/` is substituted whenever a board's document is missing or no
+  `src/data/` is substituted whenever a board's document is missing or no
   longer fits its module's shape.
 
 ## Plugins
@@ -52,7 +54,7 @@ planning multi-file features.
 
 ## Running locally
 ```bash
-cd v2 && npm run dev -- -p 3100
+npm run dev -- -p 3100
 ```
 
 ## Git

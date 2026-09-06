@@ -43,7 +43,7 @@ export default async function BoardAdminPage({ params }: PageProps<"/admin/[slug
 
       {board.id === "fixture" && (
         <p className="rounded-xl bg-yellow/15 px-4 py-3 text-sm text-ink">
-          This is the built-in fixture board. Configure Supabase (see v2/README.md) to create and edit
+          This is the built-in fixture board. Configure Supabase (see README.md) to create and edit
           real boards — saving below will fail until then.
         </p>
       )}

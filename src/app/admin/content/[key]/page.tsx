@@ -91,10 +91,10 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
             widgetColumns={widgetColumns}
             warning={
               !configured
-                ? "Supabase is not configured, so there is nowhere to save content (see v2/README.md)."
+                ? "Supabase is not configured, so there is nowhere to save content (see README.md)."
                 : read.available
                   ? undefined
-                  : "Content has no table yet — v2/supabase/migrations/0002_cms.sql has not been run. You can edit here, but saving will fail until it is."
+                  : "Content has no table yet — supabase/migrations/0002_cms.sql has not been run. You can edit here, but saving will fail until it is."
             }
           />
         </div>
