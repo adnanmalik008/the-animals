@@ -8,10 +8,13 @@ import { byKey } from "@/lib/cms/registry";
 import { parseDoc } from "@/lib/cms/parse";
 
 import aiVisibilityLegacy from "./legacy/ai-visibility.json";
+import appStoreLegacy from "./legacy/app-store.json";
 import conversationLegacy from "./legacy/conversation.json";
+import hiringLegacy from "./legacy/hiring.json";
 import newswireLegacy from "./legacy/newswire.json";
 import onStageLegacy from "./legacy/on-stage.json";
 import opinionLeadersLegacy from "./legacy/opinion-leaders.json";
+import pulseLegacy from "./legacy/pulse.json";
 import redditLegacy from "./legacy/reddit.json";
 import searchVelocityLegacy from "./legacy/search-velocity.json";
 import shareOfVoiceLegacy from "./legacy/share-of-voice.json";
@@ -29,6 +32,8 @@ const LEGACY_DOCS: Record<string, unknown> = {
   "share-of-voice": shareOfVoiceLegacy,
   "search-velocity": searchVelocityLegacy,
   "top-sites": topSitesLegacy,
+  pulse: pulseLegacy,
+  hiring: hiringLegacy,
   "opinion-leaders": opinionLeadersLegacy,
   "traffic-sources": trafficSourcesLegacy,
   "wild-cams": wildCamsLegacy,
@@ -136,5 +141,26 @@ describe("reddit's legacy template was stale before it was wired", () => {
     ].map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.every((id) => id.length > 0)).toBe(true);
+  });
+});
+
+/* app-store is the second deliberate omission, for the same kind of reason
+   as reddit: its movement chips had no ids, because the board keyed a
+   sticker on the chip's own label — renaming a theme moved its sticker to
+   the new name and orphaned what was filed under the old one. Giving the
+   chips ids is the fix, and a document written before they existed cannot
+   supply them. Zero documents exist, so this costs nothing. */
+describe("app-store's legacy template predates the chip ids", () => {
+  it("has chips with no id, which is the defect the ids close", () => {
+    const legacy = appStoreLegacy as { ios: { stats: Record<string, unknown>[] } };
+    expect(legacy.ios.stats.length).toBeGreaterThan(0);
+    expect(legacy.ios.stats.every((stat) => stat.id === undefined)).toBe(true);
+    expect(parseDoc(byKey("app-store"), legacy).ok).toBe(false);
+  });
+
+  it("gives every chip an id in the fixture that replaces it", () => {
+    const fixture = byKey("app-store").fixture();
+    const ids = [...fixture.ios.stats, ...fixture.android.stats].map((s) => s.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

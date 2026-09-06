@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import { Module } from "@/components/modules/ModuleColumn";
-import { appStoreVoice, type AppPlatform } from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
+import type { AppPlatform } from "@/data/live";
 import { useCountUp, useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
@@ -40,7 +41,7 @@ function Stars({ rating, platform }: { rating: number; platform: AppPlatform }) 
 export function AppStoreVoice({ id }: { id: string }) {
   const [platform, setPlatform] = useState<AppPlatform>("ios");
   const { ref, inView } = useInView<HTMLDivElement>();
-  const data = appStoreVoice[platform];
+  const data = useModuleDoc("app-store")[platform];
   const rating = useCountUp(data.rating, inView, 900, 1);
   const platformName = platform === "ios" ? "iOS" : "Android";
 
@@ -102,8 +103,8 @@ export function AppStoreVoice({ id }: { id: string }) {
         <div className="mt-5 grid grid-cols-2 divide-line rounded-2xl border border-line sm:grid-cols-4 sm:divide-x">
           {data.stats.map((stat) => (
             <StickerDropZone
-              key={stat.label}
-              tagKey={`app:${platform}:stat:${stat.label}`}
+              key={stat.id}
+              tagKey={`app:${platform}:stat:${stat.id}`}
               className="rounded-lg"
               insight={() => ({
                 circleId: "customer-opinion",

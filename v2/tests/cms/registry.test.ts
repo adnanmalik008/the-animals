@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AI_PLATFORM_NAME } from "@/components/live/AiPlatformMark";
+import { hiringSummary, wikiPulse } from "@/data/live";
 import { MODULES, byKey } from "@/lib/cms/registry";
 import { parseDoc } from "@/lib/cms/parse";
 import { docsFromRows } from "@/lib/cms/docs";
@@ -425,5 +426,60 @@ describe("the Live data column", () => {
     expect(parseDoc(def, { ...fixture, subreddits: [] }).ok).toBe(false);
     expect(parseDoc(def, { ...fixture, influencers: [] }).ok).toBe(false);
     expect(parseDoc(def, { ...fixture, insights: { ...fixture.insights, problems: [] } }).ok).toBe(false);
+  });
+});
+
+/* Batch four finishes the Live tab. Two figures stopped being authored, so
+   the tests below prove the arithmetic that replaced them reproduces exactly
+   what the board printed before. */
+describe("the figures the board now works out for itself", () => {
+  it("hiring: the open-roles chip is the sum of the functions, and still reads 129", () => {
+    const rows = byKey("hiring").fixture().rows;
+    const open = rows.reduce((total, row) => total + row.roles, 0);
+    expect(open).toBe(hiringSummary.open);
+    expect(open).toBe(129);
+  });
+
+  it("pulse: the bar is a share of the busiest entity, matching every width that shipped", () => {
+    const rows = byKey("pulse").fixture().rows;
+    const busiest = Math.max(...rows.map((r) => r.count));
+    const derived = rows.map((r) => Math.round((r.count / busiest) * 100));
+
+    /* wikiPulse still carries the hand-typed widths, so this compares the
+       new arithmetic against the old data rather than against itself. */
+    expect(derived).toEqual(wikiPulse.map((r) => r.pct));
+    expect(derived[0]).toBe(100);
+  });
+
+  it("pulse: the width no longer rides in the document", () => {
+    const rows = byKey("pulse").fixture().rows as Record<string, unknown>[];
+    expect(rows.every((row) => row.pct === undefined)).toBe(true);
+    expect(parseDoc(byKey("pulse"), { rows: [{ ...rows[0], pct: 40 }] }).ok).toBe(true);
+  });
+
+  it("pulse: the spike chip stays authored, because four rows spike and the chip reads two", () => {
+    const fixture = byKey("pulse").fixture();
+    expect(fixture.spikes).toBe(2);
+    expect(fixture.rows.filter((r) => r.spike)).toHaveLength(4);
+  });
+
+  it("app-store: a review may not carry the quote marks the card prints", () => {
+    const def = byKey("app-store");
+    const fixture = def.fixture();
+    const withReview = (text: string) => ({
+      ...fixture,
+      ios: { ...fixture.ios, review: { ...fixture.ios.review, text } },
+    });
+    expect(parseDoc(def, withReview('"Quoted by hand"')).ok).toBe(false);
+    expect(parseDoc(def, withReview("Plain as typed")).ok).toBe(true);
+  });
+
+  it("app-store: a rating stays inside the five stars that draw it", () => {
+    const def = byKey("app-store");
+    const fixture = def.fixture();
+    const rated = (rating: number) => ({ ...fixture, ios: { ...fixture.ios, rating } });
+    expect(parseDoc(def, rated(4.3)).ok).toBe(true);
+    expect(parseDoc(def, rated(5.1)).ok).toBe(false);
+    expect(parseDoc(def, rated(-1)).ok).toBe(false);
   });
 });

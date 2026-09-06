@@ -1,14 +1,21 @@
 "use client";
 
 import { Module } from "@/components/modules/ModuleColumn";
-import { wikiPulse, wikiPulseSpikes } from "@/data/live";
+import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
 
 /* Wikipedia edit frequency — the early-warning signal. Every entity is its
    own drop target, so the section carries as many stickers as it has rows. */
 export function PulseModule({ id }: { id: string }) {
+  const { spikes, rows } = useModuleDoc("pulse");
   const { ref, inView } = useInView<HTMLDivElement>();
+
+  /* The bar is a share of the busiest entity, worked out here rather than
+     typed: an editor who changes a count should not have to restate every
+     bar to keep them in proportion. */
+  const busiest = Math.max(...rows.map((row) => row.count), 0);
+  const barWidth = (count: number) => (busiest > 0 ? Math.round((count / busiest) * 100) : 0);
 
   return (
     <Module
@@ -16,14 +23,14 @@ export function PulseModule({ id }: { id: string }) {
       title="Wikipedia Pulse"
       headerExtra={
         <span className="ml-auto whitespace-nowrap text-sm font-semibold text-orange">
-          {wikiPulseSpikes} spikes
+          {spikes} spikes
         </span>
       }
     >
       <div ref={ref} className="pt-4">
         <p className="text-sm text-graphite">Edit frequency · early-warning signal</p>
         <ul className="divide-y divide-line">
-          {wikiPulse.map((row) => (
+          {rows.map((row) => (
             <li key={row.id}>
               <StickerDropZone
                 tagKey={`pulse:${row.id}`}
@@ -51,7 +58,7 @@ export function PulseModule({ id }: { id: string }) {
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-bg2">
                       <div
                         className="bar-fill h-full rounded-full bg-orange"
-                        style={{ width: inView ? `${row.pct}%` : "0%" }}
+                        style={{ width: inView ? `${barWidth(row.count)}%` : "0%" }}
                       />
                     </div>
                     <span className="shrink-0 text-sm tabular-nums">

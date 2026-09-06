@@ -64,8 +64,8 @@ describe("moduleGroups", () => {
     expect(groups.at(-1)?.entries.map((e) => e.key).sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
-  it("counts as JSON-only exactly the ten templates with no definition", () => {
-    expect(JSON_ONLY).toHaveLength(10);
+  it("counts as JSON-only exactly the seven templates with no definition", () => {
+    expect(JSON_ONLY).toHaveLength(7);
     expect(legacyKeys().slice().sort()).toEqual(JSON_ONLY.slice().sort());
   });
 
@@ -131,6 +131,9 @@ const HEADING_SOURCE: Record<string, string | null> = {
   "search-velocity": "src/components/live/SearchVelocity.tsx",
   "top-sites": "src/components/live/TopSites.tsx",
   reddit: "src/components/live/RedditModule.tsx",
+  "app-store": "src/components/live/AppStoreVoice.tsx",
+  pulse: "src/components/live/PulseModule.tsx",
+  hiring: "src/components/live/HiringVelocity.tsx",
   "opinion-leaders": "src/components/live/OpinionLeaders.tsx",
   "traffic-sources": "src/components/live/TrafficSources.tsx",
   "wild-cams": "src/app/(board)/in-the-wild/page.tsx",

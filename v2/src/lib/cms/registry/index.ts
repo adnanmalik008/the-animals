@@ -9,12 +9,15 @@ import type { ModuleTab } from "../spec";
 import { aiVisibilityModule } from "./ai-visibility";
 import { airwaves } from "./airwaves";
 import { anomalies } from "./anomalies";
+import { appStore } from "./app-store";
 import { boardHeader } from "./board-header";
 import { conversation } from "./conversation";
 import { inTheirInbox } from "./in-their-inbox";
+import { hiring } from "./hiring";
 import { newswire } from "./newswire";
 import { onStage } from "./on-stage";
 import { opinionLeaders } from "./opinion-leaders";
+import { pulse } from "./pulse";
 import { reddit } from "./reddit";
 import { searchVelocity } from "./search-velocity";
 import { shareOfVoiceModule } from "./share-of-voice";
@@ -41,7 +44,10 @@ export const MODULES = [
   topSitesModule,
   opinionLeaders,
   reddit,
+  appStore,
   trafficSources,
+  pulse,
+  hiring,
   wildCams,
   anomalies,
 ] as const;
