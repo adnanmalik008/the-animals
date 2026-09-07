@@ -242,9 +242,51 @@ export function DeleteBoardButton({ slug, clientName }: { slug: string; clientNa
 
 export function BoardMetaForm({ board }: { board: BoardRecord }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(updateBoardAction, {});
+
+  /* Whether the board asks for a login is the one field here that cannot be
+     left to the browser's own reset.
+
+     React 19 resets a form once its action resolves. Every other control is a
+     plain input, so it resets to its `defaultValue` — which is the value the
+     server just confirmed, and therefore right. The Switch is Radix, and Radix
+     answers a reset by restoring the value it captured when it first mounted:
+     turn protection on, save, and the switch would snap back to off while the
+     database held on. The next save then posted that stale value and published
+     a client's board with no login at all.
+
+     So the switch is controlled here, `submitted` remembers what actually went
+     to the server, and `onReset` — which runs after Radix's own listener —
+     puts that back.
+
+     What the form POSTS is a hidden input rather than the checkbox Radix
+     renders beside the switch. That one is uncontrolled (`defaultChecked`,
+     synced imperatively), so a native reset restores its first-mount value and
+     it can end up disagreeing with the switch you are looking at — which is
+     how a board that reads "open to anyone" on screen posts "login required",
+     or the reverse. A hidden input React owns cannot drift. */
+  const [isProtected, setIsProtected] = useState(board.isProtected);
+  /* what the last submit actually sent; written on the way out, read on the
+     way back in — both event handlers, never a render */
+  const submitted = useRef(board.isProtected);
+  /* Adjusted during render rather than in an effect: when the server confirms a
+     save it re-renders this form with the stored value, and the switch has to
+     be showing that on the same paint — an effect would show the old one for a
+     frame and fight the reset. */
+  const [lastStored, setLastStored] = useState(board.isProtected);
+  if (lastStored !== board.isProtected) {
+    setLastStored(board.isProtected);
+    setIsProtected(board.isProtected);
+  }
+
   return (
     <Card>
-      <form action={action}>
+      <form
+        action={action}
+        onSubmit={() => {
+          submitted.current = isProtected;
+        }}
+        onReset={() => setIsProtected(submitted.current)}
+      >
         <input type="hidden" name="slug" value={board.slug} />
         <CardHeader>
           <CardTitle>Board settings</CardTitle>
@@ -296,7 +338,8 @@ export function BoardMetaForm({ board }: { board: BoardRecord }) {
           </div>
 
           <div className="flex items-start gap-3 rounded-md border p-3 sm:col-span-2">
-            <Switch id="board-protected" name="isProtected" defaultChecked={board.isProtected} />
+            <input type="hidden" name="isProtected" value={isProtected ? "on" : "off"} />
+            <Switch id="board-protected" checked={isProtected} onCheckedChange={setIsProtected} />
             <div className="grid gap-0.5">
               <Label htmlFor="board-protected">Require a client login to view this board</Label>
               <p className="text-xs text-muted-foreground">

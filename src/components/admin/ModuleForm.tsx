@@ -21,7 +21,14 @@
      not trust.
    • The clean baseline moves on `state.savedAt`, not on `state.ok`. Two
      saves in a row both answer `ok: true`, so `ok` alone never changes and
-     the second save would leave the form looking permanently dirty. */
+     the second save would leave the form looking permanently dirty.
+   • The form answers `reset`. React 19 resets a form after its action
+     resolves, and a Radix control answers that reset by restoring the value
+     it had when it first mounted — a checkbox does so through `onCheckedChange`,
+     which writes that stale value straight back into the document. So a save
+     was followed by an invisible edit that undid it. `onReset` runs after the
+     controls' own listeners, so this is where the document is put back to what
+     the database actually confirmed. */
 
 import Link from "next/link";
 import { useActionState, useCallback, useMemo, useState, type FormEvent } from "react";
@@ -178,7 +185,19 @@ export function ModuleForm({
 
   return (
     <FieldAnchors>
-      <form action={action} onSubmit={onSubmit} className="flex min-w-0 flex-col gap-5">
+      <form
+        action={action}
+        onSubmit={onSubmit}
+        /* React 19 resets the form once the action resolves. Radix controls
+           answer that by writing their first-mount value back through their
+           change handler, which lands in the document as an edit nobody made.
+           This runs after them and restores what was actually saved. */
+        onReset={() => {
+          reset(saved.doc);
+          setDraft(null);
+        }}
+        className="flex min-w-0 flex-col gap-5"
+      >
         <input type="hidden" name="moduleKey" value={moduleKey} />
         <input type="hidden" name="doc" value={docJson} />
 

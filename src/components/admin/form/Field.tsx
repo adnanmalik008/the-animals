@@ -80,8 +80,14 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
   };
 
   /* A `select` or `ref` whose stored value the options no longer offer still
-     has to show that value rather than silently reading as empty. Radix has
-     no item for "", so an empty one is the placeholder instead. */
+     has to show that value rather than silently reading as empty.
+
+     `value` is passed straight through, including "". Mapping "" to
+     `undefined` reads as tidier and is a bug: Radix treats `prop !== undefined`
+     as "controlled", so an empty field would mount UNCONTROLLED, keep its own
+     sticky value, and go on displaying a choice the document no longer holds —
+     while Save sends the document. Radix already shows the placeholder for ""
+     (`shouldShowPlaceholder`), so there is nothing to map. */
   function choice(
     current: string,
     options: readonly { readonly value: string; readonly label: string }[],
@@ -89,7 +95,7 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
   ): ReactElement {
     const known = options.some((o) => o.value === current);
     return (
-      <Select value={current === "" ? undefined : current} onValueChange={onChange}>
+      <Select value={current} onValueChange={onChange}>
         <SelectTrigger {...common} className="w-full">
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>

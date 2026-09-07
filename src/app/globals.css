@@ -128,13 +128,23 @@
   --color-card-foreground: var(--card-foreground);
   --color-foreground: var(--foreground);
   --color-background: var(--background);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  /* Tailwind's own radius scale, restated rather than derived.
+
+     shadcn ships these as multiples of `--radius`, which redefines
+     rounded-sm…rounded-4xl for the WHOLE app — the board included, where every
+     card is drawn to a radius the design fixed (the Animal View card is 16px,
+     which is what rounded-2xl means). Deriving them moved about eighty corners
+     across the four client tabs. The admin's components ask for `--radius`
+     directly where they want their own curve, so pinning these back to
+     Tailwind's defaults costs the CMS nothing. */
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+  --radius-4xl: 2rem;
 }
 
 :root {
