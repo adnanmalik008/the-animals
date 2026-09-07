@@ -19,14 +19,18 @@ describe("moduleGroups", () => {
   /* An empty group is dropped rather than shown as a heading with nothing
      under it, so the assertion is the order and not the whole list —
      Competition has no registry entry until M5. */
-  it("groups in the order the agency reads a board", () => {
+  it("groups in the order the board's own tabs run", () => {
+    /* TopNav prints Live, Anomalies, Competition, In the Wild. The rail used to
+       run Competition before Anomalies, so the CMS and the board disagreed
+       about the same six things; this is the board's order, with the header
+       above the tabs where it sits on screen. */
     const ORDER = [
       "Header",
       "Live · editorial",
       "Live · data",
+      "Anomalies",
       "Competition",
       "In the Wild",
-      "Anomalies",
     ];
     const titles = moduleGroups()
       .map((g) => g.title)

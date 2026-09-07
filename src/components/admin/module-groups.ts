@@ -48,14 +48,19 @@ const entriesFor = (defs: ReturnType<typeof byTab>): ModuleEntry[] =>
     eyebrow: d.heading.eyebrow,
   }));
 
-/** Keys that still save raw JSON: a template but no definition, so there is
-    nothing to generate a form from yet. */
+/** Keys with a template but no definition, so there is nothing to generate a
+    form from. They are listed so they cannot vanish from the admin, but they
+    have no editor: the raw-JSON panel is gone, and a module is editable only
+    through the fields its definition describes. There are none today. */
 export function legacyKeys(): string[] {
   return Object.keys(MODULE_TEMPLATES).filter((key) => !byKey(key));
 }
 
-/** The board's tabs, in the order the agency reads them, with the JSON-only
-    keys last. */
+/** The board's tabs, in the order the board itself prints them — Live,
+    Anomalies, Competition, In the Wild (see `TopNav`), with the header above
+    them and the JSON-only keys last. Someone editing content is looking at the
+    board while they do it; two different orders for the same six things is one
+    to hold in your head for no reason. */
 export function moduleGroups(): ModuleGroup[] {
   const live = byTab("live");
   /* a live module with no column is data, not nothing — the fallback keeps
@@ -72,9 +77,9 @@ export function moduleGroups(): ModuleGroup[] {
       title: "Live · data",
       entries: entriesFor(live.filter((m) => m.column !== "editorial")),
     },
+    { id: "anomalies", title: "Anomalies", entries: entriesFor(byTab("anomalies")) },
     { id: "competition", title: "Competition", entries: entriesFor(byTab("competition")) },
     { id: "wild", title: "In the Wild", entries: entriesFor(byTab("wild")) },
-    { id: "anomalies", title: "Anomalies", entries: entriesFor(byTab("anomalies")) },
   ].filter((g) => g.entries.length > 0);
 
   const legacy = legacyKeys().map((key) => ({ key, label: key }));
