@@ -230,6 +230,12 @@ export function AdminSidebar({
           It sits at the foot of the rail — the place a dashboard puts an
           account, and out of the way of the work. */}
       <SidebarFooter className="border-t p-2">
+        {/* The form sits out here, not inside the menu. A <form> used as the
+            menu item itself only submits on a real click: Radix activates an
+            item on Enter by clicking it, and clicking a form does nothing. The
+            button below claims this one by id, which works across the menu's
+            portal, so Log out answers the keyboard as well as the mouse. */}
+        <form id="admin-logout" action={logout} className="hidden" />
         <SidebarMenu>
           <SidebarMenuItem>
             <DropdownMenu>
@@ -266,12 +272,10 @@ export function AdminSidebar({
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild variant="destructive">
-                  <form action={logout}>
-                    <button type="submit" className="flex w-full items-center gap-2">
-                      <LogOut />
-                      Log out
-                    </button>
-                  </form>
+                  <button type="submit" form="admin-logout">
+                    <LogOut />
+                    Log out
+                  </button>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
