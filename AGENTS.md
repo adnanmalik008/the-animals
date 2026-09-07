@@ -41,6 +41,18 @@ Figma walkthrough videos, and `docs/` the client correspondence.
 - Figma keyframes/utilities gotcha: Tailwind v4 translate utilities compile to
   the native `translate` property; keyframes must animate `translate`/`scale`
   (not `transform`) or they stack and displace elements.
+- The admin CMS is built from shadcn/ui (style `radix-nova`, config in
+  `components.json`, components generated into `src/components/ui/` — add more
+  with `npx shadcn@latest add <name>`, and don't hand-edit the generated
+  files). Its semantic tokens (`--primary`, `--muted`, `--border` …) are
+  mapped to the Figma palette in `globals.css`, so `bg-primary` is the brand
+  orange. The client-facing board keeps its own classes (`bg-bg`,
+  `text-graphite`, `paper-surface` …) and is not built from shadcn.
+- Admin icons come from `lucide-react`; module glyphs are mapped by key in
+  `src/components/admin/module-icons.tsx`.
+- The CMS form engine keeps native `<details>` for list rows and collapsible
+  groups: the error summary opens ancestor rows on its way to a buried field,
+  which a Radix Collapsible could not be driven to do from outside.
 - Board data flows: server components read Supabase through
   `src/lib/server/docs.ts` → `BoardDataProvider` → modules read
   `useModuleDoc(key)` from the typed board context. Documents are validated
@@ -60,3 +72,13 @@ npm run dev -- -p 3100
 ## Git
 - Remote: https://github.com/adnanmalik008/the-animals.git (account
   `adnanmalik008` — if push 403s, `gh auth switch -u adnanmalik008`)
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

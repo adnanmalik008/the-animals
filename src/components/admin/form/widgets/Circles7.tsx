@@ -6,7 +6,22 @@
    presentation are editable. */
 
 import { CIRCLE_COLORS, CIRCLE_ICONS, CIRCLE_IDS, CIRCLE_SIZES } from "@/lib/cms/widgets";
-import { input, invalidRing } from "../tokens";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import type { WidgetEditorProps } from "./index";
 import { toCircles7 } from "./values";
 
@@ -16,28 +31,19 @@ const title = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 export function Circles7({ value, onChange, id, describedBy, invalid }: WidgetEditorProps) {
   const circles = toCircles7(value);
-  const ring = invalid ? invalidRing : "";
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-line">
-      <table className="w-full min-w-[34rem] border-collapse text-sm">
-        <thead>
-          <tr className="bg-bg2 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-graphite">
-            <th scope="col" className="px-3 py-2">
-              Name
-            </th>
-            <th scope="col" className="px-3 py-2">
-              Colour
-            </th>
-            <th scope="col" className="px-3 py-2">
-              Icon
-            </th>
-            <th scope="col" className="px-3 py-2">
-              Size
-            </th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-line">
+    <div className="overflow-x-auto rounded-lg border">
+      <Table className="min-w-[34rem]">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name</TableHead>
+            <TableHead>Colour</TableHead>
+            <TableHead>Icon</TableHead>
+            <TableHead>Size</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {CIRCLE_IDS.map((circleId, row) => {
             const circle = circles[circleId];
             const patch = (fields: Partial<(typeof circles)[typeof circleId]>) =>
@@ -45,9 +51,9 @@ export function Circles7({ value, onChange, id, describedBy, invalid }: WidgetEd
             const describe = row === 0 ? describedBy : undefined;
 
             return (
-              <tr key={circleId}>
-                <td className="px-3 py-2">
-                  <input
+              <TableRow key={circleId}>
+                <TableCell>
+                  <Input
                     // the field's own <label for> points at the bare id
                     id={row === 0 ? id : `${id}-${circleId}-name`}
                     value={circle.name}
@@ -56,59 +62,64 @@ export function Circles7({ value, onChange, id, describedBy, invalid }: WidgetEd
                     aria-invalid={invalid || undefined}
                     aria-describedby={describe}
                     onChange={(e) => patch({ name: e.target.value })}
-                    className={`${input} py-1.5 ${ring}`}
                   />
-                </td>
-                <td className="px-3 py-2">
-                  <select
-                    id={`${id}-${circleId}-color`}
+                </TableCell>
+                <TableCell>
+                  <Select
                     value={circle.color}
-                    aria-label={`Circle ${row + 1} colour`}
-                    onChange={(e) => patch({ color: e.target.value as (typeof CIRCLE_COLORS)[number] })}
-                    className={`${input} py-1.5`}
+                    onValueChange={(next) => patch({ color: next as (typeof CIRCLE_COLORS)[number] })}
                   >
-                    {CIRCLE_COLORS.map((c) => (
-                      <option key={c} value={c}>
-                        {title(c)}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2">
-                  <select
-                    id={`${id}-${circleId}-icon`}
+                    <SelectTrigger id={`${id}-${circleId}-color`} aria-label={`Circle ${row + 1} colour`} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CIRCLE_COLORS.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {title(o)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Select
                     value={circle.icon}
-                    aria-label={`Circle ${row + 1} icon`}
-                    onChange={(e) => patch({ icon: e.target.value as (typeof CIRCLE_ICONS)[number] })}
-                    className={`${input} py-1.5`}
+                    onValueChange={(next) => patch({ icon: next as (typeof CIRCLE_ICONS)[number] })}
                   >
-                    {CIRCLE_ICONS.map((i) => (
-                      <option key={i} value={i}>
-                        {i === "none" ? "No icon" : title(i)}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-                <td className="px-3 py-2">
-                  <select
-                    id={`${id}-${circleId}-size`}
+                    <SelectTrigger id={`${id}-${circleId}-icon`} aria-label={`Circle ${row + 1} icon`} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CIRCLE_ICONS.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {o === "none" ? "No icon" : title(o)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+                <TableCell>
+                  <Select
                     value={circle.size}
-                    aria-label={`Circle ${row + 1} size`}
-                    onChange={(e) => patch({ size: e.target.value as (typeof CIRCLE_SIZES)[number] })}
-                    className={`${input} py-1.5`}
+                    onValueChange={(next) => patch({ size: next as (typeof CIRCLE_SIZES)[number] })}
                   >
-                    {CIRCLE_SIZES.map((s) => (
-                      <option key={s} value={s}>
-                        {SIZE_LABELS[s]}
-                      </option>
-                    ))}
-                  </select>
-                </td>
-              </tr>
+                    <SelectTrigger id={`${id}-${circleId}-size`} aria-label={`Circle ${row + 1} size`} className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CIRCLE_SIZES.map((o) => (
+                        <SelectItem key={o} value={o}>
+                          {SIZE_LABELS[o]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </TableCell>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

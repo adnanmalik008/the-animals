@@ -13,11 +13,13 @@
    limit. */
 
 import { useId, useRef, useState } from "react";
+import { Loader2, Upload, X } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ImageSpec } from "@/lib/cms/spec";
 import { UPLOAD_ACCEPT } from "@/lib/cms/upload";
 import { downscaleImage } from "./image-resize";
-import { fieldError, hint, input, invalidRing, quietBtnDisablable } from "./tokens";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function ImageField({
   spec,
@@ -73,19 +75,19 @@ export function ImageField({
     <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
       <div
         style={{ aspectRatio: spec.aspect ?? "16 / 9" }}
-        className="grid w-full max-w-56 shrink-0 place-items-center overflow-hidden rounded-xl border border-line bg-bg2"
+        className="grid w-full max-w-56 shrink-0 place-items-center overflow-hidden rounded-lg border bg-muted"
       >
         {showable ? (
           /* an arbitrary pasted URL cannot go through next/image's loader */
           // eslint-disable-next-line @next/next/no-img-element
           <img src={src} alt="" className="h-full w-full object-cover" />
         ) : (
-          <span className={hint}>{src ? "Not a usable address" : "No image"}</span>
+          <span className="text-xs text-muted-foreground">{src ? "Not a usable address" : "No image"}</span>
         )}
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <input
+        <Input
           id={id}
           type="text"
           inputMode="url"
@@ -95,7 +97,7 @@ export function ImageField({
           aria-invalid={invalid || undefined}
           aria-describedby={describedBy}
           onChange={(e) => onChange(e.target.value)}
-          className={`${input} font-mono text-xs ${invalid ? invalidRing : ""}`}
+          className="font-mono text-xs"
         />
         <div className="flex flex-wrap items-center gap-2">
           <input
@@ -110,21 +112,38 @@ export function ImageField({
               if (file) void upload(file);
             }}
           />
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => fileInput.current?.click()}
             disabled={busy}
             aria-describedby={statusId}
-            className={quietBtnDisablable}
           >
+            {busy ? <Loader2 className="animate-spin" /> : <Upload />}
             {busy ? "Uploading…" : "Upload"}
-          </button>
-          <button type="button" onClick={() => onChange("")} disabled={!value || busy} className={quietBtnDisablable}>
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onChange("")}
+            disabled={!value || busy}
+          >
+            <X />
             Clear
-          </button>
-          {spec.aspect && <span className={hint}>Cropped to {spec.aspect.replace("/", ":")}</span>}
+          </Button>
+          {spec.aspect && (
+            <span className="text-xs text-muted-foreground">
+              Cropped to {spec.aspect.replace("/", ":")}
+            </span>
+          )}
         </div>
-        <p id={statusId} role="status" className={uploadError ? fieldError : "sr-only"}>
+        <p
+          id={statusId}
+          role="status"
+          className={uploadError ? "text-xs font-medium text-destructive" : "sr-only"}
+        >
           {uploadError ?? (busy ? "Uploading…" : "")}
         </p>
         {altSlot}

@@ -6,6 +6,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CONTENT_HREF, legacyKeys, moduleGroups, moduleHref } from "@/components/admin/module-groups";
+import { hasModuleIcon } from "@/components/admin/module-icons";
 import { MODULES } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
 
@@ -51,6 +52,27 @@ describe("moduleGroups", () => {
     }
   });
 
+  /* The index prints `eyebrow` as the module's second line. Twenty of the
+     thirty modules are titled exactly as they are labelled, so printing
+     `heading` there repeated the name back twenty times ("Reddit" over
+     "Reddit"); `eyebrow` is the part that is *not* the name, and is absent
+     whenever there is none. Both halves matter: an eyebrow that had drifted
+     into carrying the title would put the duplication straight back. */
+  it("carries the eyebrow alone as the module's second line, never its name", () => {
+    const entries = moduleGroups().flatMap((g) => g.entries);
+    for (const def of MODULES) {
+      const entry = entries.find((e) => e.key === def.key);
+      expect(entry?.eyebrow).toBe(def.heading.eyebrow);
+      if (entry?.eyebrow !== undefined) expect(entry.eyebrow).not.toBe(entry.label);
+    }
+  });
+
+  it("gives every group a stable id, so the tab filter is not keyed by prose", () => {
+    const ids = moduleGroups().map((g) => g.id);
+    expect(ids.every((id) => /^[a-z-]+$/.test(id))).toBe(true);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
   /* The eighteen keys with a template but no definition still have to be
      reachable — they save raw JSON through the Advanced panel and would
      otherwise vanish from the admin entirely. Both assertions compare against
@@ -81,6 +103,25 @@ describe("moduleGroups", () => {
   it("gives a JSON-only key no heading — there is none fixed in code", () => {
     const still = moduleGroups().find((g) => g.title === "Still JSON");
     for (const entry of still?.entries ?? []) expect(entry.heading).toBeUndefined();
+  });
+});
+
+/* The index draws each module as its subject rather than as a bullet, which
+   only works while every module has a subject drawn for it. A key with no
+   glyph still renders — it falls back to a plain document — so nothing breaks
+   loudly, and that is exactly why it needs a test: a module added in six
+   months would otherwise join the list as the one anonymous row and no one
+   would notice. */
+describe("module icons", () => {
+  it("draws every registry module as itself, not as the fallback document", () => {
+    const missing = MODULES.filter((m) => !hasModuleIcon(m.key)).map((m) => m.key);
+    expect(missing).toEqual([]);
+  });
+
+  /* JSON-only keys are the deliberate exception: there is no form for them
+     yet, and the plain document says so. */
+  it("leaves the JSON-only keys on the fallback", () => {
+    for (const key of JSON_ONLY) expect(hasModuleIcon(key)).toBe(false);
   });
 });
 

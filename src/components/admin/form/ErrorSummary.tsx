@@ -10,7 +10,8 @@
 import { createContext, useCallback, useContext, useMemo, useRef, type ReactNode } from "react";
 import type { FieldErrors } from "@/lib/cms/parse";
 import { describePath } from "./list-ops";
-import { quietBtn } from "./tokens";
+import { CircleAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface Anchors {
   register: (key: string, el: HTMLElement | null) => void;
@@ -67,24 +68,27 @@ export function ErrorSummary({ errors, className = "" }: { errors: FieldErrors; 
   if (entries.length === 0) return null;
 
   return (
-    <div role="alert" className={`flex flex-col gap-2 rounded-xl border border-red/40 bg-red/5 p-4 ${className}`}>
-      <p className="text-sm font-semibold text-red">
+    <Alert variant="destructive" className={className}>
+      <CircleAlert />
+      <AlertTitle>
         {entries.length === 1 ? "1 field needs attention" : `${entries.length} fields need attention`}
-      </p>
-      <ul className="flex flex-col gap-1">
-        {entries.map(([key, message]) => (
-          <li key={key}>
-            <button
-              type="button"
-              onClick={() => anchors?.reveal(key)}
-              className={`${quietBtn} w-full !rounded-lg text-left`}
-            >
-              <span className="font-semibold text-ink">{describePath(key)}</span>
-              <span className="text-graphite"> — {message}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </div>
+      </AlertTitle>
+      <AlertDescription>
+        <ul className="flex w-full flex-col gap-1">
+          {entries.map(([key, message]) => (
+            <li key={key}>
+              <button
+                type="button"
+                onClick={() => anchors?.reveal(key)}
+                className="w-full rounded-md px-2 py-1 text-left transition-colors hover:bg-destructive/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40"
+              >
+                <span className="font-medium text-foreground">{describePath(key)}</span>
+                <span className="text-muted-foreground"> — {message}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </AlertDescription>
+    </Alert>
   );
 }

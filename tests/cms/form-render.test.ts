@@ -5,7 +5,15 @@
    enough to prove each `FieldSpec.kind` has a working branch — not only a
    branch the typechecker counted — and, more usefully, that a document
    missing a value still produces a *controlled* input rather than one React
-   would later flip from uncontrolled to controlled. */
+   would later flip from uncontrolled to controlled.
+
+   The controls are shadcn/ui, and two Radix habits shape what this file can
+   look at. State lives in attributes: a checkbox is a `role="checkbox"`
+   button whose `data-state` reads checked or unchecked, not a native box.
+   And a select's items are mounted in a portal on the client, so none of
+   them — not the offered ones, not the one the renderer adds to hold on to a
+   value the options no longer offer — ever reaches this markup. Where a mark
+   has to read an attribute instead of text it is a regular expression. */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
@@ -48,16 +56,32 @@ const SPECS: Record<FieldSpec["kind"], FieldSpec> = {
   custom: f.custom({ label: "Points", widget: "points12" }),
 };
 
+/* Radix's select trigger carries `data-placeholder` only while it is showing
+   its placeholder, so "out of the placeholder state" is how SSR says "this
+   control holds a value". The `=` matters: the trigger's own class list
+   mentions the `data-placeholder:` Tailwind variant, which is not it. */
+const SELECT_HOLDS_A_VALUE = /role="combobox"(?![^>]*data-placeholder=)/;
+
 /* For each kind: what the document holds, the mark that value must leave in
    the markup, and the mark the *empty* rendering must leave. Both are
    specific on purpose — "it rendered something" would pass on an empty div,
-   and the empty case is the one that decides whether an input is controlled. */
-const SAMPLES: Record<FieldSpec["kind"], { value: unknown; shows: string; blank: string }> = {
+   and the empty case is the one that decides whether an input is controlled.
+   A mark is a substring where the value is printed into the markup, and a
+   regular expression where a Radix control states it in attributes. */
+const SAMPLES: Record<FieldSpec["kind"], { value: unknown; shows: string | RegExp; blank: string | RegExp }> = {
   text: { value: "Hello", shows: 'value="Hello"', blank: 'value=""' },
   textarea: { value: "Hello", shows: ">Hello</textarea>", blank: "></textarea>" },
   number: { value: 3, shows: 'value="3"', blank: 'value=""' },
-  boolean: { value: true, shows: "checked", blank: 'type="checkbox"' },
-  select: { value: "orange", shows: ">Orange</option>", blank: ">Choose…</option>" },
+  /* the box is a button that spells both states out, so "unchecked" is a
+     state to read rather than an attribute that is merely missing */
+  boolean: {
+    value: true,
+    shows: /role="checkbox"[^>]*data-state="checked"/,
+    blank: /role="checkbox"[^>]*data-state="unchecked"/,
+  },
+  /* the option labels are portalled, so a held value shows as the trigger
+     being out of its placeholder state; the placeholder itself is printed */
+  select: { value: "orange", shows: SELECT_HOLDS_A_VALUE, blank: ">Choose…</span>" },
   url: { value: "https://example.com", shows: 'value="https://example.com"', blank: 'value=""' },
   image: { value: "/assets/logo.png", shows: 'src="/assets/logo.png"', blank: ">No image<" },
   color: { value: "#ff4500", shows: 'value="#ff4500"', blank: 'value="#000000"' },
@@ -74,7 +98,7 @@ describe("every kind renders", () => {
     const { value, shows, blank } = SAMPLES[kind];
 
     it(`${kind} renders the value the document holds`, () => {
-      expect(render(spec, value)).toContain(shows);
+      expect(render(spec, value)).toMatch(shows);
     });
 
     /* a saved doc can simply not have the key. The field still has to draw
@@ -85,7 +109,7 @@ describe("every kind renders", () => {
       const label = kind === "id" ? "ID" : (spec as { label?: string }).label;
       expect(label).toBeDefined();
       expect(html).toContain(label);
-      expect(html).toContain(blank);
+      expect(html).toMatch(blank);
     });
   }
 });
@@ -112,17 +136,34 @@ describe("inputs are controlled even when the document has no value", () => {
     expect(html).not.toContain("NaN");
   });
 
+  /* Radix also renders a hidden `<input type="checkbox">` beside the button
+     so a form submits something, which is why these read the button: the
+     mirror would say "checked" even if the real control never did. */
   it("a checkbox is unchecked rather than absent", () => {
-    expect(render(SPECS.boolean, undefined)).toContain('type="checkbox"');
-    expect(render(SPECS.boolean, true)).toContain("checked");
+    expect(render(SPECS.boolean, undefined)).toMatch(/role="checkbox"[^>]*data-state="unchecked"/);
+    expect(render(SPECS.boolean, true)).toMatch(/role="checkbox"[^>]*data-state="checked"/);
   });
 
   it("a failing checkbox is announced invalid like every other control", () => {
-    expect(render(SPECS.boolean, false, { field: "Required" })).toContain('aria-invalid="true"');
+    expect(render(SPECS.boolean, false, { field: "Required" })).toMatch(
+      /role="checkbox"[^>]*aria-invalid="true"/
+    );
   });
 
+  /* The renderer answers an unrecognised value by adding an item for it, so
+     the select still shows what the document holds. That item is portalled,
+     so this markup cannot see it — what it can see is that the trigger is
+     holding a value rather than sitting in its placeholder, exactly as it
+     does for a value the options do offer. The item itself is client-side,
+     and `choice` is internal to Field, so there is no unit of it to call. */
   it("a select keeps a value its options no longer offer", () => {
-    expect(render(SPECS.select, "chartreuse")).toContain("chartreuse");
+    const stale = render(SPECS.select, "chartreuse");
+    expect(stale).toMatch(SELECT_HOLDS_A_VALUE);
+    expect(stale).not.toContain('data-placeholder=""');
+    expect(stale).not.toContain(">Choose…</span>");
+
+    // the contrast: a document with nothing in it *is* the placeholder state
+    expect(render(SPECS.select, undefined)).toContain('data-placeholder=""');
   });
 
   it("a colour swatch falls back to a valid hex while the text keeps the raw value", () => {
@@ -164,8 +205,15 @@ describe("field wiring", () => {
     const withOptions = render(SPECS.ref, "news", {}, {
       refSources: { [refKey(REF_SOURCE)]: [{ value: "news", label: "News" }] },
     });
-    expect(withOptions).toContain("<select");
-    expect(withOptions).toContain("News");
+    /* given rows to offer it becomes a Radix select instead: a combobox
+       trigger carrying the field's id and holding the stored value, and no
+       text box to type an id into. "News" is an item's label, mounted in a
+       portal on the client, so it is not in this markup to look for. */
+    expect(withOptions).toContain('data-slot="select-trigger"');
+    expect(withOptions).toContain('role="combobox"');
+    expect(withOptions).toContain('id="cms-field"');
+    expect(withOptions).toMatch(SELECT_HOLDS_A_VALUE);
+    expect(withOptions).not.toContain("<input");
   });
 
   /* The key is the document *and* the list: one document can hold two, and
@@ -173,7 +221,7 @@ describe("field wiring", () => {
   it("a ref ignores options filed under the document alone", () => {
     const html = render(SPECS.ref, "news", {}, { refSources: { self: [{ value: "news", label: "News" }] } });
     expect(html).toContain("<input");
-    expect(html).not.toContain("<select");
+    expect(html).not.toContain('role="combobox"');
   });
 
   it("an image renders its alt field beside the preview, and only once", () => {
@@ -314,7 +362,7 @@ describe("the three custom widgets", () => {
   it("presence3 draws three checkboxes, named when the module names them", () => {
     const spec = f.custom({ label: "Seen on", widget: "presence3" });
     const plain = render(spec, [true, false, true]);
-    expect(plain.match(/type="checkbox"/g)).toHaveLength(3);
+    expect(plain.match(/role="checkbox"/g)).toHaveLength(3);
     expect(plain).toContain("Column 1");
 
     const named = render(spec, [true, false, true], {}, { widgetColumns: { field: ["Nike", "Adidas", "Puma"] } });
@@ -324,10 +372,14 @@ describe("the three custom widgets", () => {
 
   it("circles7 draws the seven fixed circles and never shows an id", () => {
     const html = render(f.custom({ label: "Circles", widget: "circles7" }), WIDGET_DEFAULTS.circles7());
-    expect(html.match(/<tr>/g)).toHaveLength(7);
+    /* rows are shadcn table rows, so they are counted by their slot — and
+       only inside the body, because the header is one of those rows too */
+    const body = html.slice(html.indexOf('data-slot="table-body"'));
+    expect(body.match(/data-slot="table-row"/g)).toHaveLength(7);
     expect(html).toContain("Key Influencers");
     expect(html).not.toContain("key-influencers</"); // the id is a key, not content
-    expect(html.match(/<select/g)).toHaveLength(21); // colour, icon, size per row
+    // colour, icon and size per row — Radix triggers, not native <select>s
+    expect(html.match(/data-slot="select-trigger"/g)).toHaveLength(21);
   });
 });
 

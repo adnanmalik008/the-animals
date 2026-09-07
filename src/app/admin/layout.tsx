@@ -1,47 +1,53 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { requireAdmin } from "@/lib/server/guard";
+import { listBoards } from "@/lib/server/boards";
 import { isCmsConfigured } from "@/lib/server/supabase";
-import { logout } from "@/app/login/actions";
+import { AdminHeader } from "@/components/admin/AdminHeader";
+import { AdminSidebar } from "@/components/admin/AdminSidebar";
+import { DirtyGuard } from "@/components/admin/dirty-guard";
+import { moduleGroups } from "@/components/admin/module-groups";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Admin — The Animals",
 };
 
+/* The CMS shell: a sidebar that reaches every board and every module, and a
+   header that says where you are. Both are rendered beside an open form, so
+   both sit inside the dirty guard — their links are the ones that can walk
+   away from unsaved work. */
+
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const session = await requireAdmin();
   const configured = isCmsConfigured();
+  const boards = await listBoards();
+  const groups = moduleGroups();
+
+  const boardNames = Object.fromEntries(boards.map((b) => [b.slug, b.clientName]));
+  const moduleNames = Object.fromEntries(
+    groups.flatMap((g) => g.entries.map((e) => [e.key, e.label] as const))
+  );
 
   return (
-    <div className="flex-1 bg-bg">
-      <div className="border-b border-line bg-bg3 text-white">
-        <div className="mx-auto flex max-w-[1200px] items-center justify-between gap-4 px-4 py-2.5 sm:px-6">
-          <div className="flex items-center gap-3">
-            <Link href="/admin" className="text-sm font-bold tracking-tight hover:text-orange">
-              Board CMS
-            </Link>
-            {!configured && (
-              <span className="rounded-full bg-yellow/20 px-2.5 py-0.5 text-xs text-yellow">
-                Supabase not configured — read-only preview
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3 text-xs text-white/70">
-            <span>
-              {session.username} · {session.role}
-            </span>
-            <Link href="/" className="hover:text-white">
-              View board ↗
-            </Link>
-            <form action={logout}>
-              <button type="submit" className="rounded-full border border-white/25 px-3 py-1 hover:bg-white/10">
-                Log out
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-      <div className="mx-auto max-w-[1200px] px-4 py-8 sm:px-6">{children}</div>
-    </div>
+    <DirtyGuard>
+      <TooltipProvider>
+        <SidebarProvider className="min-h-0 flex-1">
+          <AdminSidebar
+            boards={boards.map((b) => ({ slug: b.slug, clientName: b.clientName }))}
+            groups={groups}
+            configured={configured}
+            username={session.username}
+            role={session.role}
+          />
+          <SidebarInset className="min-w-0">
+            <AdminHeader boardNames={boardNames} moduleNames={moduleNames} />
+            <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 sm:py-8">{children}</div>
+          </SidebarInset>
+          <Toaster position="bottom-right" />
+        </SidebarProvider>
+      </TooltipProvider>
+    </DirtyGuard>
   );
 }

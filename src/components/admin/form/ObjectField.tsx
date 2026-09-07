@@ -14,7 +14,8 @@ import { pathKey } from "@/lib/cms/paths";
 import type { ObjectSpec } from "@/lib/cms/spec";
 import type { FieldProps, FieldRenderer, FieldSources } from "./field-types";
 import { blankObject, errorsUnder, prefixFromPath } from "./list-ops";
-import { fieldError, hint, quietBtn } from "./tokens";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Props extends FieldSources {
   spec: ObjectSpec;
@@ -102,12 +103,8 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
 
   const heading = (
     <>
-      {spec.label && <span className="text-sm font-semibold text-ink">{spec.label}</span>}
-      {insideCount > 0 && (
-        <span className="rounded-full bg-red/10 px-2 py-0.5 text-[11px] font-semibold text-red">
-          {insideCount} to fix
-        </span>
-      )}
+      {spec.label && <span className="text-sm font-semibold">{spec.label}</span>}
+      {insideCount > 0 && <Badge variant="destructive">{insideCount} to fix</Badge>}
     </>
   );
 
@@ -116,8 +113,10 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
   /* an optional group is a switch, not a set of blank inputs. Adding also
      opens it — otherwise "Add" appears to do nothing but grow a caret. */
   const toggle = spec.optional ? (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="xs"
       onClick={() => {
         if (present) onChange(undefined);
         else {
@@ -125,10 +124,9 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
           setOpen(true);
         }
       }}
-      className={quietBtn}
     >
       {present ? "Remove" : "Add"}
-    </button>
+    </Button>
   ) : null;
 
   /* Both flags together is a real combination — newswire's `incoming` sets
@@ -138,22 +136,22 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
      to the flat switch below. */
   if (spec.collapsible && (!spec.optional || present)) {
     return (
-      <fieldset className="relative rounded-xl border border-line bg-bg2/40">
+      <fieldset className="relative rounded-lg border bg-muted/30">
         <legend className="sr-only">{spec.label ?? key}</legend>
         <details open={open} onToggle={(e) => setOpen(e.currentTarget.open)}>
           <summary
-            className={`flex cursor-pointer list-none items-center gap-2 rounded-xl py-3 pl-4 hover:bg-bg2 [&::-webkit-details-marker]:hidden ${
+            className={`flex cursor-pointer list-none items-center gap-2 rounded-lg py-3 pl-4 hover:bg-muted [&::-webkit-details-marker]:hidden ${
               toggle ? "pr-28" : "pr-4"
             }`}
           >
-            <span aria-hidden className="text-graphite">
+            <span aria-hidden className="text-muted-foreground">
               {open ? "▾" : "▸"}
             </span>
             {heading}
           </summary>
-          <div className="flex flex-col gap-4 border-t border-line px-4 py-4">
-            {spec.help && <p className={hint}>{spec.help}</p>}
-            {ownError && <p className={fieldError}>{ownError}</p>}
+          <div className="flex flex-col gap-4 border-t px-4 py-4">
+            {spec.help && <p className="text-xs text-muted-foreground">{spec.help}</p>}
+            {ownError && <p className="text-xs font-medium text-destructive">{ownError}</p>}
             {body}
           </div>
         </details>
@@ -165,14 +163,14 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
 
   if (spec.optional) {
     return (
-      <fieldset className="flex flex-col gap-2 rounded-xl border border-line bg-bg2/40 p-4">
+      <fieldset className="flex flex-col gap-2 rounded-lg border bg-muted/30 p-4">
         <legend className="sr-only">{spec.label ?? key}</legend>
         <div className="flex flex-wrap items-center gap-2">
           {heading}
           <span className="ml-auto">{toggle}</span>
         </div>
-        {spec.help && <p className={hint}>{spec.help}</p>}
-        {ownError && <p className={fieldError}>{ownError}</p>}
+        {spec.help && <p className="text-xs text-muted-foreground">{spec.help}</p>}
+        {ownError && <p className="text-xs font-medium text-destructive">{ownError}</p>}
         {present && <div className="mt-2">{body}</div>}
       </fieldset>
     );
@@ -182,11 +180,11 @@ export function ObjectField({ spec, path, value, onChange, errors, renderField: 
     <fieldset className="flex flex-col gap-4">
       {spec.label && (
         <legend className="mb-1 flex items-center gap-2">
-          <span className="text-sm font-semibold text-ink">{spec.label}</span>
+          <span className="text-sm font-semibold">{spec.label}</span>
         </legend>
       )}
-      {spec.help && <p className={hint}>{spec.help}</p>}
-      {ownError && <p className={fieldError}>{ownError}</p>}
+      {spec.help && <p className="text-xs text-muted-foreground">{spec.help}</p>}
+      {ownError && <p className="text-xs font-medium text-destructive">{ownError}</p>}
       {body}
     </fieldset>
   );

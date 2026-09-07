@@ -25,10 +25,10 @@
 
 import Link from "next/link";
 import { useActionState, useCallback, useMemo, useState, type FormEvent } from "react";
+import { ChevronDown, Loader2, Lock, RotateCcw, Undo2 } from "lucide-react";
 import { Field } from "@/components/admin/form/Field";
 import { ErrorSummary, FieldAnchors } from "@/components/admin/form/ErrorSummary";
 import { useDocState } from "@/components/admin/form/useDocState";
-import { card, fieldError, hint, input, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
 import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { issuesToFieldErrors, type FieldErrors } from "@/lib/cms/parse";
 import { byKey } from "@/lib/cms/registry";
@@ -37,7 +37,27 @@ import type { RefSources, WidgetColumns } from "@/lib/cms/refs";
 import type { ObjectSpec } from "@/lib/cms/spec";
 import { saveContentDocAction, type ActionState } from "@/app/admin/actions";
 import { Feedback } from "@/app/admin/ui";
-import { usePublishDirty, useLeaveGuard } from "@/components/admin/ContentNav";
+import { usePublishDirty, useLeaveGuard } from "@/components/admin/dirty-guard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { Textarea } from "@/components/ui/textarea";
 
 export interface ModuleFormProps {
   /** a string, never the definition: definitions carry functions and RegExps */
@@ -60,13 +80,6 @@ export interface ModuleFormProps {
   widgetColumns?: WidgetColumns;
 }
 
-const LOCK = (
-  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-    <rect x="4" y="11" width="16" height="10" rx="2" />
-    <path d="M8 11V7a4 4 0 1 1 8 0v4" />
-  </svg>
-);
-
 export function ModuleForm({
   moduleKey,
   initialDoc,
@@ -87,8 +100,6 @@ export function ModuleForm({
      database confirmed */
   const [saved, setSaved] = useState<{ at?: number; doc: unknown }>({ doc: initialDoc });
   const [showErrors, setShowErrors] = useState(invalid);
-  /* true while the reset is waiting to be confirmed */
-  const [arming, setArming] = useState(false);
   /* The JSON panel's own text, and the document it was typed against. Keeping
      the base is what lets the panel be live-bound without fighting the form:
      while they agree the textarea keeps its exact characters (so the caret
@@ -172,56 +183,62 @@ export function ModuleForm({
         <input type="hidden" name="doc" value={docJson} />
 
         <header className="flex flex-col gap-3">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="text-2xl font-bold tracking-tight">{def?.label ?? moduleKey}</h1>
-              <p className={hint}>
-                <span className="font-mono">{moduleKey}</span> · shown on every board
-              </p>
-            </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight">{def?.label ?? moduleKey}</h1>
+            <p className="text-xs text-muted-foreground">
+              <span className="font-mono">{moduleKey}</span> · shown on every board
+            </p>
           </div>
 
           {def ? (
             /* fixed in code at the client's request — rendered, never bound */
-            <div className="flex flex-col gap-1 rounded-xl border border-dashed border-line bg-bg2 px-4 py-3">
-              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-graphite">
-                {LOCK} Fixed in code
+            <div className="flex flex-col gap-1 rounded-lg border border-dashed bg-muted/50 px-4 py-3">
+              <span className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <Lock className="size-3" /> Fixed in code
               </span>
               {def.heading.eyebrow && (
-                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-orange">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-primary">
                   {def.heading.eyebrow}
                 </span>
               )}
-              <span className="text-lg font-bold text-ink">{def.heading.title}</span>
-              <p className={hint}>
+              <span className="text-lg font-semibold">{def.heading.title}</span>
+              <p className="text-xs text-muted-foreground">
                 This module&apos;s eyebrow and title are part of the design. Everything below is yours.
               </p>
             </div>
           ) : (
-            <div className="flex flex-col gap-1 rounded-xl border border-dashed border-line bg-bg2 px-4 py-3">
-              <span className="text-sm font-semibold text-ink">No form for this module yet</span>
-              <p className={hint}>
+            <div className="flex flex-col gap-1 rounded-lg border border-dashed bg-muted/50 px-4 py-3">
+              <span className="text-sm font-semibold">No form for this module yet</span>
+              <p className="text-xs text-muted-foreground">
                 Edit it as JSON below. It saves exactly what you type — nothing checks the shape.
               </p>
             </div>
           )}
 
-          {def?.intro && <p className="text-sm text-graphite">{def.intro}</p>}
+          {def?.intro && <p className="text-sm text-muted-foreground">{def.intro}</p>}
 
-          <p className="rounded-xl bg-green/10 px-4 py-3 text-sm text-ink">
-            This is the one copy of this module: what you save here is what every board shows, including
-            boards created later.
-          </p>
+          <Alert>
+            <AlertDescription>
+              This is the one copy of this module: what you save here is what every board shows,
+              including boards created later.
+            </AlertDescription>
+          </Alert>
 
           {invalid && (
-            <p className="rounded-xl bg-yellow/15 px-4 py-3 text-sm text-ink">
-              What is saved for this module no longer matches its fields, so the boards are showing the
-              content built into the code instead. The saved document is loaded below — fix what is flagged
-              and save to put it back in use.
-            </p>
+            <Alert>
+              <AlertTitle>What is saved no longer matches this module&apos;s fields</AlertTitle>
+              <AlertDescription>
+                The boards are showing the content built into the code instead. The saved document is
+                loaded below — fix what is flagged and save to put it back in use.
+              </AlertDescription>
+            </Alert>
           )}
 
-          {warning && <p className="rounded-xl bg-yellow/15 px-4 py-3 text-sm text-ink">{warning}</p>}
+          {warning && (
+            <Alert>
+              <AlertDescription>{warning}</AlertDescription>
+            </Alert>
+          )}
         </header>
 
         <div id="cms-errors" tabIndex={-1} className="outline-none">
@@ -229,29 +246,40 @@ export function ModuleForm({
         </div>
 
         {rootSpec && (
-          <div className={`${card} flex flex-col gap-5`}>
-            <Field
-              spec={rootSpec}
-              path={[]}
-              value={doc}
-              onChange={replace}
-              errors={errors}
-              refSources={refSources}
-              widgetColumns={widgetColumns}
-            />
-          </div>
+          <Card>
+            <CardContent className="flex flex-col gap-5">
+              <Field
+                spec={rootSpec}
+                path={[]}
+                value={doc}
+                onChange={replace}
+                errors={errors}
+                refSources={refSources}
+                widgetColumns={widgetColumns}
+              />
+            </CardContent>
+          </Card>
         )}
 
         {/* The same document, as text. Bound to the same state, so anything
             typed here appears in the fields above and is what Save sends. */}
-        <details onToggle={() => setDraft(null)} className={`${card} !p-0`}>
-          <summary className="cursor-pointer list-none px-5 py-3 text-sm font-semibold hover:bg-bg2 [&::-webkit-details-marker]:hidden">
-            Advanced — edit as JSON
-          </summary>
-          <div className="flex flex-col gap-2 border-t border-line px-5 py-4">
-            <label className="flex flex-col gap-1.5">
-              <span className="sr-only">Document (JSON)</span>
-              <textarea
+        <Collapsible onOpenChange={() => setDraft(null)} className="group/json rounded-xl border bg-card">
+          <CollapsibleTrigger asChild>
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium hover:bg-muted/50"
+            >
+              <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]/json:rotate-180" />
+              Advanced — edit as JSON
+            </button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <div className="flex flex-col gap-2 border-t px-5 py-4">
+              <label className="sr-only" htmlFor="cms-json">
+                Document (JSON)
+              </label>
+              <Textarea
+                id="cms-json"
                 value={jsonText}
                 onChange={(e) => {
                   const text = e.target.value;
@@ -268,73 +296,99 @@ export function ModuleForm({
                 rows={20}
                 spellCheck={false}
                 aria-invalid={!!parseError}
-                className={`${input} font-mono text-xs leading-relaxed ${
-                  parseError ? "border-red/60 focus-visible:ring-red/50" : ""
-                }`}
+                className="font-mono text-xs leading-relaxed"
               />
-            </label>
-            <p className={parseError ? fieldError : hint} aria-live="polite">
-              {parseError
-                ? `Invalid JSON — ${parseError}. The fields above still hold the last version that parsed.`
-                : "Valid JSON. The fields above follow every keystroke that parses."}
-            </p>
-          </div>
-        </details>
-
-        <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center gap-2 border-t border-line bg-bg/95 px-1 py-3 backdrop-blur">
-          <button type="submit" disabled={pending || !canSave} className={primaryBtn}>
-            {pending ? "Saving…" : "Save"}
-          </button>
-
-          <button
-            type="button"
-            disabled={!dirty}
-            onClick={() => {
-              if (!window.confirm("Throw away every change since the last save?")) return;
-              reset(saved.doc);
-              setDraft(null);
-              setShowErrors(false);
-            }}
-            className={`${quietBtn} disabled:cursor-not-allowed disabled:opacity-40`}
-          >
-            Discard changes
-          </button>
-
-          {arming ? (
-            <span className="flex items-center gap-2">
-              <span className={hint}>Replace everything with the content built into the code?</span>
-              <button
-                type="button"
-                onClick={() => {
-                  replace(structuredClone(resetDoc));
-                  setDraft(null);
-                  setArming(false);
-                }}
-                className="rounded-full bg-red px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/60"
+              <p
+                className={`text-xs ${parseError ? "font-medium text-destructive" : "text-muted-foreground"}`}
+                aria-live="polite"
               >
-                Yes, reset
-              </button>
-              <button type="button" onClick={() => setArming(false)} className={quietBtn}>
-                Keep mine
-              </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => setArming(true)} className={quietBtn}>
-              Reset to template…
-            </button>
-          )}
+                {parseError
+                  ? `Invalid JSON — ${parseError}. The fields above still hold the last version that parsed.`
+                  : "Valid JSON. The fields above follow every keystroke that parses."}
+              </p>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
 
-          <Link href={CONTENT_HREF} onClick={guard} className={quietBtn}>
-            All content
-          </Link>
+        <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center gap-2 border-t bg-background/95 px-1 py-3 backdrop-blur">
+          <Button type="submit" disabled={pending || !canSave}>
+            {pending && <Loader2 className="animate-spin" />}
+            {pending ? "Saving…" : "Save"}
+          </Button>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="outline" size="sm" disabled={!dirty}>
+                <Undo2 />
+                Discard changes
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Throw away every change since the last save?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  The fields go back to the document the database last confirmed.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep editing</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    reset(saved.doc);
+                    setDraft(null);
+                    setShowErrors(false);
+                  }}
+                >
+                  Discard changes
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button type="button" variant="outline" size="sm">
+                <RotateCcw />
+                Reset to template
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Replace everything with the built-in content?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Every field is overwritten with the content this module ships with. Nothing is saved
+                  until you press Save.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep mine</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    replace(structuredClone(resetDoc));
+                    setDraft(null);
+                  }}
+                >
+                  Reset to template
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
+          <Button type="button" variant="ghost" size="sm" asChild>
+            <Link href={CONTENT_HREF} onClick={guard}>
+              All content
+            </Link>
+          </Button>
 
           <span className="ml-auto flex items-center gap-3">
             {showErrors && errorCount > 0 && (
-              <span className={fieldError}>
+              <span className="text-xs font-medium text-destructive">
                 {errorCount === 1 ? "1 field needs attention" : `${errorCount} fields need attention`}
               </span>
             )}
-            {dirty && errorCount === 0 && <span className={hint}>Unsaved changes</span>}
+            {dirty && errorCount === 0 && (
+              <span className="text-xs text-muted-foreground">Unsaved changes</span>
+            )}
             {/* "Saved" describes the document that was stored, so it stops
                 being true the moment this one differs from it — an error
                 still shows, because a rejected save is news either way */}

@@ -5,9 +5,8 @@ import { byKey } from "@/lib/cms/registry";
 import { MODULE_TEMPLATES } from "@/lib/module-templates";
 import { getContentDocs, getContentRowInfos } from "@/lib/server/docs";
 import { isCmsConfigured } from "@/lib/server/supabase";
-import { ContentNav, DirtyGuard } from "@/components/admin/ContentNav";
 import { ModuleForm } from "@/components/admin/ModuleForm";
-import { CONTENT_HREF, moduleGroups } from "@/components/admin/module-groups";
+import { CONTENT_HREF } from "@/components/admin/module-groups";
 import { ReadErrorPage } from "@/components/admin/ReadError";
 import { requireAdmin } from "@/lib/server/guard";
 
@@ -77,28 +76,21 @@ export default async function ContentModulePage({ params }: PageProps<"/admin/co
   const widgetColumns = def ? buildWidgetColumns(def.fields, otherDocs, startingDoc) : undefined;
 
   return (
-    <DirtyGuard>
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-8">
-        <ContentNav currentKey={key} groups={moduleGroups()} />
-        <div className="min-w-0 flex-1">
-          <ModuleForm
-            moduleKey={key}
-            initialDoc={startingDoc}
-            resetDoc={def ? def.fixture() : template}
-            invalid={invalid}
-            canSave={configured}
-            refSources={refSources}
-            widgetColumns={widgetColumns}
-            warning={
-              !configured
-                ? "Supabase is not configured, so there is nowhere to save content (see README.md)."
-                : read.available
-                  ? undefined
-                  : "Content has no table yet — supabase/migrations/0002_cms.sql has not been run. You can edit here, but saving will fail until it is."
-            }
-          />
-        </div>
-      </div>
-    </DirtyGuard>
+    <ModuleForm
+      moduleKey={key}
+      initialDoc={startingDoc}
+      resetDoc={def ? def.fixture() : template}
+      invalid={invalid}
+      canSave={configured}
+      refSources={refSources}
+      widgetColumns={widgetColumns}
+      warning={
+        !configured
+          ? "Supabase is not configured, so there is nowhere to save content (see README.md)."
+          : read.available
+            ? undefined
+            : "Content has no table yet — supabase/migrations/0002_cms.sql has not been run. You can edit here, but saving will fail until it is."
+      }
+    />
   );
 }

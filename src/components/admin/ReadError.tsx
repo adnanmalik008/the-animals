@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { card, hint, quietBtn } from "@/components/admin/form/tokens";
+import { ArrowLeft, CircleAlert } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 /* The one thing this admin must never do.
 
@@ -12,23 +15,26 @@ import { card, hint, quietBtn } from "@/components/admin/form/tokens";
 function Explanation({ error }: { error: string }) {
   return (
     <>
-      <p className="text-sm text-graphite">
+      <p>
         The database did not answer, so there is no way to say what is saved here. Reload in a moment.
         Nothing can be edited until the read succeeds — opening the built-in content and saving it would
         replace whatever is actually stored.
       </p>
-      <p className={`${hint} font-mono`}>{error}</p>
+      <p className="mt-2 font-mono text-xs opacity-80">{error}</p>
     </>
   );
 }
 
-/** Inside a card that would otherwise list modules. */
+/** Inside a screen that would otherwise list modules. */
 export function ReadErrorNotice({ what, error }: { what: string; error: string }) {
   return (
-    <div className="flex flex-col gap-1 rounded-xl border border-red/40 bg-red/5 px-4 py-3">
-      <p className="text-sm font-semibold text-red">Couldn&apos;t read {what}</p>
-      <Explanation error={error} />
-    </div>
+    <Alert variant="destructive">
+      <CircleAlert />
+      <AlertTitle>Couldn&apos;t read {what}</AlertTitle>
+      <AlertDescription>
+        <Explanation error={error} />
+      </AlertDescription>
+    </Alert>
   );
 }
 
@@ -45,12 +51,19 @@ export function ReadErrorPage({
   backLabel: string;
 }) {
   return (
-    <div className={`${card} flex max-w-2xl flex-col gap-3`}>
-      <h1 className="text-lg font-bold">Couldn&apos;t read {what}</h1>
-      <Explanation error={error} />
-      <Link href={backHref} className={`${quietBtn} self-start`}>
-        ← {backLabel}
-      </Link>
-    </div>
+    <Card className="max-w-2xl">
+      <CardHeader>
+        <CardTitle>Couldn&apos;t read {what}</CardTitle>
+      </CardHeader>
+      <CardContent className="grid gap-4 text-sm text-muted-foreground">
+        <Explanation error={error} />
+        <Button asChild variant="outline" size="sm" className="justify-self-start">
+          <Link href={backHref}>
+            <ArrowLeft />
+            {backLabel}
+          </Link>
+        </Button>
+      </CardContent>
+    </Card>
   );
 }

@@ -10,18 +10,32 @@
    Every control is controlled: a document can hold anything, so each branch
    narrows its value to a string, number or boolean before binding it. A
    value that arrives `undefined` becomes "" — never a React input that
-   silently switches from controlled to uncontrolled halfway through. */
+   silently switches from controlled to uncontrolled halfway through.
+
+   The controls themselves are shadcn/ui, so the CMS looks like one product
+   rather than a form engine with its own dialect. */
 
 import type { ReactElement } from "react";
+import { Lock } from "lucide-react";
 import { pathKey } from "@/lib/cms/paths";
 import { refKey } from "@/lib/cms/refs";
 import type { FieldSpec } from "@/lib/cms/spec";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { useFieldAnchor } from "./ErrorSummary";
 import type { FieldProps } from "./field-types";
 import { ImageField } from "./ImageField";
 import { ListField } from "./ListField";
 import { ObjectField } from "./ObjectField";
-import { fieldError, hint, input, invalidRing } from "./tokens";
 import { WIDGET_EDITORS } from "./widgets";
 
 const asText = (value: unknown): string => (typeof value === "string" ? value : "");
@@ -59,19 +73,43 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
   const describedBy = [help ? helpId : null, error ? errorId : null].filter(Boolean).join(" ") || undefined;
 
   const invalid = error !== undefined;
-  const ring = invalid ? invalidRing : "";
   const common = {
     id: controlId,
     "aria-invalid": invalid || undefined,
     "aria-describedby": describedBy,
-    className: `${input} ${ring}`,
   };
+
+  /* A `select` or `ref` whose stored value the options no longer offer still
+     has to show that value rather than silently reading as empty. Radix has
+     no item for "", so an empty one is the placeholder instead. */
+  function choice(
+    current: string,
+    options: readonly { readonly value: string; readonly label: string }[],
+    placeholder: string
+  ): ReactElement {
+    const known = options.some((o) => o.value === current);
+    return (
+      <Select value={current === "" ? undefined : current} onValueChange={onChange}>
+        <SelectTrigger {...common} className="w-full">
+          <SelectValue placeholder={placeholder} />
+        </SelectTrigger>
+        <SelectContent>
+          {!known && current !== "" && <SelectItem value={current}>{current}</SelectItem>}
+          {options.map((o) => (
+            <SelectItem key={o.value} value={o.value}>
+              {o.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    );
+  }
 
   function control(): ReactElement {
     switch (spec.kind) {
       case "text":
         return (
-          <input
+          <Input
             {...common}
             type="text"
             maxLength={spec.maxLength}
@@ -82,7 +120,7 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
 
       case "textarea":
         return (
-          <textarea
+          <Textarea
             {...common}
             rows={spec.rows ?? 4}
             maxLength={spec.maxLength}
@@ -93,7 +131,7 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
 
       case "number":
         return (
-          <input
+          <Input
             {...common}
             type="number"
             inputMode={spec.integer ? "numeric" : "decimal"}
@@ -112,39 +150,24 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
 
       case "boolean":
         return (
-          <label className="flex items-center gap-2 text-sm font-medium">
-            <input
+          <div className="flex items-center gap-2">
+            <Checkbox
               id={controlId}
-              type="checkbox"
               aria-invalid={invalid || undefined}
               aria-describedby={describedBy}
               checked={value === true}
-              onChange={(e) => onChange(e.target.checked)}
-              className="h-4 w-4 accent-[var(--orange)]"
+              onCheckedChange={(checked) => onChange(checked === true)}
             />
-            {spec.label}
-          </label>
+            <Label htmlFor={controlId}>{spec.label}</Label>
+          </div>
         );
 
-      case "select": {
-        const current = asText(value);
-        const known = spec.options.some((o) => o.value === current);
-        return (
-          <select {...common} value={current} onChange={(e) => onChange(e.target.value)}>
-            {/* a value the options no longer offer still has to show */}
-            {!known && <option value={current}>{current === "" ? "Choose…" : current}</option>}
-            {spec.options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        );
-      }
+      case "select":
+        return choice(asText(value), spec.options, "Choose…");
 
       case "url":
         return (
-          <input
+          <Input
             {...common}
             type="text"
             inputMode="url"
@@ -178,16 +201,16 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
               value={swatch}
               aria-label={`${spec.label} — colour picker`}
               onChange={(e) => onChange(e.target.value)}
-              className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-line bg-card p-1"
+              className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-background p-1"
             />
-            <input
+            <Input
               {...common}
               type="text"
               spellCheck={false}
               placeholder="#FF4500"
               value={raw}
               onChange={(e) => onChange(e.target.value)}
-              className={`${input} ${ring} font-mono`}
+              className="font-mono"
             />
           </div>
         );
@@ -197,11 +220,8 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
          so regenerating one orphans a client's saved work */
       case "id":
         return (
-          <span className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-bg2 px-2.5 py-1.5 font-mono text-xs text-graphite">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" aria-hidden>
-              <rect x="4" y="11" width="16" height="10" rx="2" />
-              <path d="M8 11V7a4 4 0 1 1 8 0v4" />
-            </svg>
+          <span className="inline-flex w-fit items-center gap-1.5 rounded-md border bg-muted px-2.5 py-1.5 font-mono text-xs text-muted-foreground">
+            <Lock className="size-3" />
             {asText(value) || "—"}
           </span>
         );
@@ -213,28 +233,18 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
            filled in, so let the id be typed rather than blocking the field */
         if (options.length === 0) {
           return (
-            <input
+            <Input
               {...common}
               type="text"
               spellCheck={false}
               placeholder="id of the row to link"
               value={current}
               onChange={(e) => onChange(e.target.value)}
-              className={`${input} ${ring} font-mono`}
+              className="font-mono"
             />
           );
         }
-        const known = options.some((o) => o.value === current);
-        return (
-          <select {...common} value={current} onChange={(e) => onChange(e.target.value)}>
-            {!known && <option value={current}>{current === "" ? "Choose…" : current}</option>}
-            {options.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        );
+        return choice(current, options, "Choose…");
       }
 
       case "object":
@@ -284,25 +294,23 @@ export function Field({ spec, path, value, onChange, errors, altSlot, ...sources
   const showMessages = !OWN_MESSAGES.has(spec.kind);
 
   return (
-    <div ref={anchor} tabIndex={-1} className="flex flex-col gap-1.5 outline-none">
+    <div ref={anchor} tabIndex={-1} className="flex flex-col gap-2 outline-none">
       {showLabel &&
         /* the id chip is not a labelable control, so it gets a plain caption */
         (spec.kind === "id" ? (
           <span className="text-sm font-medium">{label}</span>
         ) : (
-          <label htmlFor={controlId} className="text-sm font-medium">
-            {label}
-          </label>
+          <Label htmlFor={controlId}>{label}</Label>
         ))}
       {control()}
       {/* object and list print their own help and error beside their legend */}
       {showMessages && help && (
-        <p id={helpId} className={hint}>
+        <p id={helpId} className="text-xs text-muted-foreground">
           {help}
         </p>
       )}
       {showMessages && error && (
-        <p id={errorId} className={fieldError}>
+        <p id={errorId} className="text-xs font-medium text-destructive">
           {error}
         </p>
       )}

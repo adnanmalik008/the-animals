@@ -1,8 +1,48 @@
 "use client";
 
+/* The board half of the CMS, in shadcn/ui.
+
+   A board is three things and no more: a name, an address, and who can log
+   in. Content is not per board and lives on its own screens. */
+
 import { useActionState, useEffect, useRef, useState } from "react";
+import { Check, Copy, ExternalLink, Loader2, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import type { BoardRecord, BoardUserRecord } from "@/lib/server/boards";
-import { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Textarea } from "@/components/ui/textarea";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   addUserAction,
   createBoardAction,
@@ -12,53 +52,27 @@ import {
   type ActionState,
 } from "./actions";
 
-/* The class vocabulary now lives with the generated form, which has to look
-   like this page; re-exported here so an import of it keeps working. */
-export { card, input, label, primaryBtn, quietBtn } from "@/components/admin/form/tokens";
-
 /* The one save-result line every admin form shows. Exported: the generated
    module form is a second surface that has to report a save the same way. */
 export function Feedback({ state }: { state: ActionState }) {
   if (state.error)
     return (
-      <p role="alert" className="rounded-lg bg-red/10 px-3 py-2 text-sm text-red">
+      <p role="alert" className="text-sm font-medium text-destructive">
         {state.error}
       </p>
     );
   if (state.ok)
     return (
-      <p className="flex items-center gap-1.5 text-sm font-medium text-green">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-          <path d="M20 6L9 17l-5-5" />
-        </svg>
+      <p className="flex items-center gap-1.5 text-sm font-medium text-[var(--green)]">
+        <Check className="size-3.5" />
         Saved
       </p>
     );
   return null;
 }
 
-/* Step eyebrow — the two sections of a board page are a real sequence:
-   identity, then who gets in. Content is not per board and lives elsewhere. */
-export function StepEyebrow({ n, children }: { n: string; children: React.ReactNode }) {
-  return (
-    <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-graphite">
-      <span className="text-orange">{n}</span>
-      {children}
-    </p>
-  );
-}
-
-/* ---------------- the publish chip ----------------
-   A board's whole purpose is its URL. Everywhere a board appears, its
-   live address is a first-class object: monospaced, copyable, openable. */
-
-export function PublishChip({
-  host,
-  className = "",
-}: {
-  host: string;
-  className?: string;
-}) {
+/** The chip every board wears: its live address, openable and copyable. */
+export function PublishChip({ host, className }: { host: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => () => clearTimeout(timer.current), []);
@@ -66,40 +80,52 @@ export function PublishChip({
   const url = `https://${host}`;
   return (
     <span
-      className={`relative z-10 inline-flex max-w-full items-stretch overflow-hidden rounded-lg border border-line bg-bg2 text-xs ${className}`}
+      className={`relative z-10 inline-flex max-w-full items-stretch overflow-hidden rounded-md border bg-muted/40 text-xs ${className ?? ""}`}
     >
       <a
         href={url}
         target="_blank"
         rel="noreferrer"
         title={`Open ${url}`}
-        className="min-w-0 truncate px-2.5 py-1.5 font-mono text-ink/90 hover:bg-ink/5 hover:text-ink"
+        className="inline-flex min-w-0 items-center gap-1.5 truncate px-2.5 py-1.5 font-mono text-foreground/90 transition-colors hover:bg-muted hover:text-foreground"
       >
-        {host}
+        <span className="truncate">{host}</span>
+        <ExternalLink className="size-3 shrink-0 opacity-60" />
       </a>
       <button
         type="button"
         onClick={() => {
           navigator.clipboard?.writeText(url).then(() => {
             setCopied(true);
+            toast.success("Address copied", { description: url });
             clearTimeout(timer.current);
             timer.current = setTimeout(() => setCopied(false), 1600);
           });
         }}
         aria-label={`Copy ${url}`}
-        className="border-l border-line px-2 text-graphite transition-colors hover:bg-ink/5 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+        className="border-l px-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
       >
         {copied ? (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="text-green">
-            <path d="M20 6L9 17l-5-5" />
-          </svg>
+          <Check className="size-3 text-[var(--green)]" />
         ) : (
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-            <rect x="9" y="9" width="11" height="11" rx="2" />
-            <path d="M5 15V5a2 2 0 0 1 2-2h10" />
-          </svg>
+          <Copy className="size-3" />
         )}
       </button>
+    </span>
+  );
+}
+
+/** Login required, or open to anyone — said the same way everywhere. */
+export function ProtectionBadge({ isProtected }: { isProtected: boolean }) {
+  return (
+    <span
+      className={`inline-flex h-5 items-center rounded-full px-2 text-xs font-medium ${
+        isProtected
+          ? "bg-[var(--green)]/10 text-[var(--green)]"
+          : "bg-[var(--yellow)]/15 text-[var(--olive)]"
+      }`}
+    >
+      {isProtected ? "Login required" : "Open to anyone"}
     </span>
   );
 }
@@ -123,91 +149,92 @@ export function NewBoardForm({ rootDomain }: { rootDomain?: string | null }) {
   const effectiveSlug = slugTouched ? slug : slugify(name);
 
   return (
-    <form action={action} className={`${card} flex max-w-2xl flex-col gap-4`}>
-      <div>
-        <h2 className="text-lg font-bold">Publish a new board</h2>
-        <p className="mt-1 text-sm text-graphite">
-          The slug becomes the client&apos;s address — live the moment the board is created.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className={label}>
-          Client name
-          <input
-            name="clientName"
-            required
-            placeholder="Nike"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className={input}
-          />
-        </label>
-        <label className={label}>
-          Slug
-          <input
-            name="slug"
-            required
-            placeholder="nike"
-            /* the dash is escaped: HTML compiles `pattern` with the `v` flag,
-               under which a bare `-` inside a class is a syntax error and the
-               whole attribute is silently ignored */
-            pattern="[a-z0-9]([a-z0-9\-]{0,46}[a-z0-9])?"
-            value={effectiveSlug}
-            onChange={(e) => {
-              setSlugTouched(true);
-              setSlug(e.target.value.toLowerCase());
-            }}
-            className={`${input} font-mono`}
-          />
-        </label>
-      </div>
-
-      <p className="flex flex-wrap items-center gap-2 rounded-xl bg-bg2 px-3.5 py-2.5 text-sm text-graphite">
-        <span className="shrink-0">Publishes at</span>
-        <span className="font-mono text-ink">
-          https://{effectiveSlug || "…"}.{(rootDomain ?? "").trim() || "theanimals.live"}
-        </span>
-      </p>
-
-      <Feedback state={state} />
-      <button type="submit" disabled={pending || !effectiveSlug} className={`${primaryBtn} self-start`}>
-        {pending ? "Creating…" : "Create board"}
-      </button>
-    </form>
+    <Card id="new-board" className="scroll-mt-20">
+      <form action={action}>
+        <CardHeader>
+          <CardTitle>Publish a new board</CardTitle>
+          <CardDescription>
+            The slug becomes the client&apos;s address — live the moment the board is created.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="new-board-name">Client name</Label>
+            <Input
+              id="new-board-name"
+              name="clientName"
+              required
+              placeholder="Nike"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="new-board-slug">Slug</Label>
+            <Input
+              id="new-board-slug"
+              name="slug"
+              required
+              placeholder="nike"
+              /* the dash is escaped: HTML compiles `pattern` with the `v` flag,
+                 under which a bare `-` inside a class is a syntax error and the
+                 whole attribute is silently ignored */
+              pattern="[a-z0-9]([a-z0-9\-]{0,46}[a-z0-9])?"
+              value={effectiveSlug}
+              onChange={(e) => {
+                setSlugTouched(true);
+                setSlug(e.target.value.toLowerCase());
+              }}
+              className="font-mono"
+            />
+          </div>
+          <p className="flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2.5 text-sm text-muted-foreground sm:col-span-2">
+            <span className="shrink-0">Publishes at</span>
+            <span className="font-mono text-foreground">
+              https://{effectiveSlug || "…"}.{(rootDomain ?? "").trim() || "theanimals.live"}
+            </span>
+          </p>
+        </CardContent>
+        <CardFooter className="gap-4">
+          <Button type="submit" disabled={pending || !effectiveSlug}>
+            {pending && <Loader2 className="animate-spin" />}
+            {pending ? "Creating…" : "Create board"}
+          </Button>
+          <Feedback state={state} />
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
 
-/* ---------------- delete (two-step confirm) ---------------- */
+/* ---------------- delete ---------------- */
 
 export function DeleteBoardButton({ slug, clientName }: { slug: string; clientName: string }) {
-  const [arming, setArming] = useState(false);
-  useEffect(() => {
-    if (!arming) return;
-    const t = setTimeout(() => setArming(false), 4000);
-    return () => clearTimeout(t);
-  }, [arming]);
-
-  if (!arming) {
-    return (
-      <button type="button" onClick={() => setArming(true)} className={quietBtn}>
-        Delete board…
-      </button>
-    );
-  }
   return (
-    <form action={deleteBoardAction} className="flex items-center gap-2">
-      <input type="hidden" name="slug" value={slug} />
-      <span className="text-xs text-graphite">Deletes {clientName} and its logins.</span>
-      <button
-        type="submit"
-        className="rounded-full bg-red px-3.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red/85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red/60"
-      >
-        Confirm delete
-      </button>
-      <button type="button" onClick={() => setArming(false)} className={quietBtn}>
-        Keep it
-      </button>
-    </form>
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="destructive" size="sm">
+          <Trash2 />
+          Delete board
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Delete {clientName}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            The board stops answering at its address and its client logins go with it. Content is not
+            touched — it belongs to every board, not this one.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep it</AlertDialogCancel>
+          <form action={deleteBoardAction}>
+            <input type="hidden" name="slug" value={slug} />
+            <AlertDialogAction type="submit">Delete board</AlertDialogAction>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }
 
@@ -216,64 +243,77 @@ export function DeleteBoardButton({ slug, clientName }: { slug: string; clientNa
 export function BoardMetaForm({ board }: { board: BoardRecord }) {
   const [state, action, pending] = useActionState<ActionState, FormData>(updateBoardAction, {});
   return (
-    <form action={action} className={`${card} flex flex-col gap-4`}>
-      <input type="hidden" name="slug" value={board.slug} />
-      <div>
-        <StepEyebrow n="01">Identity</StepEyebrow>
-        <h2 className="mt-1 text-lg font-bold">Board settings</h2>
-        <p className="mt-0.5 text-sm text-graphite">What the client sees in the header.</p>
-      </div>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className={label}>
-          Client name
-          <input name="clientName" defaultValue={board.clientName} className={input} />
-        </label>
-        <label className={label}>
-          Brief date
-          <input name="briefDate" defaultValue={board.briefDate} placeholder="9th June 2026" className={input} />
-        </label>
-        <label className={`${label} sm:col-span-2`}>
-          Brief question
-          <textarea
-            name="briefQuestion"
-            defaultValue={board.briefQuestion}
-            rows={2}
-            placeholder="The question this board answers — scrolls in the header."
-            className={input}
-          />
-        </label>
-        <label className={label}>
-          Progress %
-          <input
-            name="progressPct"
-            type="number"
-            min={0}
-            max={100}
-            defaultValue={board.progressPct}
-            className={input}
-          />
-        </label>
-        <label className={label}>
-          Displayed user name
-          <input name="userDisplayName" defaultValue={board.userDisplayName} placeholder="R Basckin" className={input} />
-        </label>
-      </div>
-      <label className="flex items-center gap-2 text-sm font-medium">
-        <input
-          type="checkbox"
-          name="isProtected"
-          defaultChecked={board.isProtected}
-          className="h-4 w-4 accent-[var(--orange)]"
-        />
-        Require a client login to view this board
-      </label>
-      <div className="flex items-center gap-4">
-        <button type="submit" disabled={pending} className={primaryBtn}>
-          {pending ? "Saving…" : "Save settings"}
-        </button>
-        <Feedback state={state} />
-      </div>
-    </form>
+    <Card>
+      <form action={action}>
+        <input type="hidden" name="slug" value={board.slug} />
+        <CardHeader>
+          <CardTitle>Board settings</CardTitle>
+          <CardDescription>What the client sees in the header.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="board-client-name">Client name</Label>
+            <Input id="board-client-name" name="clientName" defaultValue={board.clientName} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="board-brief-date">Brief date</Label>
+            <Input
+              id="board-brief-date"
+              name="briefDate"
+              defaultValue={board.briefDate}
+              placeholder="9th June 2026"
+            />
+          </div>
+          <div className="grid gap-2 sm:col-span-2">
+            <Label htmlFor="board-brief-question">Brief question</Label>
+            <Textarea
+              id="board-brief-question"
+              name="briefQuestion"
+              defaultValue={board.briefQuestion}
+              rows={2}
+              placeholder="The question this board answers — scrolls in the header."
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="board-progress">Progress %</Label>
+            <Input
+              id="board-progress"
+              name="progressPct"
+              type="number"
+              min={0}
+              max={100}
+              defaultValue={board.progressPct}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="board-user-name">Displayed user name</Label>
+            <Input
+              id="board-user-name"
+              name="userDisplayName"
+              defaultValue={board.userDisplayName}
+              placeholder="R Basckin"
+            />
+          </div>
+
+          <div className="flex items-start gap-3 rounded-md border p-3 sm:col-span-2">
+            <Switch id="board-protected" name="isProtected" defaultChecked={board.isProtected} />
+            <div className="grid gap-0.5">
+              <Label htmlFor="board-protected">Require a client login to view this board</Label>
+              <p className="text-xs text-muted-foreground">
+                Off, and anyone with the address can read it.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+        <CardFooter className="gap-4">
+          <Button type="submit" disabled={pending}>
+            {pending && <Loader2 className="animate-spin" />}
+            {pending ? "Saving…" : "Save settings"}
+          </Button>
+          <Feedback state={state} />
+        </CardFooter>
+      </form>
+    </Card>
   );
 }
 
@@ -320,100 +360,152 @@ export function UsersManager({
     : "";
 
   return (
-    <div className={`${card} flex flex-col gap-4`}>
-      <div>
-        <StepEyebrow n="02">Access</StepEyebrow>
-        <h2 className="mt-1 text-lg font-bold">Client logins</h2>
-        <p className="mt-0.5 text-sm text-graphite">
-          Each login opens <span className="font-mono text-ink">{host}</span> only.
-        </p>
-      </div>
+    <Card>
+      <CardHeader>
+        <CardTitle>Client logins</CardTitle>
+        <CardDescription>
+          Each login opens <span className="font-mono text-foreground">{host}</span> only.
+        </CardDescription>
+        <CardAction>
+          <span className="text-xs text-muted-foreground">{boardUsers.length} of 10</span>
+        </CardAction>
+      </CardHeader>
 
-      {boardUsers.length > 0 ? (
-        <ul className="divide-y divide-line rounded-xl border border-line">
-          {boardUsers.map((u) => (
-            <li key={u.id} className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm">
-              <span className="font-medium">{u.username}</span>
-              <span className="ml-auto text-xs text-graphite">{u.role}</span>
-              <form action={removeUserAction}>
-                <input type="hidden" name="userId" value={u.id} />
-                <input type="hidden" name="slug" value={board.slug} />
-                <button
-                  type="submit"
-                  className="rounded-full border border-line px-3 py-1 text-xs text-graphite transition-colors hover:bg-red/10 hover:text-red"
-                >
-                  Remove
-                </button>
-              </form>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="rounded-xl bg-bg2 px-4 py-3 text-sm text-graphite">
-          No logins yet — the board asks for credentials, so add one before sharing the link.
-        </p>
-      )}
-
-      {invite && (
-        <div className="flex flex-col gap-2 rounded-xl border border-green/40 bg-green/5 p-4">
-          <p className="text-sm font-semibold text-ink">
-            Login created — copy the invite now. The password can&apos;t be shown again.
-          </p>
-          <pre className="overflow-x-auto rounded-lg bg-card px-3.5 py-3 font-mono text-xs leading-relaxed text-ink/90">
-            {inviteText}
-          </pre>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() =>
-                navigator.clipboard?.writeText(inviteText).then(() => setInviteCopied(true))
-              }
-              className={primaryBtn}
-            >
-              {inviteCopied ? "Copied" : "Copy invite"}
-            </button>
-            <button type="button" onClick={() => setInvite(null)} className={quietBtn}>
-              Dismiss
-            </button>
+      <CardContent className="grid gap-4">
+        {boardUsers.length > 0 ? (
+          <div className="overflow-hidden rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Username</TableHead>
+                  <TableHead>Role</TableHead>
+                  <TableHead className="w-24 text-right">Access</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {boardUsers.map((u) => (
+                  <TableRow key={u.id}>
+                    <TableCell className="font-medium">{u.username}</TableCell>
+                    <TableCell className="text-muted-foreground">{u.role}</TableCell>
+                    <TableCell className="text-right">
+                      <RemoveLogin userId={u.id} username={u.username} slug={board.slug} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-        </div>
-      )}
+        ) : (
+          <Alert>
+            <AlertTitle>No logins yet</AlertTitle>
+            <AlertDescription>
+              The board asks for credentials, so add one before sharing the link.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      <form
-        ref={formRef}
-        action={action}
-        className="flex flex-col gap-3 border-t border-line pt-4 sm:flex-row sm:items-end"
-      >
-        <input type="hidden" name="slug" value={board.slug} />
-        <label className={`${label} flex-1`}>
-          Username
-          <input
-            name="username"
-            required
-            autoComplete="off"
-            value={draft.username}
-            onChange={(e) => setDraft((d) => ({ ...d, username: e.target.value }))}
-            className={input}
-          />
-        </label>
-        <label className={`${label} flex-1`}>
-          Password (min 8 chars)
-          <input
-            name="password"
-            type="text"
-            required
-            minLength={8}
-            autoComplete="off"
-            value={draft.password}
-            onChange={(e) => setDraft((d) => ({ ...d, password: e.target.value }))}
-            className={input}
-          />
-        </label>
-        <button type="submit" disabled={pending || boardUsers.length >= 10} className={primaryBtn}>
-          {pending ? "Adding…" : "Add login"}
-        </button>
-      </form>
-      {state.error && <Feedback state={state} />}
-    </div>
+        {invite && (
+          <div className="grid gap-2 rounded-md border border-[var(--green)]/40 bg-[var(--green)]/5 p-4">
+            <p className="text-sm font-semibold">
+              Login created — copy the invite now. The password can&apos;t be shown again.
+            </p>
+            <pre className="overflow-x-auto rounded-md bg-card px-3 py-3 font-mono text-xs leading-relaxed">
+              {inviteText}
+            </pre>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                size="sm"
+                onClick={() =>
+                  navigator.clipboard?.writeText(inviteText).then(() => {
+                    setInviteCopied(true);
+                    toast.success("Invite copied");
+                  })
+                }
+              >
+                {inviteCopied ? <Check /> : <Copy />}
+                {inviteCopied ? "Copied" : "Copy invite"}
+              </Button>
+              <Button type="button" size="sm" variant="ghost" onClick={() => setInvite(null)}>
+                Dismiss
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <form
+          ref={formRef}
+          action={action}
+          className="grid gap-3 border-t pt-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
+        >
+          <input type="hidden" name="slug" value={board.slug} />
+          <div className="grid gap-2">
+            <Label htmlFor="client-username">Username</Label>
+            <Input
+              id="client-username"
+              name="username"
+              required
+              autoComplete="off"
+              value={draft.username}
+              onChange={(e) => setDraft((d) => ({ ...d, username: e.target.value }))}
+            />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="client-password">Password (min 8 chars)</Label>
+            <Input
+              id="client-password"
+              name="password"
+              type="text"
+              required
+              minLength={8}
+              autoComplete="off"
+              value={draft.password}
+              onChange={(e) => setDraft((d) => ({ ...d, password: e.target.value }))}
+            />
+          </div>
+          <Button type="submit" disabled={pending || boardUsers.length >= 10}>
+            {pending && <Loader2 className="animate-spin" />}
+            {pending ? "Adding…" : "Add login"}
+          </Button>
+        </form>
+        {state.error && <Feedback state={state} />}
+      </CardContent>
+    </Card>
+  );
+}
+
+function RemoveLogin({
+  userId,
+  username,
+  slug,
+}: {
+  userId: number;
+  username: string;
+  slug: string;
+}) {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="ghost" size="xs">
+          Remove
+        </Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Remove {username}?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This login stops opening the board. Anyone using it is signed out at their next request.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Keep it</AlertDialogCancel>
+          <form action={removeUserAction}>
+            <input type="hidden" name="userId" value={userId} />
+            <input type="hidden" name="slug" value={slug} />
+            <AlertDialogAction type="submit">Remove login</AlertDialogAction>
+          </form>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

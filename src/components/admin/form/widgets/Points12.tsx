@@ -4,7 +4,8 @@
    The chart is the point: typing a number and seeing the line move is the
    only way to author a curve that reads well on the board. */
 
-import { input, invalidRing } from "../tokens";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import type { WidgetEditorProps } from "./index";
 import { sparklinePath, toPoints12, withPoint } from "./values";
 
@@ -22,7 +23,7 @@ export function Points12({ value, onChange, id, describedBy, invalid }: WidgetEd
         height={H}
         preserveAspectRatio="none"
         aria-hidden
-        className="rounded-xl border border-line bg-bg2"
+        className="rounded-lg border bg-muted"
       >
         <path d={sparklinePath(points, W, H)} fill="none" stroke="var(--orange)" strokeWidth="2" strokeLinejoin="round" />
       </svg>
@@ -32,10 +33,13 @@ export function Points12({ value, onChange, id, describedBy, invalid }: WidgetEd
           const inputId = i === 0 ? id : `${id}-${i}`;
           return (
           <li key={i} className="flex flex-col gap-1">
-            <label className="text-center text-[10px] font-medium uppercase tracking-wide text-graphite" htmlFor={inputId}>
+            <Label
+              className="justify-center text-[10px] font-medium uppercase tracking-wide text-muted-foreground"
+              htmlFor={inputId}
+            >
               W{i + 1}
-            </label>
-            <input
+            </Label>
+            <Input
               id={inputId}
               type="number"
               min={0}
@@ -47,7 +51,7 @@ export function Points12({ value, onChange, id, describedBy, invalid }: WidgetEd
               aria-invalid={invalid || undefined}
               aria-describedby={i === 0 ? describedBy : undefined}
               onChange={(e) => onChange(withPoint(points, i, e.target.value))}
-              className={`${input} px-1.5 py-1.5 text-center text-xs ${invalid ? invalidRing : ""}`}
+              className="px-1.5 text-center text-xs"
             />
           </li>
           );

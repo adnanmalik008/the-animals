@@ -4,7 +4,8 @@
    names live in the module's own doc, not in the widget's value, so the form
    passes them in; without them the widget still works, numbered. */
 
-import { hint } from "../tokens";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import type { WidgetEditorProps } from "./index";
 import { toPresence3 } from "./values";
 
@@ -18,28 +19,31 @@ export function Presence3({ value, onChange, id, describedBy, invalid, columns }
     <div className="flex flex-col gap-1.5">
       <div className="flex flex-wrap gap-2">
         {flags.map((on, i) => (
-          <label
+          <Label
             key={i}
-            className="flex flex-1 min-w-32 items-center gap-2 rounded-xl border border-line bg-card px-3 py-2 text-sm font-medium"
+            htmlFor={i === 0 ? id : `${id}-${i}`}
+            className="flex min-w-32 flex-1 items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium"
           >
-            <input
+            <Checkbox
               id={i === 0 ? id : `${id}-${i}`}
-              type="checkbox"
               checked={on}
               aria-invalid={invalid || undefined}
               aria-describedby={i === 0 ? describedBy : undefined}
-              onChange={(e) => {
+              onCheckedChange={(checked) => {
                 const next = [...flags];
-                next[i] = e.target.checked;
+                next[i] = checked === true;
                 onChange(next);
               }}
-              className="h-4 w-4 shrink-0 accent-[var(--orange)]"
             />
             <span className="truncate">{headers[i]}</span>
-          </label>
+          </Label>
         ))}
       </div>
-      {!columns && <p className={hint}>Column names come from the module once it is wired.</p>}
+      {!columns && (
+        <p className="text-xs text-muted-foreground">
+          Column names come from the module once it is wired.
+        </p>
+      )}
     </div>
   );
 }

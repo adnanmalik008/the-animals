@@ -11,7 +11,8 @@
    Row bodies are <details>, not React-only state, so the error summary can
    open an ancestor row on its way to a buried field. */
 
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
+import { ArrowDown, ArrowUp, Copy, Plus, X } from "lucide-react";
 import { newId } from "@/lib/cms/ids";
 import { pathKey } from "@/lib/cms/paths";
 import type { ListSpec } from "@/lib/cms/spec";
@@ -26,7 +27,8 @@ import {
   rowSummary,
   withFreshIds,
 } from "./list-ops";
-import { fieldError, hint, quietBtnDisablable } from "./tokens";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Props extends FieldSources {
   spec: ListSpec;
@@ -46,19 +48,20 @@ function RowButton({
   label: string;
   onClick: () => void;
   disabled?: boolean;
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon-xs"
       title={label}
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className={`${quietBtnDisablable} px-2 py-1`}
     >
-      <span aria-hidden>{children}</span>
-    </button>
+      {children}
+    </Button>
   );
 }
 
@@ -109,17 +112,21 @@ export function ListField({ spec, path, value, onChange, errors, renderField: Fi
   return (
     <section className="flex flex-col gap-2" aria-labelledby={titleId}>
       <div className="flex flex-wrap items-baseline gap-2">
-        <h3 id={titleId} className="text-sm font-semibold text-ink">
+        <h3 id={titleId} className="text-sm font-semibold">
           {spec.label}
         </h3>
-        <span className={hint}>
+        <span className="text-xs text-muted-foreground">
           {rows.length} {rows.length === 1 ? "item" : "items"}
         </span>
       </div>
-      {spec.help && <p className={hint}>{spec.help}</p>}
-      {ownError && <p className={fieldError}>{ownError}</p>}
+      {spec.help && <p className="text-xs text-muted-foreground">{spec.help}</p>}
+      {ownError && <p className="text-xs font-medium text-destructive">{ownError}</p>}
 
-      {rows.length === 0 && <p className={`${hint} rounded-xl bg-bg2 px-4 py-3`}>Nothing here yet.</p>}
+      {rows.length === 0 && (
+        <p className="rounded-lg border border-dashed px-4 py-3 text-xs text-muted-foreground">
+          Nothing here yet.
+        </p>
+      )}
 
       <ol className="flex flex-col gap-2">
         {rows.map((row, index) => {
@@ -128,21 +135,21 @@ export function ListField({ spec, path, value, onChange, errors, renderField: Fi
           const isOpen = open.includes(index);
 
           return (
-            <li key={index} className="relative rounded-xl border border-line bg-card">
+            <li key={index} className="relative rounded-lg border bg-card">
               <details open={isOpen} onToggle={(e) => toggle(index, e.currentTarget.open)}>
-                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-xl py-2.5 pl-3 pr-36 hover:bg-bg2 [&::-webkit-details-marker]:hidden">
-                  <span aria-hidden className="w-3 shrink-0 text-graphite">
+                <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg py-2.5 pl-3 pr-36 hover:bg-muted/60 [&::-webkit-details-marker]:hidden">
+                  <span aria-hidden className="w-3 shrink-0 text-muted-foreground">
                     {isOpen ? "▾" : "▸"}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-sm font-medium">{rowSummary(spec, row, index)}</span>
                   {/* a collapsed row must still say something inside it is wrong */}
                   {inside > 0 && (
-                    <span className="shrink-0 rounded-full bg-red/10 px-2 py-0.5 text-[11px] font-semibold text-red">
+                    <Badge variant="destructive" className="shrink-0">
                       {inside} to fix
-                    </span>
+                    </Badge>
                   )}
                 </summary>
-                <div className="border-t border-line px-4 py-4">
+                <div className="border-t px-4 py-4">
                   <Field
                     spec={spec.item}
                     path={rowPath}
@@ -157,20 +164,20 @@ export function ListField({ spec, path, value, onChange, errors, renderField: Fi
               {/* outside the <summary>: buttons nested in one are unreliable */}
               <div className="absolute right-2 top-1.5 flex items-center gap-1">
                 <RowButton label="Move up" disabled={index === 0} onClick={() => move(index, index - 1)}>
-                  ↑
+                  <ArrowUp />
                 </RowButton>
                 <RowButton
                   label="Move down"
                   disabled={index === rows.length - 1}
                   onClick={() => move(index, index + 1)}
                 >
-                  ↓
+                  <ArrowDown />
                 </RowButton>
                 <RowButton label="Duplicate" disabled={!bounds.canAdd} onClick={() => duplicate(index)}>
-                  ⧉
+                  <Copy />
                 </RowButton>
                 <RowButton label="Delete" disabled={!bounds.canRemove} onClick={() => remove(index)}>
-                  ✕
+                  <X />
                 </RowButton>
               </div>
             </li>
@@ -179,18 +186,20 @@ export function ListField({ spec, path, value, onChange, errors, renderField: Fi
       </ol>
 
       <div className="flex flex-wrap items-center gap-2">
-        <button
+        <Button
           type="button"
+          variant="outline"
+          size="sm"
           onClick={add}
           disabled={!bounds.canAdd}
           aria-label={`Add to ${spec.label}`}
-          className={quietBtnDisablable}
         >
+          <Plus />
           Add
-        </button>
-        {bounds.addReason && <span className={hint}>{bounds.addReason}</span>}
+        </Button>
+        {bounds.addReason && <span className="text-xs text-muted-foreground">{bounds.addReason}</span>}
         {!bounds.canRemove && bounds.removeReason && rows.length > 0 && (
-          <span className={hint}>{bounds.removeReason}</span>
+          <span className="text-xs text-muted-foreground">{bounds.removeReason}</span>
         )}
       </div>
     </section>

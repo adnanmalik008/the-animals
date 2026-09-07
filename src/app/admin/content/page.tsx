@@ -1,5 +1,4 @@
 import "server-only";
-import Link from "next/link";
 import { ModuleDirectory } from "@/components/admin/ModuleDirectory";
 import { requireAdmin } from "@/lib/server/guard";
 
@@ -18,13 +17,10 @@ export default async function ContentPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <Link href="/admin" className="text-xs text-graphite hover:text-ink">
-          ← Admin
-        </Link>
-        <h1 className="mt-1 text-2xl font-bold tracking-tight">Content</h1>
-        <p className="mt-1 max-w-2xl text-sm text-graphite">
-          Every box on the board, edited once. What you save here is what every board shows — boards differ
-          in their name, their brief and who can log in, not in their content.
+        <h1 className="text-2xl font-semibold tracking-tight">Content</h1>
+        <p className="mt-1 max-w-[62ch] text-sm text-muted-foreground">
+          Every box on the board, edited once. What you save here is what every board shows — boards
+          differ in their name, their brief and who can log in, not in their content.
         </p>
       </div>
 
