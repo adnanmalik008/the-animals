@@ -84,27 +84,40 @@ function NewswireCard({
 
       <div
         /* the design's row is a fixed 123px tall, whatever the headline */
-        className={`min-h-[123px] px-1 py-3.5 transition-colors ${
+        className={`relative min-h-[123px] px-1 py-3.5 transition-colors ${
           isOver ? "rounded-xl outline-2 outline-orange outline-offset-4" : ""
         }`}
       >
-        <div className="flex items-center justify-between gap-3">
-          <SourceMark source={item.source} />
-          <span
-            className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${chipClass}`}
-          >
-            {item.category}
-          </span>
-        </div>
-
+        {/* The whole row opens the article, not just its headline — the way a
+            send opens in In Their Inbox. The button covers the row rather than
+            its three lines of text: the design fixes the row at 123px while the
+            masthead, headline and byline come to about 77, and that tail of
+            empty paper is where a reader aims. The summary below raises itself
+            over the button, so its text stays selectable and "Read summary"
+            stays clickable. */}
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
           aria-expanded={expanded}
-          className="mt-1.5 block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
+          className="absolute inset-0 z-10 w-full cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
         >
+          <span className="sr-only">
+            {expanded ? "Collapse" : "Open"} {item.source}: {item.headline}
+          </span>
+        </button>
+
+        <div className="relative">
+          <div className="flex items-center justify-between gap-3">
+            <SourceMark source={item.source} />
+            <span
+              className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${chipClass}`}
+            >
+              {item.category}
+            </span>
+          </div>
+
           <h3
-            className={`font-serif text-lg leading-snug sm:text-xl ${
+            className={`mt-1.5 font-serif text-lg leading-snug sm:text-xl ${
               /* the design's rows are a fixed 123px, so a long headline
                  truncates rather than wrapping; opening it shows the rest */
               expanded ? "" : "line-clamp-1"
@@ -112,16 +125,18 @@ function NewswireCard({
           >
             {item.headline}
           </h3>
-        </button>
 
-        <div className="mt-1.5 flex items-center justify-between gap-3 text-xs text-graphite">
-          <span className="uppercase tracking-wide">{item.author}</span>
-          <span>{item.timeAgo}</span>
+          <div className="mt-1.5 flex items-center justify-between gap-3 text-xs text-graphite">
+            <span className="uppercase tracking-wide">{item.author}</span>
+            <span>{item.timeAgo}</span>
+          </div>
         </div>
 
         <div
           inert={!expanded}
-          className={`grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${
+          /* z-20: above the row-wide button, so the summary can be selected and
+             its CTA pressed without the row closing under the pointer */
+          className={`relative z-20 grid transition-[grid-template-rows,opacity] duration-300 ease-out motion-reduce:transition-none ${
             expanded ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0"
           }`}
         >
