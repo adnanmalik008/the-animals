@@ -5,7 +5,9 @@
    Nothing here knows what a newswire is. The module's FieldSpec tree — the
    same declaration that yields its zod schema and its TypeScript type —
    generates every control, so this file is only the frame around it: the
-   locked heading, the state, the footer, and the escape hatch.
+   locked heading, the state and the footer. There is no raw-JSON escape
+   hatch — the fields are the only way in, so nothing can be saved that the
+   module's own shape does not describe.
 
    There is one copy of each module, shown by every board, so there is one
    form and one save.
@@ -32,7 +34,7 @@
 
 import Link from "next/link";
 import { useActionState, useCallback, useMemo, useState, type FormEvent } from "react";
-import { ChevronDown, Loader2, Lock, RotateCcw, Undo2 } from "lucide-react";
+import { Loader2, Lock, RotateCcw, Undo2 } from "lucide-react";
 import { Field } from "@/components/admin/form/Field";
 import { ErrorSummary, FieldAnchors } from "@/components/admin/form/ErrorSummary";
 import { useDocState } from "@/components/admin/form/useDocState";
@@ -59,12 +61,6 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { Textarea } from "@/components/ui/textarea";
 
 export interface ModuleFormProps {
   /** a string, never the definition: definitions carry functions and RegExps */
@@ -107,17 +103,10 @@ export function ModuleForm({
      database confirmed */
   const [saved, setSaved] = useState<{ at?: number; doc: unknown }>({ doc: initialDoc });
   const [showErrors, setShowErrors] = useState(invalid);
-  /* The JSON panel's own text, and the document it was typed against. Keeping
-     the base is what lets the panel be live-bound without fighting the form:
-     while they agree the textarea keeps its exact characters (so the caret
-     does not jump and half-typed JSON survives), and the moment a field above
-     moves the document on, the panel re-derives from it. */
-  const [draft, setDraft] = useState<{ text: string; base: string } | null>(null);
   /* the document the last Save actually sent */
   const [sent, setSent] = useState("");
 
   const docJson = useMemo(() => JSON.stringify(doc) ?? "", [doc]);
-  const pretty = useMemo(() => JSON.stringify(doc, null, 2) ?? "", [doc]);
 
   /* one object spec for the whole document, so the root gets ObjectField's
      behaviour — optional groups, and an image field rendering its sibling
@@ -146,28 +135,14 @@ export function ModuleForm({
   if (state.savedAt && state.savedAt !== saved.at) {
     setSaved({ at: state.savedAt, doc: state.doc });
     reset(state.doc);
-    setDraft(null);
     setShowErrors(false);
   }
 
   const replace = useCallback((next: unknown) => set([], next), [set]);
 
-  const showingDraft = draft !== null && draft.base === docJson;
-  const jsonText = showingDraft ? draft.text : pretty;
-
-  const parseError = useMemo(() => {
-    if (!showingDraft) return null;
-    try {
-      JSON.parse(jsonText);
-      return null;
-    } catch (e) {
-      return e instanceof Error ? e.message : "Invalid JSON";
-    }
-  }, [showingDraft, jsonText]);
-
   function onSubmit(e: FormEvent<HTMLFormElement>) {
     setShowErrors(true);
-    if (Object.keys(localErrors).length > 0 || parseError) {
+    if (Object.keys(localErrors).length > 0) {
       e.preventDefault();
       /* focus, not only scroll: the summary is the list of what to fix, and a
          keyboard user who never saw the page move would otherwise be left
@@ -192,10 +167,7 @@ export function ModuleForm({
            answer that by writing their first-mount value back through their
            change handler, which lands in the document as an edit nobody made.
            This runs after them and restores what was actually saved. */
-        onReset={() => {
-          reset(saved.doc);
-          setDraft(null);
-        }}
+        onReset={() => reset(saved.doc)}
         className="flex min-w-0 flex-col gap-5"
       >
         <input type="hidden" name="moduleKey" value={moduleKey} />
@@ -229,7 +201,8 @@ export function ModuleForm({
             <div className="flex flex-col gap-1 rounded-lg border border-dashed bg-muted/50 px-4 py-3">
               <span className="text-sm font-semibold">No form for this module yet</span>
               <p className="text-xs text-muted-foreground">
-                Edit it as JSON below. It saves exactly what you type — nothing checks the shape.
+                This module has no editable fields — its content is still the version built into the
+                code.
               </p>
             </div>
           )}
@@ -280,54 +253,6 @@ export function ModuleForm({
           </Card>
         )}
 
-        {/* The same document, as text. Bound to the same state, so anything
-            typed here appears in the fields above and is what Save sends. */}
-        <Collapsible onOpenChange={() => setDraft(null)} className="group/json rounded-xl border bg-card">
-          <CollapsibleTrigger asChild>
-            <button
-              type="button"
-              className="flex w-full items-center gap-2 rounded-xl px-5 py-3 text-sm font-medium hover:bg-muted/50"
-            >
-              <ChevronDown className="size-4 text-muted-foreground transition-transform group-data-[state=open]/json:rotate-180" />
-              Advanced — edit as JSON
-            </button>
-          </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="flex flex-col gap-2 border-t px-5 py-4">
-              <label className="sr-only" htmlFor="cms-json">
-                Document (JSON)
-              </label>
-              <Textarea
-                id="cms-json"
-                value={jsonText}
-                onChange={(e) => {
-                  const text = e.target.value;
-                  try {
-                    const parsed: unknown = JSON.parse(text);
-                    setDraft({ text, base: JSON.stringify(parsed) ?? "" });
-                    replace(parsed);
-                  } catch {
-                    /* keep the characters; the message below says why the
-                       fields above did not move */
-                    setDraft({ text, base: docJson });
-                  }
-                }}
-                rows={20}
-                spellCheck={false}
-                aria-invalid={!!parseError}
-                className="font-mono text-xs leading-relaxed"
-              />
-              <p
-                className={`text-xs ${parseError ? "font-medium text-destructive" : "text-muted-foreground"}`}
-                aria-live="polite"
-              >
-                {parseError
-                  ? `Invalid JSON — ${parseError}. The fields above still hold the last version that parsed.`
-                  : "Valid JSON. The fields above follow every keystroke that parses."}
-              </p>
-            </div>
-          </CollapsibleContent>
-        </Collapsible>
 
         <div className="sticky bottom-0 -mx-1 flex flex-wrap items-center gap-2 border-t bg-background/95 px-1 py-3 backdrop-blur">
           <Button type="submit" disabled={pending || !canSave}>
@@ -354,7 +279,6 @@ export function ModuleForm({
                 <AlertDialogAction
                   onClick={() => {
                     reset(saved.doc);
-                    setDraft(null);
                     setShowErrors(false);
                   }}
                 >
@@ -384,7 +308,6 @@ export function ModuleForm({
                 <AlertDialogAction
                   onClick={() => {
                     replace(structuredClone(resetDoc));
-                    setDraft(null);
                   }}
                 >
                   Reset to template

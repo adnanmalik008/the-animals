@@ -84,8 +84,8 @@ const ICONS: Record<string, LucideIcon> = {
   anomalies: CircleDashed,
 };
 
-/* A key with no glyph of its own is a module with no form yet — raw JSON.
-   A plain document is honest about it. */
+/* A key with no glyph of its own is a module with no form yet. A plain
+   document is honest about it. */
 const FALLBACK: LucideIcon = FileText;
 
 export function ModuleIcon({
