@@ -55,13 +55,22 @@ function CaptureCard({
   return (
     <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
       <p className="px-5 py-3 font-display text-base text-white/70">{name}</p>
-      <div className={`overflow-hidden bg-white/10 ${aspect}`}>
+      {/* The capture is shown whole, at its own proportions.
+
+          It used to fill a fixed frame with `object-cover`, which cut the sides
+          — the Patagonia homepage is 1000x562 (1.78) in a 1.49 frame, so a
+          tenth came off each edge and "Performance Foundations" lost its first
+          letters. Fitting it inside that frame instead left a band of empty
+          well under the capture, which the design does not have either. So the
+          frame follows the capture: nothing cropped, nothing left over. The
+          aspect is kept for the well a card with no capture yet still needs. */}
+      <div className={`overflow-hidden bg-white/10 ${src ? "" : aspect}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={src}
           alt={[name, layer].filter(Boolean).join(" ")}
           loading="lazy"
-          className="h-full w-full object-cover object-top"
+          className="block w-full"
         />
       </div>
       {caption && (
