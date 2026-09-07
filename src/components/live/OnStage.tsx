@@ -69,7 +69,7 @@ export function OnStage({ id }: { id: string }) {
                   }`}
                 >
                   {/* the design sets every stage card on the torn sheet, always */}
-                  <TornSheet shown />
+                  <TornSheet variant="stage" shown />
                   {ev.id === current.id && tagged !== undefined && (
                     <StickerBadge tag={tagged} tagKey={resolvedKey} />
                   )}

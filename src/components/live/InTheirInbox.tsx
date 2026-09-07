@@ -55,31 +55,41 @@ function InboxItem({
       <TornSheet variant="inbox" bleed="list" shown={open ? true : "hover"} />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
 
-      <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-lg font-semibold leading-snug">{item.name}</h3>
-        <span className="shrink-0 text-xs text-graphite">{item.timeAgo}</span>
-      </div>
-
-      <div className="mt-1 flex items-baseline justify-between gap-3 text-xs text-graphite">
-        <span className="truncate">
-          {item.authors} · {item.subs}
-        </span>
-        <span className="shrink-0 tabular-nums">{item.openRate}</span>
-      </div>
-
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="mt-3 flex w-full items-baseline gap-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
-      >
-        <span className="shrink-0 text-xs tracking-wide text-graphite">Subject:</span>
-        <span
-          className={`font-serif leading-snug ${open ? "text-xl sm:text-2xl" : "text-base sm:text-lg"}`}
+      {/* the whole send opens it, not just its subject line — the button lies
+          over the summary, and the quote below stays selectable */}
+      <div className="relative">
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          className="absolute inset-0 z-10 w-full cursor-pointer rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70"
         >
-          {item.subject}
-        </span>
-      </button>
+          <span className="sr-only">
+            {open ? "Collapse" : "Open"} {item.name}: {item.subject}
+          </span>
+        </button>
+
+        <div className="flex items-baseline justify-between gap-3">
+          <h3 className="text-lg font-semibold leading-snug">{item.name}</h3>
+          <span className="shrink-0 text-xs text-graphite">{item.timeAgo}</span>
+        </div>
+
+        <div className="mt-1 flex items-baseline justify-between gap-3 text-xs text-graphite">
+          <span className="truncate">
+            {item.authors} · {item.subs}
+          </span>
+          <span className="shrink-0 tabular-nums">{item.openRate}</span>
+        </div>
+
+        <div className="mt-3 flex items-baseline gap-2">
+          <span className="shrink-0 text-xs tracking-wide text-graphite">Subject:</span>
+          <span
+            className={`font-serif leading-snug ${open ? "text-xl sm:text-2xl" : "text-base sm:text-lg"}`}
+          >
+            {item.subject}
+          </span>
+        </div>
+      </div>
 
       <div
         inert={!open}

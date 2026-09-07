@@ -14,22 +14,23 @@ export type NewswireArticle = ModuleDocs["newswire"]["items"][number];
 /* the design chips every category the same peach pill */
 const chipClass = "text-orange bg-orange/10";
 
-/* each publisher tears its own shade of paper. These are solved from the
-   prototype's hovered rows: the sheet renders at --sheet-strength over the
-   column, so each tint is whatever lands that composite on the design's
-   pixels. One torn asset takes the tint; there is no per-source image.
-   A board may name a publisher we have no tint for — it tears the
-   neutral sheet below, the same one Bloomberg does. */
+/* each publisher tears its own shade of paper. The design paints a flat rect
+   in the publisher's colour under the sheet, at a 0.55 fill through a mask
+   that is itself half-opaque — so each tint lands at 0.55 x 0.502 = 0.276.
+   One torn asset takes the tint; there is no per-source image. Bloomberg has
+   no rect at all, and neither does a publisher a board names that we have no
+   tint for: both tear plain paper. */
+const TINT_ALPHA = 0.276;
+const tint = (rgb: string) => `rgba(${rgb}, ${TINT_ALPHA})`;
+
 const PAPER_TINT: Record<string, string | undefined> = {
-  Bloomberg: "#e6d0c9",
-  "The New York Times": "#edd0ad",
-  CNN: "#edbea6",
-  MSN: "#ddd6ab",
-  "Fox News": "#d2d8ac",
-  "New York Post": "#cbdbce",
-  CNBC: "#edbcab",
+  "The New York Times": tint("255, 234, 165"),
+  CNN: tint("255, 200, 165"),
+  MSN: tint("224, 255, 165"),
+  "Fox News": tint("188, 255, 165"),
+  "New York Post": tint("165, 255, 242"),
+  CNBC: tint("255, 191, 165"),
 };
-const DEFAULT_TINT = "#e6d0c9";
 
 function NewswireCard({
   item,
@@ -61,20 +62,31 @@ function NewswireCard({
   return (
     <article
       {...targetProps}
-      className={`torn-host group/row relative isolate transition-colors ${isNew ? "fold-in" : ""}`}
+      data-open={expanded ? "true" : undefined}
+      /* raised while its sheet is out, so the sheet reaches over the rules of
+         the rows it overshoots instead of stopping at its own bounds */
+      className={`torn-row torn-host group/row relative isolate z-0 transition-colors hover:z-10 ${
+        expanded ? "z-10" : ""
+      } ${isNew ? "fold-in" : ""}`}
     >
       {/* the torn sheet slides in behind the row on hover and stays open */}
-      <TornSheet tint={PAPER_TINT[item.source] ?? DEFAULT_TINT} shown={expanded ? true : "hover"} />
+      <TornSheet tint={PAPER_TINT[item.source]} shown={expanded ? true : "hover"} />
+
+      {/* the rule between rows, below the sheet rather than drawn across it */}
+      {!isOver && (
+        <span
+          aria-hidden
+          className="torn-rule pointer-events-none absolute inset-x-0 bottom-0 -z-20 h-px bg-ink/10"
+        />
+      )}
 
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
 
       <div
         /* the design's row is a fixed 123px tall, whatever the headline */
         className={`min-h-[123px] px-1 py-3.5 transition-colors ${
-          /* while a sticker is armed the row reads as its own rounded card,
-             like every other drop target, so the rule between rows steps aside */
-          expanded || isOver ? "" : "border-b border-ink/10"
-        } ${isOver ? "rounded-xl outline-2 outline-orange outline-offset-4" : ""}`}
+          isOver ? "rounded-xl outline-2 outline-orange outline-offset-4" : ""
+        }`}
       >
         <div className="flex items-center justify-between gap-3">
           <SourceMark source={item.source} />

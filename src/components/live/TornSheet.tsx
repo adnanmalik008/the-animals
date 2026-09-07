@@ -9,8 +9,10 @@
    The design frames the strip as a 775x169 box on a 123px row — about 24px
    of paper above and below the content, the sides clipped by the column —
    with its image fill at 50%, so the column's own crumple shows through.
-   -inset-y-6 and --sheet-strength carry that; every module's sheet reads
-   alike. The host row must carry `torn-host group/row relative isolate`. */
+   -inset-y-6 carries the first; the 50% lives in .torn-sheet's own paper
+   layer, so this element fades between 0 and 1 and each sheet keeps whatever
+   strength its class sets. The host row must carry
+   `torn-host group/row relative isolate`. */
 export function TornSheet({
   tint,
   bleed = "column",
@@ -26,22 +28,32 @@ export function TornSheet({
   /** true keeps the sheet on; "hover" fades it in while the host row is
       hovered; false hides it */
   shown?: boolean | "hover";
-  /** "inbox" renders In Their Inbox's own paper (see .inbox-sheet) */
-  variant?: "sheet" | "inbox";
+  /** which of the design's papers to tear. "sheet" is Newswire's; "stage"
+      and "conversation" swap in the scan and strength those modules use;
+      "inbox" is In Their Inbox's own opaque paper (see .inbox-sheet) */
+  variant?: "sheet" | "stage" | "conversation" | "inbox";
   className?: string;
 }) {
   const inset = bleed === "list" ? "-inset-x-9 sm:-inset-x-14" : "-inset-x-4 sm:-inset-x-8";
   const state =
     shown === true
-      ? "opacity-(--sheet-strength)"
+      ? "opacity-100"
       : shown === "hover"
-        ? "opacity-0 group-hover/row:opacity-(--sheet-strength)"
+        ? "opacity-0 group-hover/row:opacity-100"
         : "opacity-0";
+  const surface =
+    variant === "inbox"
+      ? "inbox-sheet"
+      : variant === "stage"
+        ? "torn-sheet sheet-stage"
+        : variant === "conversation"
+          ? "torn-sheet sheet-conversation"
+          : "torn-sheet";
   return (
     <div
       aria-hidden
       style={tint ? { ["--paper-tint" as string]: tint } : undefined}
-      className={`${variant === "inbox" ? "inbox-sheet" : "torn-sheet"} pointer-events-none absolute -inset-y-6 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
+      className={`${surface} pointer-events-none absolute -inset-y-6 -z-10 transition-opacity duration-200 motion-reduce:transition-none ${inset} ${state} ${className}`}
     />
   );
 }

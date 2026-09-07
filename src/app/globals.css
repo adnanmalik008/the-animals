@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ============================================
    The Animals — design tokens (from Figma palette)
@@ -28,6 +32,42 @@
   /* editorial (left column) surface */
   --paper: #f1efeb;
   --paper-deep: #e9e6e0;
+  /* ---- shadcn/ui semantic tokens, tuned to the palette above ----
+     The admin is built from shadcn components; they read these names. Every
+     one points at an Animals token, so the CMS is the brand and not the
+     default neutral theme. The board's own classes (bg-bg, text-graphite …)
+     are untouched. */
+  --background: var(--bg);
+  --foreground: var(--ink);
+  --card-foreground: var(--ink);
+  --popover: var(--card);
+  --popover-foreground: var(--ink);
+  --primary: var(--orange);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg-2);
+  --secondary-foreground: var(--ink);
+  --muted: var(--bg-2);
+  --muted-foreground: var(--graphite);
+  --accent: var(--bg-2);
+  --accent-foreground: var(--ink);
+  --destructive: var(--red);
+  --border: var(--line);
+  --input: var(--line);
+  --ring: var(--orange);
+  --chart-1: var(--orange);
+  --chart-2: var(--blue);
+  --chart-3: var(--purple);
+  --chart-4: var(--green);
+  --chart-5: var(--olive);
+  --radius: 0.75rem;
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--orange);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: var(--bg-2);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--orange);
 }
 
 @theme inline {
@@ -57,16 +97,58 @@
      the closest grotesque we already load — everywhere else. */
   --font-display: "SF Pro Display", -apple-system, BlinkMacSystemFont, var(--font-inter),
     system-ui, sans-serif;
+  --font-heading: var(--font-inter);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
   /* one strength for every paper surface — veil and card alike */
   --paper-strength: 0.55;
-  /* the design's strip is an image fill at 50%. The strip PNG is itself about
-     72% opaque in its body and the mask carries that, so the sheet lands at an
-     effective ~0.36 — measured, and what the prototype renders. The tints in
-     Newswire are solved against that composite, not against this number. */
-  --sheet-strength: 0.5;
+  /* Every torn sheet crops in by this much before it paints. All four scans
+     shade off at their edges — the middle of Newswire's runs L~205 against
+     L~150-180 in the outer ring — and the mask cuts a shape wider than that
+     clean middle, so without the crop the dark rim reads as a bruise in the
+     corners. Raise to crop harder; the grain grows with it. */
+  --sheet-zoom: 1.25;
+  /* And every sheet sits this much lighter than the design's own strength,
+     one number for the whole board. */
+  --sheet-fade: 0.85;
 }
 
 body {
@@ -88,9 +170,11 @@ body {
 }
 
 /* A torn sheet of paper, from one asset in any colour.
-   The ragged edge is a mask (so it follows the card), the crumple is the
-   paper scan multiplied over --paper-tint (so the grain never smears),
-   and each publisher supplies its own tint. */
+   The ragged edge is a mask (so it follows the card); the rest stacks the way
+   the design does — a flat tint rect, then the paper scan over it at 50%.
+   Multiplying the two instead would only ever darken, and the design's tints
+   are pale enough to lift the paper, so they stay separate layers. Each
+   publisher supplies its own tint, already carrying its own alpha. */
 /* the row is the query container the sheet's torn bands are sized against */
 .torn-host {
   container-type: inline-size;
@@ -111,11 +195,13 @@ body {
   --torn-w: calc(100cqw + var(--bleed) * 2);
   --torn-top: calc(var(--torn-w) * 0.00894);
   --torn-bottom: calc(var(--torn-w) * 0.01195);
-  background-color: var(--paper-tint, #eae4e1);
-  background-image: url("/assets/textures/sheet-paper.jpg");
-  background-size: cover;
-  background-position: center;
-  background-blend-mode: multiply;
+  /* every module tears the same shape, but the design gives each its own
+     scan at its own strength — see the variants below */
+  --sheet-paper: url("/assets/textures/sheet-paper.jpg");
+  --sheet-paper-opacity: 0.5;
+  /* the tint lies under the paper; a row with no tint tears plain paper,
+     which is how the design draws Bloomberg */
+  background-color: var(--paper-tint, transparent);
   -webkit-mask-image: url("/assets/textures/sheet-torn-top.png"),
     url("/assets/textures/sheet-torn-mid.png"), url("/assets/textures/sheet-torn-bottom.png");
   -webkit-mask-size: 100% var(--torn-top),
@@ -128,7 +214,67 @@ body {
     100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
   mask-position: top center, center, bottom center;
   mask-repeat: no-repeat;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
+  /* no cast shadow: the design's scans carry their own edge shading, and a
+     drop-shadow behind a half-transparent sheet shows straight through it */
+}
+
+/* the design's image fill, at the strength it sits at there, less --sheet-fade */
+.torn-sheet::before,
+.inbox-sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--sheet-paper);
+  background-size: cover;
+  background-position: center;
+  /* the crop that keeps the scan's shaded rim outside the torn shape */
+  scale: var(--sheet-zoom);
+  opacity: calc(var(--sheet-paper-opacity) * var(--sheet-fade));
+}
+
+/* a wash the design paints OVER the paper rather than under it — only
+   The Conversation has one, so this layer is transparent everywhere else */
+.torn-sheet::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-color: var(--paper-wash, transparent);
+}
+
+/* On Stage tears the design's aged strip (239:4705), at the 40% it sits at
+   there rather than Newswire's 50%. */
+.sheet-stage {
+  --sheet-paper: url("/assets/textures/stage-paper.jpg");
+  --sheet-paper-opacity: 0.4;
+}
+
+/* The Conversation tears its own cooler scan at 50%, under a cream wash the
+   design masks to the same torn shape: a 0.56 fill through a half-opaque
+   mask, so 0.56 x 0.502 = 0.281. */
+.sheet-conversation {
+  --sheet-paper: url("/assets/textures/conversation-paper.jpg");
+  --paper-wash: rgba(255, 239, 211, 0.281);
+}
+
+/* A sheet overshoots its row by 24px top and bottom, so the hairlines it
+   reaches — its own, and the one belonging to the row above — step aside
+   while it is showing. What is left of a rule sits under the paper, never
+   across it. */
+.torn-rule {
+  transition: opacity 200ms ease-out;
+}
+
+.torn-row:hover > .torn-rule,
+.torn-row[data-open="true"] > .torn-rule,
+.torn-row:has(+ .torn-row:hover) > .torn-rule,
+.torn-row:has(+ .torn-row[data-open="true"]) > .torn-rule {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .torn-rule {
+    transition: none;
+  }
 }
 
 @media (min-width: 40rem) {
@@ -141,16 +287,15 @@ body {
    (In their inbox.png — a cooler, opaque grey paper), sliced the same way as
    .torn-sheet so it fits any row height without stretching. It bleeds past the
    inbox list's own padding as well as the column's, hence the wider --bleed.
-   Opaque in the design, so it overrides --sheet-strength for itself. */
+   Its scan already bakes in the solid the design lays under it, so it needs
+   no tint of its own — only the crop and the fade every sheet takes. */
 .inbox-sheet {
-  --sheet-strength: 1;
   --bleed: 2.25rem;
   --torn-w: calc(100cqw + var(--bleed) * 2);
   --torn-top: calc(var(--torn-w) * 0.02339);
   --torn-bottom: calc(var(--torn-w) * 0.0269);
-  background-image: url("/assets/textures/inbox-paper.jpg");
-  background-size: cover;
-  background-position: center;
+  --sheet-paper: url("/assets/textures/inbox-paper.jpg");
+  --sheet-paper-opacity: 1;
   -webkit-mask-image: url("/assets/textures/inbox-torn-top.png"),
     url("/assets/textures/inbox-torn-mid.png"), url("/assets/textures/inbox-torn-bottom.png");
   -webkit-mask-size: 100% var(--torn-top),
@@ -163,7 +308,8 @@ body {
     100% calc(100% - var(--torn-top) - var(--torn-bottom)), 100% var(--torn-bottom);
   mask-position: top center, center, bottom center;
   mask-repeat: no-repeat;
-  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.13));
+  /* no cast shadow, for the same reason .torn-sheet drops one: it would
+     paint straight through a sheet that is no longer opaque */
 }
 
 @media (min-width: 40rem) {
@@ -333,5 +479,12 @@ body {
   .bar-fill,
   .line-draw {
     transition: none;
+  }
+}
+
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
 }

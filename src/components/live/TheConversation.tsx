@@ -68,7 +68,7 @@ function QuoteCard({ quote, stock = "" }: { quote: ConversationQuote; stock?: st
       }`}
     >
       {/* the same torn sheet Newswire uses fades in behind the quote on hover */}
-      <TornSheet shown="hover" />
+      <TornSheet variant="conversation" shown="hover" />
       {tagged !== undefined && <StickerBadge tag={tagged} tagKey={resolvedKey} />}
       <div className={`px-5 py-4 ${stock}`}>
         <div className="flex items-center justify-between gap-3 text-xs text-graphite">
