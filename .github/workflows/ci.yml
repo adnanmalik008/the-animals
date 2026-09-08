@@ -1,0 +1,49 @@
+# The four gates, run by a machine instead of by memory.
+#
+# Pushing to `main` deploys to production for real clients, so until now the
+# only thing between a broken commit and a client's board was somebody
+# remembering to run these four commands first. They run here on every push to
+# main and on every pull request.
+#
+# No secrets. Every route in the app is dynamic, so nothing reads Supabase at
+# build time — `next build` is green with no environment at all, which is
+# exactly what this job gives it. If a page ever starts reading the database
+# while it builds, this is where it will fail first, and that is the right
+# place to find out.
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A second push to the same branch makes the first run pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: typecheck · lint · test · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `ci`, not `install`: the lockfile is the input, and a job that quietly
+      # resolves a different tree is not testing what ships.
+      - run: npm ci
+
+      # tsc twice — the app, then the tests under tsconfig.test.json
+      - run: npm run typecheck
+
+      - run: npm run lint
+
+      - run: npm test
+
+      - run: npm run build
