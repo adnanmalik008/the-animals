@@ -41,11 +41,14 @@ export function BrandBar() {
           <div className="min-w-0">
             <p className="font-serif text-lg font-bold sm:text-xl">{boardMeta.briefDate}</p>
             <div className="relative overflow-hidden">
-              {/* the gap lives inside each copy so the -50% loop wraps seamlessly;
-                  a full stop closes each pass and the gap stays tight */}
+              {/* the separator lives inside each copy so the -50% loop wraps
+                  seamlessly; a full stop closes each pass and the dot marks
+                  where the question starts over */}
               <div className="marquee-track text-sm text-graphite sm:text-base">
-                <span className="pr-6">{question}</span>
-                <span aria-hidden className="pr-6">{question}</span>
+                <span>{question}</span>
+                <span aria-hidden className="px-3 text-graphite/60">&bull;</span>
+                <span aria-hidden>{question}</span>
+                <span aria-hidden className="px-3 text-graphite/60">&bull;</span>
               </div>
             </div>
           </div>
