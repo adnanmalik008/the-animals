@@ -18,11 +18,20 @@ import { getSession, sessionAllowsBoard } from "./session";
    does not know which page it is wrapping, so it omits it and the visitor
    lands on the board root. */
 export async function requireBoardAccess(nextPath = "/"): Promise<BoardRecord> {
+  const board = await allowedBoard();
+  if (board) return board;
+  redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+}
+
+/* The same check without the redirect, for the server actions the board's own
+   pages call. A redirect is the right answer to a navigation and the wrong one
+   to a write: the action is answering a fetch, not a page load, so it says no
+   and lets the caller keep the board it is already showing. */
+export async function allowedBoard(): Promise<BoardRecord | null> {
   const board = await getCurrentBoard();
   if (!board.isProtected) return board;
   const session = await getSession();
-  if (sessionAllowsBoard(session, board.slug)) return board;
-  redirect(`/login?next=${encodeURIComponent(nextPath)}`);
+  return sessionAllowsBoard(session, board.slug) ? board : null;
 }
 
 /* Admin area guard. Called in the admin layout AND in every admin page,
