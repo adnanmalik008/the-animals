@@ -24,7 +24,12 @@ import { YouTubeVoices } from "./YouTubeVoices";
 
 /* Left column: human-curated, editorial. Right column: machine-led, clean. */
 
-function renderEditorial(id: string) {
+/* Exported for the admin's proof panel, which renders one of these on its own
+   against an unsaved draft. It renders the module through the same switch the
+   board uses rather than its own copy, so a proof cannot drift into showing
+   something the board would not. Both still need a `ModuleColumn` around them —
+   `Module` throws without one. */
+export function renderEditorial(id: string) {
   switch (id) {
     case "newswire":
       return (
@@ -53,7 +58,7 @@ function renderEditorial(id: string) {
   }
 }
 
-function renderData(id: string) {
+export function renderData(id: string) {
   switch (id) {
     case "ai-visibility":
       return (
