@@ -180,6 +180,24 @@ export function TopicCircleView({
     window.addEventListener("pointerup", end, { once: true });
   };
 
+  /* A circle grown at the edge of the board has to come back inside as it
+     grows. Leave the position alone and the disc simply hangs over the edge,
+     clipped — and then the next press on it, a click to dismiss something or
+     a hair of drag, runs the move clamp and the circle jumps back inside on
+     its own. Growing it is when that should be visible, not later. */
+  const fit = (diameter: number, from: CircleLayout): CircleLayout => {
+    const board = boardRef.current;
+    const size = Math.max(MIN_DIAMETER, Math.min(MAX_DIAMETER, diameter));
+    if (!board) return { ...from, diameter: size };
+    const widthPct = (size / Math.max(board.offsetWidth, 1)) * 100;
+    const heightPct = (size / Math.max(board.offsetHeight, 1)) * 100;
+    return {
+      diameter: size,
+      x: Math.max(0, Math.min(100 - widthPct, from.x)),
+      y: Math.max(0, Math.min(100 - heightPct, from.y)),
+    };
+  };
+
   const beginResize = (e: ReactPointerEvent<HTMLButtonElement>) => {
     if (e.button !== 0) return;
     const board = boardRef.current;
@@ -192,10 +210,7 @@ export function TopicCircleView({
 
     const move = (event: PointerEvent) => {
       const delta = Math.max(event.clientX - start.x, event.clientY - start.y) / Math.max(renderedScale, 0.01);
-      onLayoutChange(circle.id, {
-        ...start.layout,
-        diameter: Math.max(MIN_DIAMETER, Math.min(MAX_DIAMETER, start.layout.diameter + delta)),
-      });
+      onLayoutChange(circle.id, fit(start.layout.diameter + delta, start.layout));
     };
     const end = () => {
       setManipulating(false);
@@ -207,10 +222,7 @@ export function TopicCircleView({
   };
 
   const resizeBy = (amount: number) =>
-    onLayoutChange(circle.id, {
-      ...layout,
-      diameter: Math.max(MIN_DIAMETER, Math.min(MAX_DIAMETER, layout.diameter + amount)),
-    });
+    onLayoutChange(circle.id, fit(layout.diameter + amount, layout));
 
   return (
     // z-20 lifts an open popover above the fuse circle (z-10) — the lava
