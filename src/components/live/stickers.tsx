@@ -13,7 +13,7 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { addInsight, removeInsight, removeInsightsBySource, useBoardStore, type InsightItem } from "@/lib/insights";
+import { fileInsight, removeInsight, removeInsightsBySource, useBoardStore, type InsightItem } from "@/lib/insights";
 
 /* ============================================================
    Stickers — the Live → Anomalies routing gesture.
@@ -103,6 +103,23 @@ export function StickerProvider({ children }: { children: ReactNode }) {
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  /* a second Live tab peeling the same sticker off — the board store syncs
+     itself across tabs, and the tags that draw the badges have to follow */
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== null && e.key !== TAG_STORE_KEY) return;
+      try {
+        const next = e.newValue ? (JSON.parse(e.newValue) as Record<string, StickerTag>) : {};
+        tagsRef.current = next;
+        setTags(next);
+      } catch {
+        /* mid-write or corrupted — keep what we have */
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const circlesRef = useRef(circles);
   useEffect(() => {
     circlesRef.current = circles;
@@ -113,7 +130,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   const applySticker = useCallback(
     (key: string, payload: InsightPayload, position = { x: 6, y: 10 }) => {
       const shade = used % 3;
-      const insight = addInsight({ ...payload, sourceKey: key });
+      const insight = fileInsight({ ...payload, sourceKey: key });
 
       commitTags({
         ...tagsRef.current,
@@ -225,21 +242,31 @@ export function StickerBadge({
     <button
       type="button"
       draggable={Boolean(tagKey)}
-      aria-label="Sticker tagged for Anomalies. Drag it back to the sticker tray to remove it."
-      title="Drag back to the sticker tray to remove"
+      aria-label="Sticker tagged for Anomalies. Press it to peel it off, or drag it back to the sticker tray."
+      title="Press to peel off — or drag back to the sticker tray"
       onDragStart={(e) => {
         if (!tagKey) return;
         e.stopPropagation();
         e.dataTransfer.setData(PLACED_STICKER_MIME, tagKey);
         e.dataTransfer.effectAllowed = "move";
       }}
-      onClick={(e) => e.stopPropagation()}
+      /* a press peels the sticker off: the drag back to the tray is the
+         gesture the design describes, but it is not one anybody finds, and
+         a placed sticker that swallows its own click is a dead control */
+      onClick={(e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        if (tagKey) removeSticker(tagKey);
+      }}
       onKeyDown={(e) => {
         if (!tagKey || (e.key !== "Delete" && e.key !== "Backspace")) return;
         e.preventDefault();
         removeSticker(tagKey);
       }}
-      className={`absolute z-20 h-8 w-8 cursor-grab rounded-full drop-shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${className}`}
+      /* z-30 clears the module content it sits on — an opened Newswire
+         summary raises itself to z-20, and a badge tied on that level loses
+         the hit test to it, leaving a sticker that cannot be taken off */
+      className={`absolute z-30 h-8 w-8 cursor-grab rounded-full drop-shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 active:cursor-grabbing ${className}`}
       style={{
         left: `${value.x}%`,
         top: `${value.y}%`,

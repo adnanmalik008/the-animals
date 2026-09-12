@@ -335,6 +335,7 @@ function migrateState(parsed: Partial<StoreState>): StoreState {
 function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
+  watchOtherTabs();
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -348,6 +349,26 @@ function hydrate() {
   } catch {
     /* corrupted storage — keep defaults */
   }
+}
+
+/* Another tab writing the board — a sticker peeled off on the Live tab while
+   Anomalies sits open in a second tab — reaches us only through this event:
+   localStorage fires `storage` in every *other* tab, never the one that wrote,
+   so there is no loop to guard against. Without it the second tab keeps
+   rendering the board as it stood when that tab was opened. */
+function watchOtherTabs() {
+  window.addEventListener("storage", (e) => {
+    /* key is null when a tab clears storage outright */
+    if (e.key !== null && e.key !== STORAGE_KEY) return;
+    try {
+      state = e.newValue
+        ? migrateState(JSON.parse(e.newValue) as Partial<StoreState>)
+        : DEFAULT_STATE;
+    } catch {
+      return; /* mid-write or corrupted — keep what we have */
+    }
+    emit();
+  });
 }
 
 function subscribe(listener: () => void) {
@@ -388,6 +409,31 @@ export function addInsight(item: Omit<InsightItem, "id" | "createdAt"> & { id?: 
   const full: InsightItem = { ...item, id: item.id ?? nextId("ins"), createdAt: Date.now() };
   update((prev) => ({ ...prev, insights: [...prev.insights, full] }));
   return full;
+}
+
+/** File the content a Live-board sticker tagged.
+
+    A circle that already holds this very card — one of the seeds, which
+    mirror the Live modules item for item, or a card filed by a sticker that
+    was peeled off and stuck back on — is adopted rather than twinned: the
+    sticker takes ownership of the card already sitting there. Without that,
+    sticking the top Newswire story files a second copy of a card the circle
+    already shows, and peeling the sticker off leaves its identical twin
+    behind, which reads as the removal never happening. A card another
+    sticker already owns is left alone, so two targets that happen to share
+    a headline keep a card each. */
+export function fileInsight(item: Omit<InsightItem, "id" | "createdAt">): InsightItem {
+  const existing = state.insights.find(
+    (i) => !i.sourceKey && !i.author && i.circleId === item.circleId && i.headline === item.headline
+  );
+  if (!existing) return addInsight(item);
+
+  const adopted: InsightItem = { ...existing, sourceKey: item.sourceKey };
+  update((prev) => ({
+    ...prev,
+    insights: prev.insights.map((i) => (i.id === adopted.id ? adopted : i)),
+  }));
+  return adopted;
 }
 
 export function removeInsight(id: string) {
