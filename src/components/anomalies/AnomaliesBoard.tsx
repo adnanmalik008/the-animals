@@ -10,6 +10,7 @@ import {
 import {
   addCircle,
   addInsight,
+  clearBoard,
   moveInsight,
   removeCircle,
   removeInsight,
@@ -20,6 +21,7 @@ import {
   type TopicCircle,
 } from "@/lib/insights";
 import { XIcon } from "./CircleIcon";
+import { ClearBoardModal } from "./ClearBoardModal";
 import { FuseCircle } from "./FuseCircle";
 import { IdeasPanel } from "./IdeasPanel";
 import { NewCircleModal } from "./NewCircleModal";
@@ -71,6 +73,7 @@ export function AnomaliesBoard() {
   const [zoom, setZoom] = useState(100);
   const [ideasOpen, setIdeasOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [clearOpen, setClearOpen] = useState(false);
   const [addFor, setAddFor] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [savedLayouts, setSavedLayouts] = useState<Record<string, CircleLayout>>({});
@@ -307,15 +310,16 @@ export function AnomaliesBoard() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
-      // the modal (z-50) overlays everything, so it must close first
-      if (modalOpen) setModalOpen(false);
+      // the modals (z-50) overlay everything, so they must close first
+      if (clearOpen) setClearOpen(false);
+      else if (modalOpen) setModalOpen(false);
       else if (addFor) setAddFor(null);
       else if (editingId) setEditingId(null);
       else if (ideasOpen) setIdeasOpen(false);
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [addFor, editingId, modalOpen, ideasOpen]);
+  }, [addFor, clearOpen, editingId, modalOpen, ideasOpen]);
 
   const circleFor = useCallback(
     (circleId: string) => circleById.get(circleId),
@@ -338,6 +342,7 @@ export function AnomaliesBoard() {
           ideasOpen={ideasOpen}
           onToggleIdeas={() => setIdeasOpen((v) => !v)}
           onNewCircle={() => setModalOpen(true)}
+          onClearBoard={() => setClearOpen(true)}
         />
       </div>
 
@@ -511,6 +516,20 @@ export function AnomaliesBoard() {
       {/* overlays */}
       <IdeasPanel open={ideasOpen} onClose={() => setIdeasOpen(false)} />
       {modalOpen && <NewCircleModal onClose={() => setModalOpen(false)} onSave={handleNewCircle} />}
+      {clearOpen && (
+        <ClearBoardModal
+          insightCount={insights.length}
+          ideaCount={ideas.length}
+          circleCount={circles.filter((c) => !c.builtIn).length}
+          onClose={() => setClearOpen(false)}
+          onConfirm={() => {
+            clearBoard();
+            setClearOpen(false);
+            setSlots([]);
+            showToast("Board cleared");
+          }}
+        />
+      )}
 
       {toast && (
         <div
