@@ -1,6 +1,9 @@
 import { TopNav } from "@/components/shell/TopNav";
 import { BrandBar } from "@/components/shell/BrandBar";
+import { AnomaliesStore } from "@/components/board/AnomaliesStore";
 import { BoardDataProvider } from "@/components/board/BoardDataContext";
+import { EMPTY_DOC } from "@/lib/anomalies/types";
+import { readBoard } from "@/lib/server/anomalies";
 import { boardToMeta } from "@/lib/server/boards";
 import { getContentDocs } from "@/lib/server/docs";
 import { requireBoardAccess } from "@/lib/server/guard";
@@ -15,8 +18,16 @@ export default async function BoardLayout({ children }: LayoutProps<"/">) {
   const board = await requireBoardAccess();
   const { docs } = await getContentDocs();
 
+  /* The Anomalies board, read here rather than on /anomalies: the Live tab
+     needs it too, because a card filed by a sticker is what draws that
+     sticker. One read, both tabs. The fixture board — Supabase unconfigured,
+     or a slug with no row — has no id to read against, and comes back as the
+     empty, unbacked board the store keeps in the browser instead. */
+  const anomalies = board.id === "fixture" ? EMPTY_DOC : await readBoard(board.id);
+
   return (
     <BoardDataProvider meta={boardToMeta(board)} docs={docs}>
+      <AnomaliesStore doc={anomalies} />
       <TopNav />
       <BrandBar />
       {children}

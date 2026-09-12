@@ -13,7 +13,13 @@ import {
   type MouseEvent,
   type ReactNode,
 } from "react";
-import { fileInsight, removeInsight, removeInsightsBySource, useBoardStore, type InsightItem } from "@/lib/insights";
+import {
+  fileInsight,
+  removeInsightsBySource,
+  useBoardStore,
+  type InsightItem,
+  type StickerPlacement,
+} from "@/lib/insights";
 
 /* ============================================================
    Stickers — the Live → Anomalies routing gesture.
@@ -28,21 +34,18 @@ export const PLACED_STICKER_MIME = "animals/placed-sticker";
 
 export type InsightPayload = Omit<InsightItem, "id" | "createdAt">;
 
-interface StickerTag {
-  shade: number;
-  x: number;
-  y: number;
-  insightId?: string;
-}
-
 interface StickerCtxValue {
   /** how many stickers have been used — drives the Rolodex roll */
   used: number;
   armedSticker: number | null;
   toggleArm: () => void;
   /** sticker stuck on a given target, or undefined */
-  tagOf: (key: string) => StickerTag | undefined;
-  applySticker: (key: string, payload: InsightPayload, position?: Pick<StickerTag, "x" | "y">) => boolean;
+  tagOf: (key: string) => StickerPlacement | undefined;
+  applySticker: (
+    key: string,
+    payload: InsightPayload,
+    position?: Pick<StickerPlacement, "x" | "y">
+  ) => boolean;
   removeSticker: (key: string) => void;
 }
 
@@ -55,70 +58,40 @@ const StickerCtx = createContext<StickerCtxValue>({
   removeSticker: () => {},
 });
 
-const TAG_STORE_KEY = "animals-sticker-tags";
+/* The default placement for a sticker that arrives without one — a keyboard
+   press rather than a drop, which has no pointer to take a position from. */
+const DEFAULT_PLACEMENT = { x: 6, y: 10 };
 
 export function StickerProvider({ children }: { children: ReactNode }) {
-  const { circles } = useBoardStore();
+  const { circles, insights } = useBoardStore();
   const [used, setUsed] = useState(0);
   const [armed, setArmed] = useState(false);
-  const [tags, setTags] = useState<Record<string, StickerTag>>({});
   const [toast, setToast] = useState<{ msg: string; key: number } | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  /* updaters must stay pure — React may run them twice — so writes to the
-     insight store and to localStorage happen here, against a mirror of the
-     current tags rather than inside setTags */
-  const tagsRef = useRef(tags);
-  const commitTags = useCallback((next: Record<string, StickerTag>) => {
-    tagsRef.current = next;
-    setTags(next);
-    try {
-      localStorage.setItem(TAG_STORE_KEY, JSON.stringify(next));
-    } catch {
-      /* quota/private mode — in-memory only */
+  /* Where every stuck sticker is, read off the cards themselves.
+
+     It used to be a second store in localStorage, keyed by target, and the
+     board a sticker filed into was a third. Two stores for one fact is how a
+     sticker outlives the card it filed — peel it off in one tab and the card
+     stays in the other, clear the board and the stickers stay stuck. A card
+     carries the target that filed it and the placement of its sticker, so
+     the tray, the badge and the circle now cannot disagree: they are all
+     reading the same row. */
+  const tags = useMemo(() => {
+    const placed = new Map<string, StickerPlacement>();
+    for (const insight of insights) {
+      if (insight.sourceKey) {
+        placed.set(insight.sourceKey, insight.sticker ?? { shade: 0, ...DEFAULT_PLACEMENT });
+      }
     }
-  }, []);
+    return placed;
+  }, [insights]);
 
-  /* tags survive a reload so a tagged article stays visibly tagged */
+  const tagsRef = useRef(tags);
   useEffect(() => {
-    const raf = requestAnimationFrame(() => {
-      try {
-        const raw = localStorage.getItem(TAG_STORE_KEY);
-        if (raw) {
-          const parsed = JSON.parse(raw) as Record<string, StickerTag | number>;
-          const restored = Object.fromEntries(
-            Object.entries(parsed).map(([key, value]) => [
-              key,
-              typeof value === "number" ? { shade: value, x: 6, y: 10 } : value,
-            ])
-          );
-          /* seed the mirror too, or the next sticker would drop the restored tags */
-          tagsRef.current = restored;
-          setTags(restored);
-        }
-      } catch {
-        /* unavailable or corrupted — start clean */
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, []);
-
-  /* a second Live tab peeling the same sticker off — the board store syncs
-     itself across tabs, and the tags that draw the badges have to follow */
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key !== null && e.key !== TAG_STORE_KEY) return;
-      try {
-        const next = e.newValue ? (JSON.parse(e.newValue) as Record<string, StickerTag>) : {};
-        tagsRef.current = next;
-        setTags(next);
-      } catch {
-        /* mid-write or corrupted — keep what we have */
-      }
-    };
-    window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
-  }, []);
+    tagsRef.current = tags;
+  }, [tags]);
 
   const circlesRef = useRef(circles);
   useEffect(() => {
@@ -128,17 +101,14 @@ export function StickerProvider({ children }: { children: ReactNode }) {
   useEffect(() => () => clearTimeout(toastTimer.current), []);
 
   const applySticker = useCallback(
-    (key: string, payload: InsightPayload, position = { x: 6, y: 10 }) => {
-      const shade = used % 3;
-      const insight = fileInsight({ ...payload, sourceKey: key });
-
-      commitTags({
-        ...tagsRef.current,
-        [key]: {
-          shade,
+    (key: string, payload: InsightPayload, position = DEFAULT_PLACEMENT) => {
+      fileInsight({
+        ...payload,
+        sourceKey: key,
+        sticker: {
+          shade: used % 3,
           x: Math.max(4, Math.min(96, position.x)),
           y: Math.max(6, Math.min(94, position.y)),
-          insightId: insight.id,
         },
       });
 
@@ -154,23 +124,17 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       toastTimer.current = setTimeout(() => setToast(null), 2400);
       return true;
     },
-    [used, commitTags]
+    [used]
   );
 
   const removeSticker = useCallback((key: string) => {
-    const tag = tagsRef.current[key];
-    if (!tag) return;
-    /* tags saved by an earlier build carry no insight id, so fall back to
-       the source key the insight itself remembers */
-    if (tag.insightId) removeInsight(tag.insightId);
+    if (!tagsRef.current.has(key)) return;
+    /* the card and its sticker are the same row, so this takes both */
     removeInsightsBySource(key);
-    const next = { ...tagsRef.current };
-    delete next[key];
-    commitTags(next);
     setToast({ msg: "Sticker returned to the tray", key: Date.now() });
     clearTimeout(toastTimer.current);
     toastTimer.current = setTimeout(() => setToast(null), 2400);
-  }, [commitTags]);
+  }, []);
 
   /* Escape disarms */
   useEffect(() => {
@@ -186,7 +150,7 @@ export function StickerProvider({ children }: { children: ReactNode }) {
       used,
       armedSticker: armed ? used % 3 : null,
       toggleArm: () => setArmed((v) => !v),
-      tagOf: (key: string) => tags[key],
+      tagOf: (key: string) => tags.get(key),
       applySticker,
       removeSticker,
     }),
@@ -232,12 +196,12 @@ export function StickerBadge({
   className = "",
 }: {
   shade?: number;
-  tag?: StickerTag;
+  tag?: StickerPlacement;
   tagKey?: string;
   className?: string;
 }) {
   const { removeSticker } = useContext(StickerCtx);
-  const value = tag ?? { shade: shade ?? 0, x: 6, y: 10 };
+  const value = tag ?? { shade: shade ?? 0, ...DEFAULT_PLACEMENT };
   return (
     <button
       type="button"
@@ -410,7 +374,7 @@ export function useStickerTarget(getPayload: () => InsightPayload, tagKey?: stri
     []
   );
 
-  const stick = useCallback((position?: Pick<StickerTag, "x" | "y">) => {
+  const stick = useCallback((position?: Pick<StickerPlacement, "x" | "y">) => {
     const key = resolveKey();
     /* one sticker per target — re-sticking would file duplicates */
     if (tagOf(key) !== undefined) return;

@@ -5,7 +5,7 @@
    fails the day either list is edited alone. */
 import { describe, expect, it } from "vitest";
 import { CIRCLE_IDS, WIDGET_DEFAULTS, WIDGET_SCHEMAS } from "@/lib/cms/widgets";
-import { BUILTIN_CIRCLES } from "@/lib/insights";
+import { BUILTIN_CIRCLES } from "@/lib/anomalies/types";
 
 const twelve = (v: number) => Array.from({ length: 12 }, () => v);
 
