@@ -347,7 +347,11 @@ export function AnomaliesBoard() {
       </div>
 
       {/* desktop board */}
-      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(1400px,calc(100vh-8.5rem))] print:block print:min-h-[1400px]">
+      {/* Taller than the constellation needs, so the bottom circles have floor
+          left under them to be dragged into and grown into. Circles are placed
+          in percentages of this box, so its height is also what decides how far
+          down a circle of a given size is allowed to sit. */}
+      <div className="relative hidden overflow-hidden lg:block lg:min-h-[max(1660px,calc(100vh-8.5rem))] print:block print:min-h-[1660px]">
         <div
           ref={boardRef}
           className="absolute inset-0 print:!transform-none"
