@@ -185,7 +185,7 @@ export function Attention({ id }: { id: string }) {
 
   return (
     <Module id={id} variant="panel" title="What's Driving Their Attention" titleClassName={bigTitle}>
-      <Subtitle>How the category shows up.</Subtitle>
+      <Subtitle>Website traffic by channel</Subtitle>
       <Kicker className="mt-12">Channel Mix</Kicker>
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {competitors.map((card) => (
