@@ -49,6 +49,7 @@ export function Toolbar({
   ideasOpen,
   onToggleIdeas,
   onNewCircle,
+  onClearBoard,
 }: {
   zoom: number;
   onZoom: (zoom: number) => void;
@@ -57,6 +58,7 @@ export function Toolbar({
   ideasOpen: boolean;
   onToggleIdeas: () => void;
   onNewCircle: () => void;
+  onClearBoard: () => void;
 }) {
   const idx = ZOOM_LEVELS.indexOf(zoom);
   const zoomIn = () => onZoom(ZOOM_LEVELS[Math.min(idx + 1, ZOOM_LEVELS.length - 1)] ?? 100);
@@ -106,6 +108,15 @@ export function Toolbar({
           <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
             <path d="M10 13a5 5 0 0 0 7.07 0l2.13-2.13a5 5 0 1 0-7.07-7.07l-1.42 1.42" />
             <path d="M14 11a5 5 0 0 0-7.07 0L4.8 13.13a5 5 0 1 0 7.07 7.07l1.41-1.42" />
+          </svg>
+        </IconButton>
+
+        {/* Clearing is the one thing here nobody can undo, so it opens a
+            dialog rather than acting on the press. */}
+        <IconButton label="Clear board" onClick={onClearBoard}>
+          <svg width="15" height="15" viewBox="0 0 24 24" {...stroke}>
+            <path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14" />
+            <path d="M10 11v5M14 11v5" />
           </svg>
         </IconButton>
         <span aria-hidden className="mx-1 h-6 w-px bg-line" />
