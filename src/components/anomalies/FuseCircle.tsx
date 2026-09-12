@@ -103,7 +103,6 @@ export function FuseCircle({
               <p className="mt-4 text-[28px] font-medium leading-tight tracking-tight text-ink">
                 Drag two insights here
               </p>
-              <p className="mt-0.5 text-base text-graphite">From different circles to fuse</p>
             </>
           )}
 

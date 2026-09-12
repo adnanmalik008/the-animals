@@ -180,7 +180,7 @@ function PaidSearchCardView({ card }: { card: PaidCard }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-white/5 bg-bg3">
       <p className="flex items-center gap-2 border-b border-white/5 p-5 font-display text-base">
-        <span className="font-medium text-white">Sample Text Ads</span>
+        <span className="font-medium text-white">Text Ads</span>
         <span className="text-white/70">{name}</span>
       </p>
       <ul>

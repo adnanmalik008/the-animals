@@ -22,7 +22,7 @@ export const paidSearchModule = defineModule({
       summary: "id",
       item: f.object({
         fields: {
-          /* The card *is* the competitor: the name beside "Sample Text Ads"
+          /* The card *is* the competitor: the name beside "Text Ads"
              and the mark on every ad come from the Competitive set, and
              naming the ref `id` is what stops two cards claiming the same
              brand. */

@@ -96,7 +96,7 @@ export function Notepad({ id }: { id: string }) {
               id="live-notepad"
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
-              placeholder="Scribble in the margins — hunches, threads to pull, names to remember…"
+              placeholder="Scribble your own thing here"
               spellCheck={false}
               rows={9}
               className="min-h-[288px] w-full resize-y bg-transparent font-serif text-lg leading-8 text-ink placeholder:text-graphite/50 focus-visible:outline-none"
