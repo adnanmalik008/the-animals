@@ -6,6 +6,7 @@ import { useModuleDoc } from "@/components/board/BoardDataContext";
 import type { AppPlatform } from "@/data/live";
 import { useCountUp, useInView } from "@/lib/hooks";
 import { StickerDropZone } from "./stickers";
+import { TabPills } from "./TabPills";
 
 const platforms: { id: AppPlatform; label: string }[] = [
   { id: "ios", label: "iOS" },
@@ -50,28 +51,7 @@ export function AppStoreVoice({ id }: { id: string }) {
       id={id}
       title="App Store Voice"
       headerExtra={
-        <div
-          role="group"
-          aria-label="App platform"
-          className="ml-auto flex items-center gap-1 rounded-full border border-line bg-card p-1 shadow-sm"
-        >
-          {platforms.map((p) => {
-            const active = platform === p.id;
-            return (
-              <button
-                key={p.id}
-                type="button"
-                aria-pressed={active}
-                onClick={() => setPlatform(p.id)}
-                className={`rounded-full px-3.5 py-1 text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 ${
-                  active ? "bg-orange text-white" : "text-graphite hover:text-ink"
-                }`}
-              >
-                {p.label}
-              </button>
-            );
-          })}
-        </div>
+        <TabPills items={platforms} active={platform} onChange={setPlatform} label="App platform" />
       }
     >
       <div ref={ref} className="pt-4">

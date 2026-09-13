@@ -1,5 +1,5 @@
 import { defineModule, f } from "../spec";
-import { redditInsightStates, redditors, subreddits } from "@/data/live";
+import { redditInsightStates, redditInsightsSource, redditors, redditSubtitle, subreddits } from "@/data/live";
 
 /* One insight, per consumer state. Each carries an id because a sticker
    dropped on it files against that id; keying by position would move
@@ -29,6 +29,13 @@ export const reddit = defineModule({
   heading: { title: "Reddit" },
   boardPath: "/",
   fields: {
+    subtitle: f.textarea({
+      label: "Subtitle",
+      help: "The line under the tabs, printed on all three.",
+      rows: 2,
+      maxLength: 200,
+      default: redditSubtitle,
+    }),
     subreddits: f.list({
       label: "Subreddits",
       min: 1,
@@ -55,10 +62,11 @@ export const reddit = defineModule({
           id: f.id(),
           name: f.text({ label: "Redditor", help: "With its u/ prefix", maxLength: 40 }),
           karma: f.text({ label: "Karma", help: "With the word: 184K karma", maxLength: 20 }),
+          avatar: f.image({ label: "Avatar", help: "Square; shown as a circle", aspect: "1/1", optional: true }),
           /* Not derivable here: karma is a rounded string with its unit in
-             it, so nothing in this document holds the number a share would
-             be taken of. The editor sets the bar directly, longest first. */
-          pct: f.number({ label: "Bar length", help: "0–100, relative to the top influencer", integer: true, min: 0, max: 100 }),
+             it, so nothing in this document holds a number to score from.
+             The editor sets the engagement figure the row prints. */
+          pct: f.number({ label: "Engagement", help: "0–100, printed as the row's ENG score", integer: true, min: 0, max: 100 }),
         },
       }),
     }),
@@ -66,6 +74,12 @@ export const reddit = defineModule({
       label: "Insights",
       help: "One set per state; the board's three pills switch between them.",
       fields: {
+        source: f.text({
+          label: "Sourced from",
+          help: "The line under the Opinions heading",
+          maxLength: 80,
+          default: redditInsightsSource,
+        }),
         drivers: insight,
         problems: insight,
         solutions: insight,
@@ -73,9 +87,11 @@ export const reddit = defineModule({
     }),
   },
   fixture: () => ({
+    subtitle: redditSubtitle,
     subreddits,
     influencers: redditors,
     insights: {
+      source: redditInsightsSource,
       drivers: withIds("ri-d", redditInsightStates.drivers),
       problems: withIds("ri-p", redditInsightStates.problems),
       solutions: withIds("ri-s", redditInsightStates.solutions),
