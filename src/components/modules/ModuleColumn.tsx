@@ -207,7 +207,10 @@ export function Module({
         </p>
       )}
 
-      <div className="flex items-center gap-2 pr-8">
+      {/* The content clip below bleeds 24px upward (see its note), which lands
+          it over this row and — being later in the DOM — swallows clicks on the
+          header's own switches. Lift the row back above it. */}
+      <div className="relative z-10 flex items-center gap-2 pr-8">
         <button
           type="button"
           onClick={() => ctx.toggle(id)}

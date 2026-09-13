@@ -5,7 +5,7 @@ import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
 import { StickerBadge, useStickerTarget } from "./stickers";
 import { TornSheet } from "./TornSheet";
-import { CarouselArrow } from "./SocialPulse";
+import { CarouselArrow } from "./Carousel";
 
 /* Keynote stages — what the category is saying from the podium. */
 export function OnStage({ id }: { id: string }) {

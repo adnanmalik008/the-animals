@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useModuleDoc } from "@/components/board/BoardDataContext";
 import { Module } from "@/components/modules/ModuleColumn";
 import type { ModuleDocs } from "@/lib/cms/types";
-import { CarouselArrow } from "./SocialPulse";
+import { CarouselArrow } from "./Carousel";
 import { StickerDropZone } from "./stickers";
 
 /* ============================================================

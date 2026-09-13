@@ -22,11 +22,27 @@ export interface SocialPost {
   timeAgo: string;
   image: string;
   imageAlt: string;
+  /* Everything below is optional: the design's card prints more than the
+     first documents carried, and a saved post that predates these fields
+     must keep validating. Each has a printed fallback in the card. */
+  /** the bold first line; the handle drops to the line beneath it */
+  name?: string;
+  avatar?: string;
+  /** X's blue tick */
+  verified?: boolean;
+  /** Instagram prints a place where the others print a handle */
+  place?: string;
+  /** reddit's net score, printed between the two arrows */
+  upvotes?: string;
+  shares?: string;
 }
 
 export const socialPosts: SocialPost[] = [
   {
     id: "sp-1",
+    name: "Stride Collective",
+    avatar: "/assets/headshots/h03.jpg",
+    shares: "1.1K",
     platform: "tiktok",
     author: "@stridecollective",
     text: "POV: your Saturday run club has a waitlist longer than the marathon itself. 5:45am and 200 people showed up.",
@@ -38,6 +54,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-2",
+    name: "r/RunningShoeGeeks",
+    avatar: "/assets/headshots/h07.jpg",
+    shares: "96",
+    upvotes: "2.4K",
     platform: "reddit",
     author: "u/tempo_junkie",
     text: "Hot take: the Adizero Evo SL is the best daily trainer under $150 and it isn't close. Full 300-mile review inside.",
@@ -49,6 +69,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-3",
+    name: "Samba Sunday",
+    avatar: "/assets/headshots/h11.jpg",
+    shares: "402",
+    place: "Shoreditch, London",
     platform: "instagram",
     author: "@sambasunday",
     text: "Sambas at the finish line, espresso in hand. Race day is a lifestyle now.",
@@ -60,6 +84,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-4",
+    name: "Laced Up London",
+    avatar: "/assets/headshots/h02.jpg",
+    shares: "612",
+    verified: true,
     platform: "x",
     author: "@lacedup_ldn",
     text: "adidas quietly seeding the new Evo to sub-3 marathoners only. Scarcity marketing meets PB culture.",
@@ -71,6 +99,9 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-5",
+    name: "Girls That Run",
+    avatar: "/assets/headshots/h14.jpg",
+    shares: "3.4K",
     platform: "tiktok",
     author: "@girlsthatrun",
     text: "Rating every run club in East London by their post-run pastry situation. Part 4: the croissant capital.",
@@ -82,6 +113,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-6",
+    name: "Trackhouse Archive",
+    avatar: "/assets/headshots/h09.jpg",
+    shares: "188",
+    place: "Tokyo, Japan",
     platform: "instagram",
     author: "@trackhouse.archive",
     text: "1972 Munich spikes, restored stitch by stitch. Some shoes are museums.",
@@ -93,6 +128,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-7",
+    name: "r/AdvancedRunning",
+    avatar: "/assets/headshots/h05.jpg",
+    shares: "143",
+    upvotes: "1.8K",
     platform: "reddit",
     author: "u/marathon_matt",
     text: "Pulled data from 400 Strava clubs: average group-run pace slowed 40s/mile since 2023. Social running is winning.",
@@ -104,6 +143,10 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-8",
+    name: "The Sneaker Lawyer",
+    avatar: "/assets/headshots/h16.jpg",
+    shares: "744",
+    verified: true,
     platform: "x",
     author: "@sneakerlawyer",
     text: "Terrace culture did more for adidas' 2025 balance sheet than every performance launch combined. Discuss.",
@@ -115,6 +158,9 @@ export const socialPosts: SocialPost[] = [
   },
   {
     id: "sp-9",
+    name: "Coach Kofi",
+    avatar: "/assets/headshots/h19.jpg",
+    shares: "2.1K",
     platform: "tiktok",
     author: "@coachkofi",
     text: "Your shoes don't need more drop. You need more sleep. Anyway, here's my full rotation for 2026.",
@@ -399,6 +445,13 @@ export const opinionLeaders: OpinionLeader[] = [
 
 export type RedditTab = "subreddits" | "influencers" | "insights";
 
+/* The line the design prints under the tabs, whichever tab is open. */
+export const redditSubtitle =
+  "Use of subreddits by US runners interested in performance gear";
+
+/* What the Insights tab cites under its own heading. */
+export const redditInsightsSource = "Sourced from 3m+ subreddits";
+
 export interface SubredditRow {
   id: string;
   name: string;
@@ -418,15 +471,17 @@ export interface RedditorRow {
   id: string;
   name: string;
   karma: string;
-  pct: number; // 0-100
+  /** engagement, 0-100 — printed as the row's ENG score */
+  pct: number;
+  avatar?: string;
 }
 
 export const redditors: RedditorRow[] = [
-  { id: "rd-i1", name: "u/tempo_junkie", karma: "184K karma", pct: 100 },
-  { id: "rd-i2", name: "u/marathon_matt", karma: "122K karma", pct: 66 },
-  { id: "rd-i3", name: "u/solereview_sam", karma: "98K karma", pct: 53 },
-  { id: "rd-i4", name: "u/trackclubtina", karma: "76K karma", pct: 41 },
-  { id: "rd-i5", name: "u/gel_vs_foam", karma: "41K karma", pct: 22 },
+  { id: "rd-i1", name: "u/tempo_junkie", karma: "184K karma", pct: 94, avatar: "/assets/headshots/h04.jpg" },
+  { id: "rd-i2", name: "u/marathon_matt", karma: "122K karma", pct: 88, avatar: "/assets/headshots/h08.jpg" },
+  { id: "rd-i3", name: "u/solereview_sam", karma: "98K karma", pct: 82, avatar: "/assets/headshots/h12.jpg" },
+  { id: "rd-i4", name: "u/trackclubtina", karma: "76K karma", pct: 79, avatar: "/assets/headshots/h15.jpg" },
+  { id: "rd-i5", name: "u/gel_vs_foam", karma: "41K karma", pct: 75, avatar: "/assets/headshots/h18.jpg" },
 ];
 
 export const redditInsights: string[] = [
@@ -440,7 +495,7 @@ export type InsightState = "drivers" | "problems" | "solutions";
 
 export const insightStateLabel: Record<InsightState, string> = {
   drivers: "Drivers",
-  problems: "Problems",
+  problems: "Problem",
   solutions: "Solutions",
 };
 
