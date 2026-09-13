@@ -221,7 +221,9 @@ function XCard({ post }: { post: SocialPost }) {
     <CardShell>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Identity post={post} badge />
-        <p className="text-sm leading-normal text-graphite">{withHashtags(post.text)}</p>
+        {/* the design sets the tags on their own line under the post, so a
+            line break typed into the text is kept rather than collapsed */}
+        <p className="whitespace-pre-line text-sm leading-normal text-graphite">{withHashtags(post.text)}</p>
         <PostImage post={post} className="aspect-[278/150] rounded-lg" />
       </div>
       {/* X counts the reply first and the like last */}
@@ -269,30 +271,54 @@ function TikTokCard({ post }: { post: SocialPost }) {
               <img src={icon.comment} alt="" aria-hidden className="size-4 brightness-0 invert" />
               {post.comments}
             </span>
-            {post.shares && (
-              <span className="flex flex-col items-center gap-0.5">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={icon.share} alt="" aria-hidden className="size-4 brightness-0 invert" />
-                {post.shares}
-              </span>
-            )}
+            <span className="flex flex-col items-center gap-0.5">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={icon.share} alt="" aria-hidden className="size-4 brightness-0 invert" />
+              {/* the app labels this one rather than counting it */}
+              {post.shares ?? "Share"}
+            </span>
           </div>
 
+          {/* the spinning disc the app parks above the tab bar */}
+          <span className="absolute bottom-11 right-2 size-5 rounded-full bg-white/20 ring-1 ring-white/40" aria-hidden />
+
           {/* caption and music, as the app stacks them */}
-          <div className="absolute inset-x-1.5 bottom-7 space-y-0.5 pr-10 text-[8px] leading-tight text-white">
+          <div className="absolute inset-x-1.5 bottom-8 space-y-0.5 pr-11 text-[8px] leading-tight text-white">
             <p className="font-semibold">
               {post.author} · {post.timeAgo}
             </p>
             <p className="line-clamp-2 text-white/85">{post.text}</p>
+            <p className="flex items-center gap-1 text-white/80">
+              <span aria-hidden>♪</span>
+              <span className="truncate">original sound — {post.author}</span>
+            </p>
           </div>
 
           {/* the app's tab bar, drawn as the flat band the design shows */}
-          <div className="absolute inset-x-0 bottom-0 flex items-center justify-between bg-black/85 px-2 py-1.5 text-[7px] text-white/60">
-            <span className="text-white">Home</span>
-            <span>Discover</span>
-            <span className="rounded-[3px] bg-white px-1.5 py-0.5 text-black">+</span>
-            <span>Inbox</span>
-            <span>Me</span>
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between bg-black/85 px-2 pb-2 pt-1 text-[6px] text-white/60">
+            {[
+              { label: "Home", d: "M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z", active: true },
+              { label: "Discover", d: "M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm10 17-5.2-5.2" },
+            ].map((t) => (
+              <span key={t.label} className={`flex flex-col items-center gap-0.5 ${t.active ? "text-white" : ""}`}>
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d={t.d} />
+                </svg>
+                {t.label}
+              </span>
+            ))}
+            <span className="mb-1 rounded-[3px] bg-white px-1.5 py-[3px] text-[7px] leading-none text-black">+</span>
+            {[
+              { label: "Inbox", d: "M4 5h16v12H8l-4 3z" },
+              { label: "Me", d: "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm-8 9a8 8 0 0 1 16 0" },
+            ].map((t) => (
+              <span key={t.label} className="flex flex-col items-center gap-0.5">
+                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden>
+                  <path d={t.d} />
+                </svg>
+                {t.label}
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -300,16 +326,20 @@ function TikTokCard({ post }: { post: SocialPost }) {
   );
 }
 
-function PostCard({ post }: { post: SocialPost }) {
+/* The card follows the filter, not the post: the file's Default variant
+   prints one neutral card for every post while All platforms is open, and
+   each platform's own card only once that platform is chosen. Mixing the
+   four shapes in one row is a thing the design never does. */
+function PostCard({ post, variant }: { post: SocialPost; variant: SocialPlatform | "all" }) {
   const label = socialPlatformLabel[post.platform];
   const Card =
-    post.platform === "tiktok"
+    variant === "tiktok"
       ? TikTokCard
-      : post.platform === "reddit"
+      : variant === "reddit"
         ? RedditCard
-        : post.platform === "instagram"
+        : variant === "instagram"
           ? InstagramCard
-          : post.platform === "x"
+          : variant === "x"
             ? XCard
             : DefaultCard;
 
@@ -434,7 +464,7 @@ export function SocialPulse({ id }: { id: string }) {
                 key={post.id}
                 className="w-full shrink-0 px-1 sm:w-1/2 lg:w-1/3"
               >
-                <PostCard post={post} />
+                <PostCard post={post} variant={filter} />
               </div>
             ))}
           </div>
