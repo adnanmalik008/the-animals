@@ -130,7 +130,14 @@ describe("reddit's legacy template was stale before it was wired", () => {
     expect(Array.isArray(legacy.insights)).toBe(true);
 
     const def = byKey("reddit");
-    expect(Object.keys(def.fields.insights.fields).sort()).toEqual(["drivers", "problems", "solutions"]);
+    /* `source` is the line the tab prints under its heading; the three
+       states beside it are what the flat list never was */
+    expect(Object.keys(def.fields.insights.fields).sort()).toEqual([
+      "drivers",
+      "problems",
+      "solutions",
+      "source",
+    ]);
 
     /* and so it does not parse — which is why it is not in the net above */
     expect(parseDoc(def, legacy).ok).toBe(false);
