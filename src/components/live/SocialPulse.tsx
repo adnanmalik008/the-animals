@@ -40,6 +40,16 @@ function AllIcon({ size = 24 }: { size?: number }) {
   return <Mark src="/assets/social/all.svg" size={size} />;
 }
 
+/* 24px in the filter tile, except reddit's roundel, which the design sets
+   two pixels larger so its circle reads the same size as the rest. */
+const tileIconSize: Record<SocialPlatform | "all", number> = {
+  all: 24,
+  tiktok: 24,
+  reddit: 26,
+  instagram: 24,
+  x: 24,
+};
+
 /* ---------------- card furniture ---------------- */
 
 /* The design's own icons, each exported at the colour it is drawn in. */
@@ -102,7 +112,9 @@ function Identity({ post, sub, badge }: { post: SocialPost; sub?: string; badge?
   return (
     <div className="flex items-start gap-3">
       <Avatar post={post} />
-      <div className="min-w-0 text-sm">
+      {/* the file stacks the two lines 4px apart, both on the font's own
+          leading rather than a looser one */}
+      <div className="flex min-w-0 flex-col gap-1 text-sm leading-tight">
         <p className="flex items-center gap-1 font-medium text-ink">
           <span className="truncate">{post.name ?? post.author}</span>
           {badge && post.verified && (
@@ -161,7 +173,7 @@ function DefaultCard({ post }: { post: SocialPost }) {
     <CardShell>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Identity post={post} />
-        <p className="text-sm leading-normal text-graphite">{post.text}</p>
+        <p className="text-sm leading-tight text-graphite">{post.text}</p>
         <PostImage post={post} className="aspect-[278/164] rounded-lg" />
       </div>
       <CardFooter>
@@ -178,7 +190,7 @@ function RedditCard({ post }: { post: SocialPost }) {
     <CardShell>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Identity post={post} sub={post.timeAgo} />
-        <p className="text-sm leading-normal text-graphite">{post.text}</p>
+        <p className="text-sm leading-tight text-graphite">{post.text}</p>
         <PostImage post={post} className="aspect-[278/164] rounded-lg" />
       </div>
       <CardFooter>
@@ -223,7 +235,7 @@ function XCard({ post }: { post: SocialPost }) {
         <Identity post={post} badge />
         {/* the design sets the tags on their own line under the post, so a
             line break typed into the text is kept rather than collapsed */}
-        <p className="whitespace-pre-line text-sm leading-normal text-graphite">{withHashtags(post.text)}</p>
+        <p className="whitespace-pre-line text-sm leading-tight text-graphite">{withHashtags(post.text)}</p>
         <PostImage post={post} className="aspect-[278/150] rounded-lg" />
       </div>
       {/* X counts the reply first and the like last */}
@@ -244,7 +256,7 @@ function TikTokCard({ post }: { post: SocialPost }) {
     <CardShell>
       <div className="flex flex-1 flex-col gap-4 p-4">
         <Identity post={post} />
-        <p className="line-clamp-2 text-sm leading-normal text-graphite">{post.text}</p>
+        <p className="line-clamp-2 text-sm leading-tight text-graphite">{post.text}</p>
         {/* the phone keeps the design's 185px width rather than the card's:
             stretched to a full-width slide it would stand 700px tall */}
         <div className="relative mx-auto aspect-[185/381] w-full max-w-[200px] overflow-hidden rounded-lg bg-ink">
@@ -435,11 +447,15 @@ export function SocialPulse({ id }: { id: string }) {
                 aria-pressed={active}
                 aria-label={f.label}
                 title={f.label}
-                className={`flex size-10 shrink-0 items-center justify-center rounded-2xl shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 sm:size-12 ${
+                className={`flex size-10 shrink-0 items-center justify-center rounded-2xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange/70 sm:size-12 ${
                   active ? "bg-orange [&_img]:brightness-0 [&_img]:invert" : "bg-card hover:bg-bg2"
                 }`}
               >
-                {f.id === "all" ? <AllIcon size={20} /> : <PlatformIcon platform={f.id} size={20} />}
+                {f.id === "all" ? (
+                  <AllIcon size={tileIconSize.all} />
+                ) : (
+                  <PlatformIcon platform={f.id} size={tileIconSize[f.id]} />
+                )}
               </button>
             );
           })}
